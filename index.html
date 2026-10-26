@@ -107,11 +107,15 @@
     </div>
   </div>
 
-  <!-- 一般購買 Modal -->
+  <!-- 一般購買 Modal（支援單位） -->
   <div class="modal-overlay" id="qtyModal">
     <div class="modal-content">
       <div class="modal-header"><h2 id="editModalTitle">新增購買</h2><button class="btn-close" onclick="closeModal('qtyModal')">✕</button></div>
       <div class="form-group"><label class="form-label">購買人 / 登記人</label><input type="text" id="editBuyer" class="form-input" placeholder="例如：敏敏..." /></div>
+      <div class="form-group">
+        <label class="form-label">數量單位</label>
+        <select id="editUnit" class="form-select"></select>
+      </div>
       <div class="form-group"><label class="form-label">購買數量</label>
         <div class="qty-modal-controls">
           <button class="btn-qty-lg" onclick="changeQty(-1)">-</button>
@@ -127,7 +131,7 @@
   <div class="modal-overlay" id="editBuyerModal">
     <div class="modal-content">
       <div class="modal-header"><h2>修改購買數量</h2><button class="btn-close" onclick="closeModal('editBuyerModal')">✕</button></div>
-      <div class="form-group"><label class="form-label">購買人</label><input type="text" id="existingBuyerName" class="form-input" readonly style="background:#eee;" /></div>
+      <div class="form-group"><label class="form-label">購買人與單位</label><input type="text" id="existingBuyerName" class="form-input" readonly style="background:#eee;" /></div>
       <div class="form-group"><label class="form-label">購買數量</label>
         <div class="qty-modal-controls">
           <button class="btn-qty-lg" onclick="changeExistQty(-1)">-</button>
@@ -153,6 +157,7 @@
           <option value="文具雜貨">文具雜貨</option>
         </select>
       </div>
+      <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開，例如：盒,片）</label><input type="text" id="editProdUnits" class="form-input" placeholder="盒,片" /></div>
       <div class="form-group"><label class="form-label">商品圖片</label>
         <input type="file" id="editProdImageFile" class="form-input" accept="image/*" style="margin-bottom: 6px;" onchange="handleEditImg(event)" />
         <input type="text" id="editProdImage" class="form-input" placeholder="圖片網址 (URL)..." />
@@ -177,7 +182,7 @@
       </div>
 
       <div class="admin-section" id="adminSec2">
-        <div class="form-group"><label class="form-label">商品名稱 *</label><input type="text" id="itemName" class="form-input" placeholder="例如：咖啡糖..." /></div>
+        <div class="form-group"><label class="form-label">商品名稱 *</label><input type="text" id="itemName" class="form-input" placeholder="例如：積雪草面膜..." /></div>
         <div class="form-group"><label class="form-label">分類</label>
           <select id="itemCategory" class="form-select">
             <option value="食品/食材">食品/食材</option>
@@ -186,6 +191,7 @@
             <option value="文具雜貨">文具雜貨</option>
           </select>
         </div>
+        <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開，例如：盒,片）</label><input type="text" id="itemUnits" class="form-input" value="盒,片" placeholder="盒,片" /></div>
         <div class="form-group"><label class="form-label">商品圖片</label>
           <input type="file" id="itemImageFile" class="form-input" accept="image/*" style="margin-bottom: 6px;" onchange="handleNewImg(event)" />
           <input type="text" id="itemImage" class="form-input" placeholder="或直接貼上圖片網址 (URL)..." />
@@ -210,14 +216,14 @@
     var ADMIN_PASSWORD = '1234';
 
     var defaultProducts = [
-      { id: 1, name: '咖啡糖Americano', buyers: [{name: 'Jane', count: 1}], category: '食品/食材', note: '', image: '' },
-      { id: 2, name: '咖啡糖espresso', buyers: [{name: '敏敏', count: 4}], category: '食品/食材', note: '', image: '' }
+      { id: 1, name: '咖啡糖Americano', buyers: [{name: 'Jane', count: 1, unit: '包'}], category: '食品/食材', units: ['包', '個'], note: '', image: '' },
+      { id: 2, name: '積雪草面膜', buyers: [{name: '敏敏', count: 1, unit: '盒'}, {name: '敏敏', count: 5, unit: '片'}], category: '美妝保養', units: ['盒', '片'], note: '', image: '' }
     ];
 
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v15_products');
+      var saved = localStorage.getItem('buylist_v17_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -242,8 +248,8 @@
       for (var i = 0; i < products.length; i++) {
         var product = products[i];
         if (!product.buyers) product.buyers = [];
+        if (!product.units || !Array.isArray(product.units)) product.units = ['個'];
 
-        // 根據分類篩選
         if (currentCategoryFilter !== '全部' && product.category !== currentCategoryFilter) {
           continue;
         }
@@ -254,7 +260,8 @@
         var buyerTagsHTML = '';
         for (var j = 0; j < product.buyers.length; j++) {
           var b = product.buyers[j];
-          buyerTagsHTML += '<span class="tag tag-buyer" onclick="openEditBuyerModal(' + i + ', ' + j + ')">' + b.name + ' +' + b.count + '</span>';
+          var unitStr = b.unit ? b.unit : '';
+          buyerTagsHTML += '<span class="tag tag-buyer" onclick="openEditBuyerModal(' + i + ', ' + j + ')">' + b.name + ' +' + b.count + unitStr + '</span>';
         }
 
         var defaultSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
@@ -271,7 +278,7 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v15_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v17_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -306,6 +313,17 @@
       var product = products[index];
       document.getElementById('editModalTitle').innerText = '新增購買：' + product.name;
       document.getElementById('editBuyer').value = '';
+      
+      var unitSelect = document.getElementById('editUnit');
+      unitSelect.innerHTML = '';
+      var units = product.units && product.units.length > 0 ? product.units : ['個'];
+      for (var u = 0; u < units.length; u++) {
+        var opt = document.createElement('option');
+        opt.value = units[u];
+        opt.innerText = units[u];
+        unitSelect.appendChild(opt);
+      }
+
       tempEditQty = 1;
       document.getElementById('editQtyVal').innerText = tempEditQty;
       document.getElementById('qtyModal').classList.add('active');
@@ -320,8 +338,9 @@
     function saveNewBuy() {
       if (currentEditIndex !== null) {
         var buyerName = document.getElementById('editBuyer').value.trim();
+        var selectedUnit = document.getElementById('editUnit').value;
         if (!buyerName) { alert('請輸入購買人姓名！'); return; }
-        products[currentEditIndex].buyers.push({ name: buyerName, count: tempEditQty });
+        products[currentEditIndex].buyers.push({ name: buyerName, count: tempEditQty, unit: selectedUnit });
         renderList();
         closeModal('qtyModal');
       }
@@ -331,7 +350,8 @@
       currentItemIndex = itemIdx;
       currentBuyerIndex = buyerIdx;
       var buyerObj = products[itemIdx].buyers[buyerIdx];
-      document.getElementById('existingBuyerName').value = buyerObj.name;
+      var unitStr = buyerObj.unit ? buyerObj.unit : '';
+      document.getElementById('existingBuyerName').value = buyerObj.name + ' (' + unitStr + ')';
       tempExistingQty = buyerObj.count;
       document.getElementById('existingQtyVal').innerText = tempExistingQty;
       document.getElementById('editBuyerModal').classList.add('active');
@@ -387,7 +407,8 @@
           for (var j = 0; j < p.buyers.length; j++) {
             var b = p.buyers[j];
             itemTotal += b.count;
-            buyersHtml += '<div class="admin-buyer-detail">👤 ' + b.name + ': <b>' + b.count + '</b> 件</div>';
+            var unitStr = b.unit ? b.unit : '';
+            buyersHtml += '<div class="admin-buyer-detail">👤 ' + b.name + ': <b>' + b.count + '</b> ' + unitStr + '</div>';
           }
         } else {
           buyersHtml = '<div class="admin-buyer-detail" style="color:#aaa;">尚無人登記購買</div>';
@@ -396,12 +417,13 @@
 
         var defaultThumb = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
         var thumbSrc = p.image ? p.image : defaultThumb;
+        var unitsText = p.units ? p.units.join(',') : '個';
 
         var row = document.createElement('div');
         row.className = 'admin-item-row';
         row.innerHTML = '<img src="' + thumbSrc + '" class="admin-thumb" alt="" />' +
           '<div class="admin-item-info">' +
-            '<div class="admin-item-title"><span>📦 ' + p.name + '</span><span style="color:var(--accent);">總計: ' + itemTotal + ' 件</span></div>' +
+            '<div class="admin-item-title"><span>📦 ' + p.name + ' <small style="color:var(--text-sub);">(' + unitsText + ')</small></span></div>' +
             buyersHtml +
             '<div class="admin-action-btns">' +
               '<button class="btn-edit-prod" onclick="openEditProdModal(' + i + ')">✏️ 編輯</button>' +
@@ -413,7 +435,7 @@
 
       var summaryHeader = document.createElement('div');
       summaryHeader.style.cssText = "font-size:16px; font-weight:bold; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--border-color); color:var(--text-main);";
-      summaryHeader.innerText = '📊 總訂購商品件數：' + grandTotal + ' 件';
+      summaryHeader.innerText = '📊 總登記筆數：' + grandTotal + ' 筆';
       contentList.insertBefore(summaryHeader, contentList.firstChild);
     }
 
@@ -422,6 +444,7 @@
       var p = products[index];
       document.getElementById('editProdName').value = p.name;
       document.getElementById('editProdCategory').value = p.category || '食品/食材';
+      document.getElementById('editProdUnits').value = p.units ? p.units.join(',') : '盒,片';
       document.getElementById('editProdNote').value = p.note || '';
       document.getElementById('editProdImage').value = p.image || '';
       document.getElementById('editProdImageFile').value = '';
@@ -449,10 +472,13 @@
       if (editingProdIndex !== null) {
         var name = document.getElementById('editProdName').value.trim();
         var category = document.getElementById('editProdCategory').value;
+        var unitsStr = document.getElementById('editProdUnits').value.trim();
         var note = document.getElementById('editProdNote').value.trim();
         var imgUrl = document.getElementById('editProdImage').value.trim();
 
         if (!name) { alert('請填寫商品名稱！'); return; }
+
+        var unitsArr = unitsStr ? unitsStr.split(/[,，]/).map(function(s){ return s.trim(); }).filter(Boolean) : ['個'];
 
         var finalImg = products[editingProdIndex].image;
         if (tempEditUploadedImg) {
@@ -465,12 +491,13 @@
 
         products[editingProdIndex].name = name;
         products[editingProdIndex].category = category;
+        products[editingProdIndex].units = unitsArr;
         products[editingProdIndex].note = note;
         products[editingProdIndex].image = finalImg;
 
         renderList();
         updateAdminStats();
-        closeEditProdModal(); // 編輯完直接關閉編輯框，留在後台
+        closeEditProdModal();
       }
     }
 
@@ -489,11 +516,14 @@
     function saveNewProd() {
       var name = document.getElementById('itemName').value.trim();
       var category = document.getElementById('itemCategory').value;
+      var unitsStr = document.getElementById('itemUnits').value.trim();
       var note = document.getElementById('itemNote').value.trim();
       var imgUrl = document.getElementById('itemImage').value.trim();
       
       if (!name) { alert('請填寫商品名稱！'); return; }
       
+      var unitsArr = unitsStr ? unitsStr.split(/[,，]/).map(function(s){ return s.trim(); }).filter(Boolean) : ['個'];
+
       var finalImg = '';
       if (tempUploadedImg) {
         finalImg = tempUploadedImg;
@@ -501,7 +531,7 @@
         finalImg = imgUrl;
       }
 
-      products.unshift({ id: Date.now(), name: name, buyers: [], category: category, note: note, image: finalImg });
+      products.unshift({ id: Date.now(), name: name, buyers: [], category: category, units: unitsArr, note: note, image: finalImg });
       renderList();
       updateAdminStats();
       
@@ -509,6 +539,7 @@
       document.getElementById('itemNote').value = '';
       document.getElementById('itemImage').value = '';
       document.getElementById('itemImageFile').value = '';
+      document.getElementById('itemUnits').value = '盒,片';
       tempUploadedImg = '';
       
       switchTab(1);
