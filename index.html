@@ -22,11 +22,9 @@
     .header { background: var(--card-bg); padding: 18px; border-radius: 20px; box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
     .header-title h1 { font-size: 20px; font-weight: 700; color: var(--text-main); }
 
-    /* 頁面切換內容區塊 */
     .page-section { display: none; }
     .page-section.active { display: block; }
 
-    /* 分類篩選列 */
     .filter-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; scrollbar-width: none; }
     .filter-bar::-webkit-scrollbar { display: none; }
     .filter-pill { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-sub); padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; box-shadow: var(--shadow); transition: all 0.2s; }
@@ -45,13 +43,11 @@
     .item-note { font-size: 12px; color: #999; margin-top: 2px; }
     .btn-buy-action { background-color: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 14px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
 
-    /* 底部固定導覽列（5個按鈕：首頁、分類、購物車、個人、管理者） */
     .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #FFFFFF; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 8px 0; z-index: 999; box-shadow: 0 -4px 12px rgba(0,0,0,0.05); }
     .nav-item { background: none; border: none; display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-sub); cursor: pointer; gap: 3px; flex: 1; }
     .nav-item.active { color: var(--accent); font-weight: bold; }
     .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
 
-    /* 燈箱 Modal */
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end; z-index: 1000; }
     .modal-overlay.active { display: flex; }
     .modal-content { background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px; max-height: 90vh; overflow-y: auto; }
@@ -159,7 +155,7 @@
     </div>
   </div>
 
-  <!-- 底部導覽列（5個按鈕） -->
+  <!-- 底部導覽列 -->
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="switchSection('home', this)">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -263,7 +259,6 @@
         <button class="btn-save-manual" onclick="manualSaveData()">💾 儲存所有變更</button>
       </div>
 
-      <!-- 個案與訂單管理分頁 (支援後台直接刪除特定顧客訂單) -->
       <div class="admin-section" id="adminSec2">
         <div id="customerContentList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 12px;"></div>
         <button class="btn-save-manual" onclick="manualSaveData()">💾 儲存所有變更</button>
@@ -324,7 +319,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v39_products');
+      var saved = localStorage.getItem('buylist_v40_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -500,10 +495,14 @@
 
     function manualSaveData() {
       try {
-        localStorage.setItem('buylist_v39_products', JSON.stringify(products));
+        // 自動清理舊的暫存版本，釋放 localStorage 空間
+        for (var i = 30; i < 40; i++) {
+          localStorage.removeItem('buylist_v' + i + '_products');
+        }
+        localStorage.setItem('buylist_v40_products', JSON.stringify(products));
         alert('💾 儲存成功！');
       } catch (e) {
-        alert('儲存空間已滿！');
+        alert('儲存空間已滿，請清除部分瀏覽器快取！');
       }
     }
 
@@ -597,7 +596,10 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v39_products', JSON.stringify(products));
+        for (var cleanIdx = 30; cleanIdx < 40; cleanIdx++) {
+          localStorage.removeItem('buylist_v' + cleanIdx + '_products');
+        }
+        localStorage.setItem('buylist_v40_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -799,7 +801,6 @@
       }
     }
 
-    // 後台管理員直接刪除某顧客在某個商品上的所有登記
     function adminDeleteCustomerItem(itemIdx, buyerName) {
       if (confirm('確定要從後台刪除 「' + buyerName + '」 的這筆商品訂單嗎？')) {
         var product = products[itemIdx];
@@ -839,7 +840,6 @@
       updateAdminStats();
     }
 
-    // 更新後台個案管理清單（新增刪除訂單按鈕）
     function updateCustomerStats() {
       var customerList = document.getElementById('customerContentList');
       if (!customerList) return;
