@@ -133,7 +133,7 @@
     </div>
   </div>
 
-  <!-- 同時選購多單位 Modal -->
+  <!-- 新增購買 Modal -->
   <div class="modal-overlay" id="qtyModal">
     <div class="modal-content">
       <div class="modal-header"><h2 id="editModalTitle">新增購買</h2><button class="btn-close" onclick="closeModal('qtyModal')">✕</button></div>
@@ -146,20 +146,17 @@
     </div>
   </div>
 
-  <!-- 修改購買數量 Modal -->
+  <!-- 修改購買數量 Modal (支援各單位分別加減) -->
   <div class="modal-overlay" id="editBuyerModal">
     <div class="modal-content">
-      <div class="modal-header"><h2>修改購買數量</h2><button class="btn-close" onclick="closeModal('editBuyerModal')">✕</button></div>
-      <div class="form-group"><label class="form-label">購買人與單位</label><input type="text" id="existingBuyerName" class="form-input" readonly style="background:#eee;" /></div>
-      <div class="form-group"><label class="form-label">購買數量</label>
-        <div class="qty-modal-controls" style="display:flex; align-items:center; justify-content:center; gap:16px; margin:20px 0;">
-          <button class="btn-qty-sm" style="width:44px; height:44px; font-size:20px;" onclick="changeExistQty(-1)">-</button>
-          <span class="qty-display-lg" id="existingQtyVal">1</span>
-          <button class="btn-qty-sm plus" style="width:44px; height:44px; font-size:20px;" onclick="changeExistQty(1)">+</button>
-        </div>
+      <div class="modal-header"><h2 id="editBuyerModalTitle">修改購買數量</h2><button class="btn-close" onclick="closeModal('editBuyerModal')">✕</button></div>
+      <div class="form-group"><label class="form-label">購買人</label><input type="text" id="existingBuyerName" class="form-input" readonly style="background:#eee;" /></div>
+      <div class="form-group">
+        <label class="form-label">各單位購買數量（歸零即代表刪除該單位）</label>
+        <div id="editUnitQtyContainer"></div>
       </div>
       <button class="btn-submit" onclick="saveExistBuy()">儲存修改</button>
-      <button class="btn-submit btn-danger" onclick="delExistBuy()">刪除此購買紀錄</button>
+      <button class="btn-submit btn-danger" onclick="delAllExistBuy()">刪除此人所有購買紀錄</button>
     </div>
   </div>
 
@@ -241,8 +238,7 @@
   <script>
     var currentEditIndex = null;
     var currentItemIndex = null;
-    var currentBuyerIndex = null;
-    var tempExistingQty = 1;
+    var editingBuyerName = '';
     var editingProdIndex = null;
     var isAuthed = false;
     var currentCategoryFilter = 'default_all';
@@ -257,7 +253,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v33_products');
+      var saved = localStorage.getItem('buylist_v34_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -266,23 +262,18 @@
       products = defaultProducts;
     }
 
-    // 自動清理空間與防爆儲存
     function manualSaveData() {
       try {
-        localStorage.setItem('buylist_v33_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v34_products', JSON.stringify(products));
         alert('💾 儲存成功！所有變更已安全儲存。');
       } catch (e) {
-        // 自動清除舊版本垃圾資料以釋放空間
         try {
-          localStorage.removeItem('buylist_v27_products');
-          localStorage.removeItem('buylist_v28_products');
-          localStorage.removeItem('buylist_v29_products');
-          localStorage.removeItem('buylist_v30_products');
-          localStorage.removeItem('buylist_v31_products');
-          localStorage.setItem('buylist_v33_products', JSON.stringify(products));
+          localStorage.removeItem('buylist_v32_products');
+          localStorage.removeItem('buylist_v33_products');
+          localStorage.setItem('buylist_v34_products', JSON.stringify(products));
           alert('💾 儲存成功！系統已自動清理暫存空間並完成儲存。');
         } catch (err) {
-          alert('儲存空間已滿，請清除部分瀏覽器快取！');
+          alert('儲存空間已滿！');
         }
       }
     }
@@ -329,13 +320,12 @@
         var card = document.createElement('div');
         card.className = 'item-card' + (product.isCompleted ? ' completed' : '');
 
-        // 整合同一個人的不同單位（例如：敏敏 +1盒 5片）
         var buyerMap = {};
         for (var j = 0; j < product.buyers.length; j++) {
           var b = product.buyers[j];
           var name = b.name.trim();
           if (!buyerMap[name]) buyerMap[name] = [];
-          buyerMap[name].push({ buyerIdx: j, count: b.count, unit: b.unit || '個' });
+          buyerMap[name].push({ count: b.count, unit: b.unit || '個' });
         }
 
         var buyerTagsHTML = '';
@@ -347,8 +337,8 @@
           for (var d = 0; d < details.length; d++) {
             detailStr += '+' + details[d].count + details[d].unit + ' ';
           }
-          var firstIdx = details[0].buyerIdx;
-          buyerTagsHTML += '<span class="tag tag-buyer" onclick="openEditBuyerModal(' + i + ', ' + firstIdx + ')">' + name + ' ' + detailStr.trim() + '</span>';
+          // 點擊標籤時傳入商品索引與該顧客姓名
+          buyerTagsHTML += '<span class="tag tag-buyer" onclick="openEditBuyerModal(' + i + ', \'' + name + '\')">' + name + ' ' + detailStr.trim() + '</span>';
         }
 
         if (product.isCompleted) {
@@ -369,7 +359,7 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v33_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v34_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -428,6 +418,7 @@
       switchTab(1);
     }
 
+    // 開啟新增購買視窗
     function openQtyModal(index) {
       currentEditIndex = index;
       var product = products[index];
@@ -489,43 +480,85 @@
       }
     }
 
-    function openEditBuyerModal(itemIdx, buyerIdx) {
+    // 開啟修改購買數量視窗（支援各單位分別加減）
+    function openEditBuyerModal(itemIdx, buyerName) {
       currentItemIndex = itemIdx;
-      currentBuyerIndex = buyerIdx;
-      var buyerObj = products[itemIdx].buyers[buyerIdx];
-      var unitStr = buyerObj.unit ? buyerObj.unit : '';
-      document.getElementById('existingBuyerName').value = buyerObj.name + ' (' + unitStr + ')';
-      tempExistingQty = buyerObj.count;
-      document.getElementById('existingQtyVal').innerText = tempExistingQty;
+      editingBuyerName = buyerName;
+      var product = products[itemIdx];
+
+      document.getElementById('editBuyerModalTitle').innerText = '修改購買數量：' + product.name;
+      document.getElementById('existingBuyerName').value = buyerName;
+
+      var container = document.getElementById('editUnitQtyContainer');
+      container.innerHTML = '';
+      var units = product.units && product.units.length > 0 ? product.units : ['個'];
+
+      // 取得該顧客現有的各單位數量
+      var existingMap = {};
+      for (var j = 0; j < product.buyers.length; j++) {
+        var b = product.buyers[j];
+        if (b.name.trim() === buyerName) {
+          existingMap[b.unit || '個'] = b.count;
+        }
+      }
+
+      for (var u = 0; u < units.length; u++) {
+        var unitName = units[u];
+        var currentQty = existingMap[unitName] !== undefined ? existingMap[unitName] : 0;
+
+        var row = document.createElement('div');
+        row.className = 'unit-qty-row';
+        row.innerHTML = '<span>' + unitName + '</span>' +
+          '<div class="unit-qty-controls">' +
+            '<button class="btn-qty-sm" onclick="adjustModalQty(\'edit_qty_' + u + '\', -1)">-</button>' +
+            '<span class="qty-display-sm" id="edit_qty_' + u + '">' + currentQty + '</span>' +
+            '<button class="btn-qty-sm plus" onclick="adjustModalQty(\'edit_qty_' + u + '\', 1)">+</button>' +
+          '</div>';
+        container.appendChild(row);
+      }
+
       document.getElementById('editBuyerModal').classList.add('active');
     }
 
-    function changeExistQty(val) {
-      tempExistingQty += val;
-      if (tempExistingQty < 0) tempExistingQty = 0;
-      document.getElementById('existingQtyVal').innerText = tempExistingQty;
-    }
-
     function saveExistBuy() {
-      if (currentItemIndex !== null && currentBuyerIndex !== null) {
-        if (tempExistingQty === 0) {
-          products[currentItemIndex].buyers.splice(currentBuyerIndex, 1);
-        } else {
-          products[currentItemIndex].buyers[currentBuyerIndex].count = tempExistingQty;
-          if (products[currentItemIndex].buyers[currentBuyerIndex].bought > tempExistingQty) {
-            products[currentItemIndex].buyers[currentBuyerIndex].bought = tempExistingQty;
+      if (currentItemIndex !== null && editingBuyerName) {
+        var product = products[currentItemIndex];
+        var units = product.units && product.units.length > 0 ? product.units : ['個'];
+
+        // 先移除該顧客舊的紀錄
+        var newBuyers = [];
+        for (var j = 0; j < product.buyers.length; j++) {
+          if (product.buyers[j].name.trim() !== editingBuyerName) {
+            newBuyers.push(product.buyers[j]);
           }
         }
+
+        // 收集視窗中調整後大於 0 的各單位數量重新加入
+        for (var u = 0; u < units.length; u++) {
+          var qty = parseInt(document.getElementById('edit_qty_' + u).innerText);
+          if (qty > 0) {
+            newBuyers.push({ name: editingBuyerName, count: qty, unit: units[u], bought: 0 });
+          }
+        }
+
+        product.buyers = newBuyers;
         renderList();
         manualSaveData();
         closeModal('editBuyerModal');
       }
     }
 
-    function delExistBuy() {
-      if (currentItemIndex !== null && currentBuyerIndex !== null) {
-        if (confirm('確定要刪除這位購買人的紀錄嗎？')) {
-          products[currentItemIndex].buyers.splice(currentBuyerIndex, 1);
+    function delAllExistBuy() {
+      if (currentItemIndex !== null && editingBuyerName) {
+        if (confirm('確定要刪除 ' + editingBuyerName + ' 在這個商品的所有購買紀錄嗎？')) {
+          var product = products[currentItemIndex];
+          var newBuyers = [];
+          for (var j = 0; j < product.buyers.length; j++) {
+            if (product.buyers[j].name.trim() !== editingBuyerName) {
+              newBuyers.push(product.buyers[j]);
+            }
+          }
+          product.buyers = newBuyers;
           renderList();
           manualSaveData();
           closeModal('editBuyerModal');
