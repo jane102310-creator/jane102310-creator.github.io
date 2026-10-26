@@ -58,6 +58,7 @@
     .btn-qty-lg.plus { background: var(--accent); color: white; border: none; }
     .qty-display-lg { font-size: 24px; font-weight: bold; min-width: 40px; text-align: center; }
     .btn-submit { width: 100%; background-color: var(--accent); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+    .btn-save-manual { width: 100%; background-color: #28A745; color: white; border: none; padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 12px; margin-bottom: 8px; }
     .btn-danger { background-color: #D9534F !important; margin-top: 8px; }
 
     .admin-nav { display: flex; gap: 4px; margin-bottom: 16px; }
@@ -202,12 +203,14 @@
 
       <!-- 分頁 1：總數量統計與採購進度 -->
       <div class="admin-section active" id="adminSec1">
-        <div id="adminContentList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 16px;"></div>
+        <div id="adminContentList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 12px;"></div>
+        <button class="btn-save-manual" onclick="manualSaveData()">💾 儲存所有變更</button>
       </div>
 
       <!-- 分頁 2：顧客管理 -->
       <div class="admin-section" id="adminSec2">
-        <div id="customerContentList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 16px;"></div>
+        <div id="customerContentList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 12px;"></div>
+        <button class="btn-save-manual" onclick="manualSaveData()">💾 儲存所有變更</button>
       </div>
 
       <!-- 分頁 3：新增商品 -->
@@ -262,13 +265,58 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v23_products');
+      var saved = localStorage.getItem('buylist_v24_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
       }
     } catch(e) {
       products = defaultProducts;
+    }
+
+    // 圖片壓縮輔助函數（避免 Base64 檔案過大導致 localStorage 存不下）
+    function compressImage(file, callback) {
+      var reader = new FileReader();
+      reader.onload = function (e) {
+        var img = new Image();
+        img.onload = function () {
+          var canvas = document.createElement('canvas');
+          var ctx = canvas.getContext('2d');
+          var maxWidth = 150;
+          var maxHeight = 150;
+          var width = img.width;
+          var height = img.height;
+
+          if (width > height) {
+            if (width > maxWidth) {
+              height *= maxWidth / width;
+              width = maxWidth;
+            }
+          } else {
+            if (height > maxHeight) {
+              width *= maxHeight / height;
+              height = maxHeight;
+            }
+          }
+
+          canvas.width = width;
+          canvas.height = height;
+          ctx.drawImage(img, 0, 0, width, height);
+          var dataUrl = canvas.toDataURL('image/jpeg', 0.7); // 壓縮為 70% 畫質的 JPEG
+          callback(dataUrl);
+        };
+        img.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+
+    function manualSaveData() {
+      try {
+        localStorage.setItem('buylist_v24_products', JSON.stringify(products));
+        alert('💾 儲存成功！所有變更與照片已安全儲存。');
+      } catch (e) {
+        alert('儲存失敗，圖片檔案可能過大，請嘗試使用較小的照片或圖片網址。');
+      }
     }
 
     function setCategoryFilter(category, btnElement) {
@@ -290,7 +338,6 @@
         if (!product.units || !Array.isArray(product.units)) product.units = ['個'];
         if (!product.purchasedCounts) product.purchasedCounts = {};
 
-        // 確保每個 buyer 都有 bought 欄位
         for (var j = 0; j < product.buyers.length; j++) {
           if (product.buyers[j].bought === undefined) {
             product.buyers[j].bought = 0;
@@ -329,7 +376,7 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v23_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v24_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -422,6 +469,7 @@
         if (!buyerName) { alert('請輸入購買人姓名！'); return; }
         products[currentEditIndex].buyers.push({ name: buyerName, count: tempEditQty, unit: selectedUnit, bought: 0 });
         renderList();
+        manualSaveData();
         closeModal('qtyModal');
       }
     }
@@ -448,13 +496,13 @@
         if (tempExistingQty === 0) {
           products[currentItemIndex].buyers.splice(currentBuyerIndex, 1);
         } else {
-          products[currentItemIndex].buyers[currentItemIndex].count = tempExistingQty;
-          // 確保已買數量不超過總數量
+          products[currentItemIndex].buyers[currentBuyerIndex].count = tempExistingQty;
           if (products[currentItemIndex].buyers[currentBuyerIndex].bought > tempExistingQty) {
             products[currentItemIndex].buyers[currentBuyerIndex].bought = tempExistingQty;
           }
         }
         renderList();
+        manualSaveData();
         closeModal('editBuyerModal');
       }
     }
@@ -464,6 +512,7 @@
         if (confirm('確定要刪除這位購買人的紀錄嗎？')) {
           products[currentItemIndex].buyers.splice(currentBuyerIndex, 1);
           renderList();
+          manualSaveData();
           closeModal('editBuyerModal');
         }
       }
@@ -475,6 +524,7 @@
         renderList();
         updateAdminStats();
         updateCustomerStats();
+        manualSaveData();
       }
     }
 
@@ -490,13 +540,12 @@
       updateAdminStats();
     }
 
-    // 更新個別顧客項目的採買進度
     function updateCustomerItemBought(itemIdx, buyerIdx, delta) {
       var b = products[itemIdx].buyers[buyerIdx];
       if (b.bought === undefined) b.bought = 0;
       b.bought += delta;
       if (b.bought < 0) b.bought = 0;
-      if (b.bought > b.count) b.bought = b.count; // 最多買到登記數量
+      if (b.bought > b.count) b.bought = b.count;
       
       renderList();
       updateCustomerStats();
@@ -507,6 +556,7 @@
       p.isCompleted = !p.isCompleted;
       renderList();
       updateAdminStats();
+      manualSaveData();
     }
 
     function updateCustomerStats() {
@@ -682,12 +732,10 @@
     function handleEditImg(e) {
       var file = e.target.files[0];
       if (file) {
-        var reader = new FileReader();
-        reader.onload = function(event) {
-          tempEditUploadedImg = event.target.result;
-          document.getElementById('editProdImage').value = '[已選擇本機圖片]';
-        };
-        reader.readAsDataURL(file);
+        compressImage(file, function(compressedDataUrl) {
+          tempEditUploadedImg = compressedDataUrl;
+          document.getElementById('editProdImage').value = '[已選擇並壓縮本機圖片]';
+        });
       }
     }
 
@@ -706,7 +754,7 @@
         var finalImg = products[editingProdIndex].image;
         if (tempEditUploadedImg) {
           finalImg = tempEditUploadedImg;
-        } else if (imgUrl && imgUrl !== '[已選擇本機圖片]') {
+        } else if (imgUrl && imgUrl !== '[已選擇並壓縮本機圖片]') {
           finalImg = imgUrl;
         } else if (!imgUrl) {
           finalImg = '';
@@ -721,6 +769,7 @@
         renderList();
         updateAdminStats();
         updateCustomerStats();
+        manualSaveData();
         closeEditProdModal();
       }
     }
@@ -728,12 +777,10 @@
     function handleNewImg(e) {
       var file = e.target.files[0];
       if (file) {
-        var reader = new FileReader();
-        reader.onload = function(event) {
-          tempUploadedImg = event.target.result;
-          document.getElementById('itemImage').value = '[已選擇本機圖片]';
-        };
-        reader.readAsDataURL(file);
+        compressImage(file, function(compressedDataUrl) {
+          tempUploadedImg = compressedDataUrl;
+          document.getElementById('itemImage').value = '[已選擇並壓縮本機圖片]';
+        });
       }
     }
 
@@ -751,7 +798,7 @@
       var finalImg = '';
       if (tempUploadedImg) {
         finalImg = tempUploadedImg;
-      } else if (imgUrl && imgUrl !== '[已選擇本機圖片]') {
+      } else if (imgUrl && imgUrl !== '[已選擇並壓縮本機圖片]') {
         finalImg = imgUrl;
       }
 
@@ -759,6 +806,7 @@
       renderList();
       updateAdminStats();
       updateCustomerStats();
+      manualSaveData();
       
       document.getElementById('itemName').value = '';
       document.getElementById('itemNote').value = '';
