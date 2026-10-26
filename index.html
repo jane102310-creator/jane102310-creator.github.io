@@ -127,20 +127,15 @@
       <div id="itemListCategory"></div>
     </div>
 
-    <!-- 3. 購物車分頁 -->
-    <div id="sectionCart" class="page-section">
-      <div style="font-size: 16px; font-weight: bold; margin-bottom: 12px;">🛒 我的購物車 / 登記清單</div>
-      <div id="cartContentList"></div>
-    </div>
-
-    <!-- 4. 個人分頁 -->
+    <!-- 3. 個人分頁 (強制要求：信箱、名稱、密碼) -->
     <div id="sectionProfile" class="page-section">
       <div id="profileLoggedOut" style="background: #FFF; padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); text-align: center;">
-        <h2 style="font-size: 18px; margin-bottom: 12px;">🔐 會員專區登入</h2>
-        <p style="font-size: 13px; color: var(--text-sub); margin-bottom: 20px;">請輸入您的信箱與密碼以查看您的個人訂單</p>
+        <h2 style="font-size: 18px; margin-bottom: 12px;">🔐 會員專區登入 / 註冊</h2>
+        <p style="font-size: 13px; color: var(--text-sub); margin-bottom: 20px;">請輸入您的信箱、名稱與密碼以查看個人訂單</p>
         <div class="form-group" style="text-align: left;"><label class="form-label">信箱 (Email)</label><input type="email" id="profileEmailInput" class="form-input" placeholder="請輸入您的信箱..." /></div>
+        <div class="form-group" style="text-align: left;"><label class="form-label">名稱 (姓名)</label><input type="text" id="profileNameInput" class="form-input" placeholder="請輸入您的名稱..." /></div>
         <div class="form-group" style="text-align: left;"><label class="form-label">密碼</label><input type="password" id="profilePwdInput" class="form-input" placeholder="請輸入密碼..." /></div>
-        <button class="btn-submit" onclick="submitProfileLogin()">登入會員專區</button>
+        <button class="btn-submit" onclick="submitProfileLogin()">登入 / 註冊會員</button>
       </div>
 
       <div id="profileLoggedIn" style="display: none;">
@@ -155,7 +150,7 @@
     </div>
   </div>
 
-  <!-- 底部導覽列 -->
+  <!-- 底部導覽列 (已取消購物車，保留：首頁、分類、個人、管理者) -->
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="switchSection('home', this)">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -164,10 +159,6 @@
     <button class="nav-item" onclick="switchSection('category', this)">
       <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
       <span>分類</span>
-    </button>
-    <button class="nav-item" onclick="switchSection('cart', this)">
-      <svg viewBox="0 0 24 24"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-      <span>購物車</span>
     </button>
     <button class="nav-item" onclick="switchSection('profile', this)">
       <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
@@ -319,7 +310,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v40_products');
+      var saved = localStorage.getItem('buylist_v41_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -347,9 +338,6 @@
         renderList();
       } else if (sectionName === 'category') {
         document.getElementById('sectionCategory').classList.add('active');
-      } else if (sectionName === 'cart') {
-        document.getElementById('sectionCart').classList.add('active');
-        renderCartList();
       } else if (sectionName === 'profile') {
         document.getElementById('sectionProfile').classList.add('active');
         checkProfileLoginState();
@@ -385,22 +373,25 @@
 
     function submitProfileLogin() {
       var email = document.getElementById('profileEmailInput').value.trim();
+      var name = document.getElementById('profileNameInput').value.trim();
       var pwd = document.getElementById('profilePwdInput').value.trim();
 
       if (!email || !email.includes('@')) { alert('請輸入有效的信箱！'); return; }
+      if (!name) { alert('請輸入您的名稱！'); return; }
       if (!pwd) { alert('請輸入密碼！'); return; }
 
       if (!customerAccounts[email]) {
-        var autoName = email.split('@')[0];
-        customerAccounts[email] = { name: autoName, password: pwd };
+        customerAccounts[email] = { name: name, password: pwd };
       } else {
         if (customerAccounts[email].password !== pwd) {
           alert('密碼錯誤！');
           return;
         }
+        // 更新名稱
+        customerAccounts[email].name = name;
       }
 
-      currentUser = { name: customerAccounts[email].name, email: email };
+      currentUser = { name: name, email: email };
       localStorage.setItem('buylist_current_user', JSON.stringify(currentUser));
       localStorage.setItem('buylist_customer_accounts', JSON.stringify(customerAccounts));
 
@@ -459,47 +450,12 @@
       }
     }
 
-    function renderCartList() {
-      var container = document.getElementById('cartContentList');
-      container.innerHTML = '';
-
-      var totalCount = 0;
-      for (var i = 0; i < products.length; i++) {
-        var p = products[i];
-        if (!p.buyers || p.buyers.length === 0) continue;
-        
-        var unitTotals = {};
-        for (var j = 0; j < p.buyers.length; j++) {
-          totalCount++;
-          var u = p.buyers[j].unit || '個';
-          if (!unitTotals[u]) unitTotals[u] = 0;
-          unitTotals[u] += p.buyers[j].count;
-        }
-
-        var summaryStr = [];
-        for (var uKey in unitTotals) {
-          summaryStr.push(unitTotals[uKey] + ' ' + uKey);
-        }
-
-        var card = document.createElement('div');
-        card.className = 'customer-card';
-        card.innerHTML = '<div class="customer-name"><span>📦 ' + p.name + '</span><b>' + summaryStr.join(', ') + '</b></div>' +
-          '<div style="font-size:12px; color:var(--text-sub);">分類：' + p.category + ' | 狀態：' + (p.isCompleted ? '✅ 已完成' : '⏳ 進行中') + '</div>';
-        container.appendChild(card);
-      }
-
-      if (totalCount === 0) {
-        container.innerHTML = '<div style="text-align:center; color:#999; padding:30px;">目前購物車尚無任何登記商品</div>';
-      }
-    }
-
     function manualSaveData() {
       try {
-        // 自動清理舊的暫存版本，釋放 localStorage 空間
-        for (var i = 30; i < 40; i++) {
+        for (var i = 30; i < 42; i++) {
           localStorage.removeItem('buylist_v' + i + '_products');
         }
-        localStorage.setItem('buylist_v40_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v41_products', JSON.stringify(products));
         alert('💾 儲存成功！');
       } catch (e) {
         alert('儲存空間已滿，請清除部分瀏覽器快取！');
@@ -596,10 +552,10 @@
         itemList.appendChild(card);
       }
       try {
-        for (var cleanIdx = 30; cleanIdx < 40; cleanIdx++) {
+        for (var cleanIdx = 30; cleanIdx < 42; cleanIdx++) {
           localStorage.removeItem('buylist_v' + cleanIdx + '_products');
         }
-        localStorage.setItem('buylist_v40_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v41_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -652,7 +608,7 @@
     function openQtyModal(index) {
       if (!currentUser || !currentUser.name) {
         alert('請先至下方「個人」分頁登入會員！');
-        switchSection('profile', document.querySelectorAll('.bottom-nav .nav-item')[3]);
+        switchSection('profile', document.querySelectorAll('.bottom-nav .nav-item')[2]);
         return;
       }
 
