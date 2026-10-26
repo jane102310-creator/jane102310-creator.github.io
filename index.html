@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="pageTitleText">Jane代購清單</title>
+  <title id="pageTitleText">韓國代購清單</title>
   <style>
     :root {
       --bg-color: #FDFBF7;
@@ -18,8 +18,15 @@
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
     body { background-color: var(--bg-color); color: var(--text-main); padding: 16px; padding-bottom: 120px; }
     .container { max-width: 480px; margin: 0 auto; }
-    .header { background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
-    .header-title h1 { font-size: 22px; font-weight: 700; color: var(--text-main); }
+    
+    .header { background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: var(--shadow); margin-bottom: 16px; position: relative; }
+    .header-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .header-title h1 { font-size: 20px; font-weight: 700; color: var(--text-main); text-align: center; width: 100%; }
+    
+    /* 用戶身分橫條 */
+    .user-badge-bar { display: flex; justify-content: space-between; align-items: center; background: var(--accent-light); padding: 8px 12px; border-radius: 12px; font-size: 13px; color: var(--text-sub); margin-bottom: 16px; }
+    .btn-my-orders { background: var(--accent); color: white; border: none; padding: 6px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer; }
+    .btn-switch-user { background: none; border: none; color: var(--text-sub); text-decoration: underline; font-size: 12px; cursor: pointer; margin-left: 6px; }
 
     /* 分類篩選列 */
     .filter-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; scrollbar-width: none; }
@@ -34,7 +41,7 @@
     .item-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
     .tag { font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: 500; }
     .tag-category { background-color: var(--accent-light); color: var(--text-sub); }
-    .tag-buyer { background-color: #E8E2D8; color: #5A4D41; cursor: pointer; }
+    .tag-buyer { background-color: #E8E2D8; color: #5A4D41; }
     .tag-status-done { background-color: #D4EDDA; color: #155724; font-weight: bold; }
     .item-name { font-size: 15px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .item-note { font-size: 12px; color: #999; margin-top: 2px; }
@@ -86,13 +93,13 @@
     .status-ongoing { background: #FFF3CD; color: #856404; }
     .status-done { background: #D4EDDA; color: #155724; }
 
-    /* 顧客管理卡片樣式 */
+    /* 顧客管理與個人訂單卡片樣式 */
     .customer-card { background: #FAFAFA; border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; margin-bottom: 12px; }
-    .customer-name { font-size: 15px; font-weight: bold; color: var(--accent); margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; display: flex; justify-content: space-between; }
+    .customer-name { font-size: 15px; font-weight: bold; color: var(--accent); margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .customer-email-sub { font-size: 12px; color: var(--text-sub); margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
     .customer-item-row { font-size: 13px; color: var(--text-main); margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color); display: flex; flex-direction: column; gap: 6px; }
     .customer-item-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
     .customer-item-top { display: flex; justify-content: space-between; align-items: center; }
-    .customer-progress-bar { display: flex; justify-content: space-between; align-items: center; background: #FFF; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 12px; }
 
     .admin-action-btns { display: flex; gap: 6px; margin-top: 8px; }
     .btn-edit-prod { background: var(--accent); color: white; border: none; padding: 4px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
@@ -102,9 +109,20 @@
 <body>
   <div class="container">
     <div class="header">
-      <div class="header-title"><h1 id="headerTitleDisplay">Jane代購清單</h1></div>
+      <div class="header-top">
+        <div class="header-title"><h1 id="headerTitleDisplay">韓國代購清單</h1></div>
+      </div>
     </div>
     
+    <!-- 顧客身分提示橫條 -->
+    <div class="user-badge-bar" id="userBadgeBar">
+      <span>👤 歡迎，<b id="currentUserNameDisplay">訪客</b></span>
+      <div>
+        <button class="btn-my-orders" onclick="openMyOrdersModal()">🛒 我的訂單</button>
+        <button class="btn-switch-user" onclick="openCustomerLoginModal()">切換身分</button>
+      </div>
+    </div>
+
     <!-- 分類篩選列 -->
     <div class="filter-bar" id="filterBar">
       <button class="filter-pill active" onclick="setCategoryFilter('全部', this)">全部商品</button>
@@ -118,6 +136,31 @@
 
     <div class="footer-admin-section">
       <button class="btn-footer-admin" onclick="openAdminPortal()">管理者</button>
+    </div>
+  </div>
+
+  <!-- 顧客身分登入 Modal (進入時必填名稱與Email) -->
+  <div class="modal-overlay" id="customerLoginModal">
+    <div class="modal-content">
+      <div class="modal-header"><h2>✨ 歡迎參與代購</h2></div>
+      <div class="form-group">
+        <label class="form-label">您的姓名 / 暱稱 *</label>
+        <input type="text" id="loginNameInput" class="form-input" placeholder="例如：敏敏..." />
+      </div>
+      <div class="form-group">
+        <label class="form-label">您的 Gmail / 電子信箱 *</label>
+        <input type="email" id="loginEmailInput" class="form-input" placeholder="例如：example@gmail.com" />
+      </div>
+      <button class="btn-submit" onclick="submitCustomerLogin()">確認身分，開始購物</button>
+    </div>
+  </div>
+
+  <!-- 我的訂單專屬 Modal (顧客可在此查看、修改、刪除自己的訂單) -->
+  <div class="modal-overlay" id="myOrdersModal">
+    <div class="modal-content">
+      <div class="modal-header"><h2>🛒 我的訂單管理</h2><button class="btn-close" onclick="closeModal('myOrdersModal')">✕</button></div>
+      <div id="myOrdersContentList" style="max-height: 60vh; overflow-y: auto; margin-bottom: 12px;"></div>
+      <button class="btn-submit" onclick="closeModal('myOrdersModal')">關閉</button>
     </div>
   </div>
 
@@ -137,7 +180,7 @@
   <div class="modal-overlay" id="qtyModal">
     <div class="modal-content">
       <div class="modal-header"><h2 id="editModalTitle">新增購買</h2><button class="btn-close" onclick="closeModal('qtyModal')">✕</button></div>
-      <div class="form-group"><label class="form-label">購買人 / 登記人</label><input type="text" id="editBuyer" class="form-input" placeholder="例如：敏敏..." /></div>
+      <div class="form-group"><label class="form-label">登記購買人</label><input type="text" id="editBuyer" class="form-input" readonly style="background:#eee;" /></div>
       <div class="form-group">
         <label class="form-label">各單位購買數量</label>
         <div id="unitQtyContainer"></div>
@@ -146,21 +189,7 @@
     </div>
   </div>
 
-  <!-- 修改購買數量 Modal -->
-  <div class="modal-overlay" id="editBuyerModal">
-    <div class="modal-content">
-      <div class="modal-header"><h2 id="editBuyerModalTitle">修改購買數量</h2><button class="btn-close" onclick="closeModal('editBuyerModal')">✕</button></div>
-      <div class="form-group"><label class="form-label">購買人</label><input type="text" id="existingBuyerName" class="form-input" readonly style="background:#eee;" /></div>
-      <div class="form-group">
-        <label class="form-label">各單位購買數量（歸零即代表刪除該單位）</label>
-        <div id="editUnitQtyContainer"></div>
-      </div>
-      <button class="btn-submit" onclick="saveExistBuy()">儲存修改</button>
-      <button class="btn-submit btn-danger" onclick="delAllExistBuy()">刪除此人所有購買紀錄</button>
-    </div>
-  </div>
-
-  <!-- 修改商品資料 Modal (含隱藏商品開關) -->
+  <!-- 修改商品資料 Modal -->
   <div class="modal-overlay" id="editProdModal" style="z-index: 1100;">
     <div class="modal-content">
       <div class="modal-header"><h2>✏️ 修改商品資料</h2><button class="btn-close" onclick="closeEditProdModal()">✕</button></div>
@@ -192,8 +221,8 @@
       <div class="modal-header"><h2>🔐 管理者後台</h2><button class="btn-close" onclick="closeModal('adminModal')">✕</button></div>
       
       <div class="admin-nav">
-        <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 商品及統計數量</button>
-        <button class="admin-tab-btn" id="tabBtn2" onclick="switchTab(2)">👥 顧客管理</button>
+        <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 商品及統計</button>
+        <button class="admin-tab-btn" id="tabBtn2" onclick="switchTab(2)">👥 顧客與信箱</button>
         <button class="admin-tab-btn" id="tabBtn3" onclick="switchTab(3)">➕ 新增商品</button>
         <button class="admin-tab-btn" id="tabBtn4" onclick="switchTab(4)">⚙️ 設定</button>
       </div>
@@ -204,7 +233,7 @@
         <button class="btn-save-manual" onclick="manualSaveData()">💾 儲存所有變更</button>
       </div>
 
-      <!-- 分頁 2：顧客管理 -->
+      <!-- 分頁 2：顧客與信箱管理 -->
       <div class="admin-section" id="adminSec2">
         <div id="customerContentList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 12px;"></div>
         <button class="btn-save-manual" onclick="manualSaveData()">💾 儲存所有變更</button>
@@ -229,11 +258,11 @@
         <button class="btn-submit" onclick="saveNewProd()">確認新增商品</button>
       </div>
 
-      <!-- 分頁 4：管理者設定（修改標題與密碼） -->
+      <!-- 分頁 4：管理者設定 -->
       <div class="admin-section" id="adminSec4">
         <div class="form-group">
           <label class="form-label">修改網頁標題名稱</label>
-          <input type="text" id="siteTitleInput" class="form-input" placeholder="Jane代購清單" />
+          <input type="text" id="siteTitleInput" class="form-input" placeholder="韓國代購清單" />
         </div>
         <button class="btn-submit" onclick="saveSiteTitle()" style="margin-bottom: 20px;">更新網頁標題</button>
         
@@ -249,14 +278,17 @@
 
   <script>
     var currentEditIndex = null;
-    var currentItemIndex = null;
-    var editingBuyerName = '';
     var editingProdIndex = null;
     var isAuthed = false;
     var currentCategoryFilter = 'default_all';
     
     var ADMIN_PASSWORD = localStorage.getItem('buylist_admin_pwd') || '1234';
-    var SITE_TITLE = localStorage.getItem('buylist_site_title') || 'Jane代購清單';
+    var SITE_TITLE = localStorage.getItem('buylist_site_title') || '韓國代購清單';
+    
+    // 顧客登入身分紀錄
+    var currentUser = JSON.parse(localStorage.getItem('buylist_current_user') || 'null');
+    // 顧客 Email 簿紀錄 { "敏敏": "minmin@gmail.com", "Jane": "jane@gmail.com" }
+    var customerEmails = JSON.parse(localStorage.getItem('buylist_customer_emails') || '{}');
 
     // 初始化頁面標題
     document.getElementById('pageTitleText').innerText = SITE_TITLE;
@@ -271,7 +303,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v35_products');
+      var saved = localStorage.getItem('buylist_v36_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -280,15 +312,59 @@
       products = defaultProducts;
     }
 
+    // 檢查首次進入是否需要登入
+    window.onload = function() {
+      updateUserBadgeUI();
+      if (!currentUser || !currentUser.name) {
+        openCustomerLoginModal();
+      }
+    };
+
+    function openCustomerLoginModal() {
+      if (currentUser) {
+        document.getElementById('loginNameInput').value = currentUser.name || '';
+        document.getElementById('loginEmailInput').value = currentUser.email || '';
+      }
+      document.getElementById('customerLoginModal').classList.add('active');
+    }
+
+    function submitCustomerLogin() {
+      var name = document.getElementById('loginNameInput').value.trim();
+      var email = document.getElementById('loginEmailInput').value.trim();
+      
+      if (!name) { alert('請輸入您的姓名或暱稱！'); return; }
+      if (!email || !email.includes('@')) { alert('請輸入有效的 Gmail / 電子信箱！'); return; }
+
+      currentUser = { name: name, email: email };
+      customerEmails[name] = email;
+
+      localStorage.setItem('buylist_current_user', JSON.stringify(currentUser));
+      localStorage.setItem('buylist_customer_emails', JSON.stringify(customerEmails));
+
+      closeModal('customerLoginModal');
+      updateUserBadgeUI();
+      renderList();
+    }
+
+    function updateUserBadgeUI() {
+      var nameDisplay = document.getElementById('currentUserNameDisplay');
+      if (currentUser && currentUser.name) {
+        nameDisplay.innerText = currentUser.name + ' (' + currentUser.email + ')';
+      } else {
+        nameDisplay.innerText = '訪客 (請點擊切換身分登入)';
+      }
+    }
+
     function manualSaveData() {
       try {
-        localStorage.setItem('buylist_v35_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v36_products', JSON.stringify(products));
+        localStorage.setItem('buylist_customer_emails', JSON.stringify(customerEmails));
         alert('💾 儲存成功！所有變更已安全儲存。');
       } catch (e) {
         try {
-          localStorage.removeItem('buylist_v33_products');
           localStorage.removeItem('buylist_v34_products');
-          localStorage.setItem('buylist_v35_products', JSON.stringify(products));
+          localStorage.removeItem('buylist_v35_products');
+          localStorage.setItem('buylist_v36_products', JSON.stringify(products));
           alert('💾 儲存成功！系統已自動清理暫存空間並完成儲存。');
         } catch (err) {
           alert('儲存空間已滿！');
@@ -331,7 +407,7 @@
 
       for (var i = 0; i < products.length; i++) {
         var product = products[i];
-        if (product.isHidden) continue; // 如果設定為隱藏則不顯示在主頁面
+        if (product.isHidden) continue;
 
         if (!product.buyers) product.buyers = [];
         if (!product.units || !Array.isArray(product.units)) product.units = ['個'];
@@ -367,7 +443,7 @@
           for (var d = 0; d < details.length; d++) {
             detailStr += '+' + details[d].count + details[d].unit + ' ';
           }
-          buyerTagsHTML += '<span class="tag tag-buyer" onclick="openEditBuyerModal(' + i + ', \'' + name + '\')">' + name + ' ' + detailStr.trim() + '</span>';
+          buyerTagsHTML += '<span class="tag tag-buyer">' + name + ' ' + detailStr.trim() + '</span>';
         }
 
         if (product.isCompleted) {
@@ -388,8 +464,87 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v35_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v36_products', JSON.stringify(products));
       } catch(e) {}
+    }
+
+    // 開啟「我的訂單」Modal
+    function openMyOrdersModal() {
+      if (!currentUser || !currentUser.name) {
+        alert('請先設定您的身分！');
+        openCustomerLoginModal();
+        return;
+      }
+
+      var container = document.getElementById('myOrdersContentList');
+      container.innerHTML = '';
+
+      var myItems = [];
+      for (var i = 0; i < products.length; i++) {
+        var p = products[i];
+        if (!p.buyers) continue;
+        for (var j = 0; j < p.buyers.length; j++) {
+          var b = p.buyers[j];
+          if (b.name.trim() === currentUser.name.trim()) {
+            myItems.push({
+              itemIdx: i,
+              buyerIdx: j,
+              itemName: p.name,
+              count: b.count,
+              unit: b.unit || '個',
+              bought: b.bought || 0,
+              isCompleted: !!p.isCompleted
+            });
+          }
+        }
+      }
+
+      if (myItems.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color:#999; padding:30px;">您目前尚無任何代購登記紀錄！趕快去選購吧 😊</div>';
+      } else {
+        var header = document.createElement('div');
+        header.style.cssText = "font-size:14px; font-weight:bold; margin-bottom:10px; color:var(--text-sub);";
+        header.innerText = '📧 登入信箱：' + currentUser.email + ' (共登記 ' + myItems.length + ' 筆訂單)';
+        container.appendChild(header);
+
+        for (var m = 0; m < myItems.length; m++) {
+          var it = myItems[m];
+          var row = document.createElement('div');
+          row.className = 'customer-card';
+          row.innerHTML = '<div class="customer-name"><span>📦 ' + it.itemName + '</span><b>' + it.count + ' ' + it.unit + '</b></div>' +
+            '<div style="font-size:12px; color:var(--text-sub); margin-bottom:8px;">採購狀態：' + (it.isCompleted ? '✅ 已採購完成' : '⏳ 採購進行中') + '</div>' +
+            '<div style="display:flex; gap:8px;">' +
+              '<button class="btn-edit-prod" style="flex:1;" onclick="openEditBuyerFromMyOrders(' + it.itemIdx + ', \'' + currentUser.name + '\')">✏️ 修改數量</button>' +
+              '<button class="btn-del-prod" style="flex:1;" onclick="deleteMyOrder(' + it.itemIdx + ', \'' + currentUser.name + '\', \'' + it.unit + '\')">🗑️ 刪除此項</button>' +
+            '</div>';
+          container.appendChild(row);
+        }
+      }
+
+      document.getElementById('myOrdersModal').classList.add('active');
+    }
+
+    // 從我的訂單直接修改某個商品的數量
+    function openEditBuyerFromMyOrders(itemIdx, buyerName) {
+      closeModal('myOrdersModal');
+      openEditBuyerModal(itemIdx, buyerName);
+    }
+
+    function deleteMyOrder(itemIdx, buyerName, unitName) {
+      if (confirm('確定要刪除這項訂單 (' + unitName + ') 嗎？')) {
+        var product = products[itemIdx];
+        var newBuyers = [];
+        for (var j = 0; j < product.buyers.length; j++) {
+          var b = product.buyers[j];
+          if (!(b.name.trim() === buyerName.trim() && (b.unit || '個') === unitName)) {
+            newBuyers.push(b);
+          }
+        }
+        product.buyers = newBuyers;
+        renderList();
+        manualSaveData();
+        openMyOrdersModal();
+      }
     }
 
     function openAdminPortal() {
@@ -448,10 +603,16 @@
     }
 
     function openQtyModal(index) {
+      if (!currentUser || !currentUser.name) {
+        alert('請先設定您的身分！');
+        openCustomerLoginModal();
+        return;
+      }
+
       currentEditIndex = index;
       var product = products[index];
       document.getElementById('editModalTitle').innerText = '新增購買：' + product.name;
-      document.getElementById('editBuyer').value = '';
+      document.getElementById('editBuyer').value = currentUser.name + ' (' + currentUser.email + ')';
       
       var container = document.getElementById('unitQtyContainer');
       container.innerHTML = '';
@@ -481,10 +642,8 @@
     }
 
     function saveNewBuy() {
-      if (currentEditIndex !== null) {
-        var buyerName = document.getElementById('editBuyer').value.trim();
-        if (!buyerName) { alert('請輸入購買人姓名！'); return; }
-
+      if (currentEditIndex !== null && currentUser) {
+        var buyerName = currentUser.name;
         var product = products[currentEditIndex];
         var units = product.units && product.units.length > 0 ? product.units : ['個'];
         var addedCount = 0;
@@ -505,6 +664,7 @@
         renderList();
         manualSaveData();
         closeModal('qtyModal');
+        alert('🎉 登記成功！您可以隨時點擊「我的訂單」查看或修改。');
       }
     }
 
@@ -512,9 +672,6 @@
       currentItemIndex = itemIdx;
       editingBuyerName = buyerName;
       var product = products[itemIdx];
-
-      document.getElementById('editBuyerModalTitle').innerText = '修改購買數量：' + product.name;
-      document.getElementById('existingBuyerName').value = buyerName;
 
       var container = document.getElementById('editUnitQtyContainer');
       container.innerHTML = '';
@@ -542,52 +699,6 @@
           '</div>';
         container.appendChild(row);
       }
-
-      document.getElementById('editBuyerModal').classList.add('active');
-    }
-
-    function saveExistBuy() {
-      if (currentItemIndex !== null && editingBuyerName) {
-        var product = products[currentItemIndex];
-        var units = product.units && product.units.length > 0 ? product.units : ['個'];
-
-        var newBuyers = [];
-        for (var j = 0; j < product.buyers.length; j++) {
-          if (product.buyers[j].name.trim() !== editingBuyerName) {
-            newBuyers.push(product.buyers[j]);
-          }
-        }
-
-        for (var u = 0; u < units.length; u++) {
-          var qty = parseInt(document.getElementById('edit_qty_' + u).innerText);
-          if (qty > 0) {
-            newBuyers.push({ name: editingBuyerName, count: qty, unit: units[u], bought: 0 });
-          }
-        }
-
-        product.buyers = newBuyers;
-        renderList();
-        manualSaveData();
-        closeModal('editBuyerModal');
-      }
-    }
-
-    function delAllExistBuy() {
-      if (currentItemIndex !== null && editingBuyerName) {
-        if (confirm('確定要刪除 ' + editingBuyerName + ' 在這個商品的所有購買紀錄嗎？')) {
-          var product = products[currentItemIndex];
-          var newBuyers = [];
-          for (var j = 0; j < product.buyers.length; j++) {
-            if (product.buyers[j].name.trim() !== editingBuyerName) {
-              newBuyers.push(product.buyers[j]);
-            }
-          }
-          product.buyers = newBuyers;
-          renderList();
-          manualSaveData();
-          closeModal('editBuyerModal');
-        }
-      }
     }
 
     function deleteItemFromAdmin(i) {
@@ -612,25 +723,6 @@
       updateAdminStats();
     }
 
-    function updateCustomerItemBought(itemIdx, buyerIdx, delta) {
-      var b = products[itemIdx].buyers[buyerIdx];
-      if (b.bought === undefined) b.bought = 0;
-      b.bought += delta;
-      if (b.bought < 0) b.bought = 0;
-      if (b.bought > b.count) b.bought = b.count;
-      
-      renderList();
-      updateCustomerStats();
-    }
-
-    function toggleCompleteStatus(itemIdx) {
-      var p = products[itemIdx];
-      p.isCompleted = !p.isCompleted;
-      renderList();
-      updateAdminStats();
-      manualSaveData();
-    }
-
     function updateCustomerStats() {
       var customerList = document.getElementById('customerContentList');
       if (!customerList) return;
@@ -647,15 +739,10 @@
           if (!customerMap[cName]) {
             customerMap[cName] = [];
           }
-          if (b.bought === undefined) b.bought = 0;
-          
           customerMap[cName].push({
-            itemIdx: i,
-            buyerIdx: j,
             itemName: p.name,
             count: b.count,
-            unit: b.unit || '個',
-            bought: b.bought
+            unit: b.unit || '個'
           });
         }
       }
@@ -673,6 +760,7 @@
 
       for (var k = 0; k < customerNames.length; k++) {
         var name = customerNames[k];
+        var email = customerEmails[name] || '未留下信箱';
         var items = customerMap[name];
         
         var card = document.createElement('div');
@@ -681,26 +769,12 @@
         var itemsHtml = '';
         for (var m = 0; m < items.length; m++) {
           var it = items[m];
-          var isDone = it.bought >= it.count;
-          var badgeClass = isDone ? 'cust-badge-done' : 'cust-badge-ongoing';
-          var badgeText = isDone ? '✅ 已完成' : '⏳ 進行中';
-
-          itemsHtml += '<div class="customer-item-row">' +
-            '<div class="customer-item-top">' +
-              '<span>• ' + it.itemName + ' <b style="margin-left:4px;">' + it.count + ' ' + it.unit + '</b></span>' +
-              '<span class="' + badgeClass + '">' + badgeText + '</span>' +
-            '</div>' +
-            '<div class="customer-progress-bar">' +
-              '<span>🛒 個人已買：<b>' + it.bought + ' / ' + it.count + ' ' + it.unit + '</b></span>' +
-              '<div class="progress-controls">' +
-                '<button class="btn-mini-qty" onclick="updateCustomerItemBought(' + it.itemIdx + ', ' + it.buyerIdx + ', -1)">-</button>' +
-                '<button class="btn-mini-qty" onclick="updateCustomerItemBought(' + it.itemIdx + ', ' + it.buyerIdx + ', 1)">+</button>' +
-              '</div>' +
-            '</div>' +
-          '</div>';
+          itemsHtml += '<div style="font-size:13px; margin-bottom:4px;">• ' + it.itemName + ': <b>' + it.count + ' ' + it.unit + '</b></div>';
         }
 
-        card.innerHTML = '<div class="customer-name"><span>👤 ' + name + '</span><span style="font-size:12px; color:var(--text-sub);">共登記 ' + items.length + ' 項商品</span></div>' + itemsHtml;
+        card.innerHTML = '<div class="customer-name"><span>👤 ' + name + '</span></div>' +
+          '<div class="customer-email-sub">📧 信箱：' + email + '</div>' +
+          itemsHtml;
         customerList.appendChild(card);
       }
     }
@@ -783,6 +857,14 @@
       summaryHeader.style.cssText = "font-size:16px; font-weight:bold; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--border-color); color:var(--text-main);";
       summaryHeader.innerText = '📊 總登記筆數：' + totalRegistrationCount + ' 筆';
       contentList.insertBefore(summaryHeader, contentList.firstChild);
+    }
+
+    function toggleCompleteStatus(itemIdx) {
+      var p = products[itemIdx];
+      p.isCompleted = !p.isCompleted;
+      renderList();
+      updateAdminStats();
+      manualSaveData();
     }
 
     function openEditProdModal(index) {
