@@ -265,7 +265,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v24_products');
+      var saved = localStorage.getItem('buylist_v25_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -274,7 +274,7 @@
       products = defaultProducts;
     }
 
-    // 圖片壓縮輔助函數（避免 Base64 檔案過大導致 localStorage 存不下）
+    // 強力圖片壓縮函數（限制在 80x80 像素，畫質 50%，確保檔案極小絕不爆容量）
     function compressImage(file, callback) {
       var reader = new FileReader();
       reader.onload = function (e) {
@@ -282,8 +282,8 @@
         img.onload = function () {
           var canvas = document.createElement('canvas');
           var ctx = canvas.getContext('2d');
-          var maxWidth = 150;
-          var maxHeight = 150;
+          var maxWidth = 80;
+          var maxHeight = 80;
           var width = img.width;
           var height = img.height;
 
@@ -302,7 +302,7 @@
           canvas.width = width;
           canvas.height = height;
           ctx.drawImage(img, 0, 0, width, height);
-          var dataUrl = canvas.toDataURL('image/jpeg', 0.7); // 壓縮為 70% 畫質的 JPEG
+          var dataUrl = canvas.toDataURL('image/jpeg', 0.5); 
           callback(dataUrl);
         };
         img.src = e.target.result;
@@ -312,10 +312,10 @@
 
     function manualSaveData() {
       try {
-        localStorage.setItem('buylist_v24_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v25_products', JSON.stringify(products));
         alert('💾 儲存成功！所有變更與照片已安全儲存。');
       } catch (e) {
-        alert('儲存失敗，圖片檔案可能過大，請嘗試使用較小的照片或圖片網址。');
+        alert('儲存空間已滿，建議改用「圖片網址」來代替上傳本機照片！');
       }
     }
 
@@ -376,7 +376,7 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v24_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v25_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -734,7 +734,7 @@
       if (file) {
         compressImage(file, function(compressedDataUrl) {
           tempEditUploadedImg = compressedDataUrl;
-          document.getElementById('editProdImage').value = '[已選擇並壓縮本機圖片]';
+          document.getElementById('editProdImage').value = '[已極致壓縮本機圖片]';
         });
       }
     }
@@ -754,7 +754,7 @@
         var finalImg = products[editingProdIndex].image;
         if (tempEditUploadedImg) {
           finalImg = tempEditUploadedImg;
-        } else if (imgUrl && imgUrl !== '[已選擇並壓縮本機圖片]') {
+        } else if (imgUrl && imgUrl !== '[已極致壓縮本機圖片]') {
           finalImg = imgUrl;
         } else if (!imgUrl) {
           finalImg = '';
@@ -779,7 +779,7 @@
       if (file) {
         compressImage(file, function(compressedDataUrl) {
           tempUploadedImg = compressedDataUrl;
-          document.getElementById('itemImage').value = '[已選擇並壓縮本機圖片]';
+          document.getElementById('itemImage').value = '[已極致壓縮本機圖片]';
         });
       }
     }
@@ -798,7 +798,7 @@
       var finalImg = '';
       if (tempUploadedImg) {
         finalImg = tempUploadedImg;
-      } else if (imgUrl && imgUrl !== '[已選擇並壓縮本機圖片]') {
+      } else if (imgUrl && imgUrl !== '[已極致壓縮本機圖片]') {
         finalImg = imgUrl;
       }
 
