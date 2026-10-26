@@ -46,4 +46,294 @@
     .btn-qty-lg { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--card-bg); font-size: 20px; font-weight: bold; cursor: pointer; color: var(--text-main); }
     .btn-qty-lg.plus { background: var(--accent); color: white; border: none; }
     .qty-display-lg { font-size: 24px; font-weight: bold; min-width: 40px; text-align: center; }
-    .btn-submit { width: 100%; background-color: var(--accent); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px
+    .btn-submit { width: 100%; background-color: var(--accent); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+    .btn-danger { background-color: #D9534F !important; margin-top: 8px; }
+
+    .admin-nav { display: flex; gap: 10px; margin-bottom: 16px; }
+    .admin-tab-btn { flex: 1; padding: 10px; border: none; background: #EFECE6; color: var(--text-sub); font-weight: 600; border-radius: 10px; cursor: pointer; }
+    .admin-tab-btn.active { background: var(--accent); color: white; }
+    .admin-section { display: none; }
+    .admin-section.active { display: block; }
+    .admin-item-row { background: #FAFAFA; padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border-color); }
+    .admin-item-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .admin-buyer-detail { font-size: 12px; color: var(--text-sub); margin-left: 10px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-title"><h1>待購清單</h1></div>
+      <button class="btn-admin-main" id="btnOpenAdmin">🔐 管理者後台</button>
+    </div>
+    
+    <div id="itemList"></div>
+  </div>
+
+  <div class="modal-overlay" id="qtyModal">
+    <div class="modal-content">
+      <div class="modal-header"><h2 id="editModalTitle">新增購買</h2><button class="btn-close" id="btnCloseQty">✕</button></div>
+      <div class="form-group"><label class="form-label">購買人 / 登記人</label><input type="text" id="editBuyer" class="form-input" placeholder="例如：敏敏..." /></div>
+      <div class="form-group"><label class="form-label">購買數量</label>
+        <div class="qty-modal-controls">
+          <button class="btn-qty-lg" id="btnQtyMinus">-</button>
+          <span class="qty-display-lg" id="editQtyVal">1</span>
+          <button class="btn-qty-lg plus" id="btnQtyPlus">+</button>
+        </div>
+      </div>
+      <button class="btn-submit" id="btnSaveNewBuy">確認新增購買人</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="editBuyerModal">
+    <div class="modal-content">
+      <div class="modal-header"><h2>修改購買數量</h2><button class="btn-close" id="btnCloseEditBuyer">✕</button></div>
+      <div class="form-group"><label class="form-label">購買人</label><input type="text" id="existingBuyerName" class="form-input" readonly style="background:#eee;" /></div>
+      <div class="form-group"><label class="form-label">購買數量</label>
+        <div class="qty-modal-controls">
+          <button class="btn-qty-lg" id="btnExistMinus">-</button>
+          <span class="qty-display-lg" id="existingQtyVal">1</span>
+          <button class="btn-qty-lg plus" id="btnExistPlus">+</button>
+        </div>
+      </div>
+      <button class="btn-submit" id="btnSaveExistBuy">儲存修改</button>
+      <button class="btn-submit btn-danger" id="btnDelExistBuy">刪除此購買紀錄</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="adminModal">
+    <div class="modal-content">
+      <div class="modal-header"><h2>🔐 管理者後台</h2><button class="btn-close" id="btnCloseAdmin">✕</button></div>
+      
+      <div class="admin-nav">
+        <button class="admin-tab-btn active" id="tabBtn1">📦 總數量統計</button>
+        <button class="admin-tab-btn" id="tabBtn2">➕ 新增商品</button>
+      </div>
+
+      <div class="admin-section active" id="adminSec1">
+        <div id="adminContentList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 16px;"></div>
+      </div>
+
+      <div class="admin-section" id="adminSec2">
+        <div class="form-group"><label class="form-label">商品名稱 *</label><input type="text" id="itemName" class="form-input" placeholder="例如：咖啡糖..." /></div>
+        <div class="form-group"><label class="form-label">分類</label>
+          <select id="itemCategory" class="form-select">
+            <option value="食品/食材">食品/食材</option>
+            <option value="日用品">日用品</option>
+            <option value="美妝保養">美妝保養</option>
+            <option value="文具雜貨">文具雜貨</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">備註說明</label><input type="text" id="itemNote" class="form-input" placeholder="規格或口味..." /></div>
+        <button class="btn-submit" id="btnSaveProd">確認新增商品</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var currentEditIndex = null;
+    var tempEditQty = 1;
+    var currentItemIndex = null;
+    var currentBuyerIndex = null;
+    var tempExistingQty = 1;
+
+    var products = [
+      { id: 1, name: '咖啡糖Americano', buyers: [{name: 'Jane', count: 1}], category: '食品/食材', note: '' },
+      { id: 2, name: '咖啡糖espresso', buyers: [{name: '敏敏', count: 4}], category: '食品/食材', note: '' }
+    ];
+
+    try {
+      var saved = localStorage.getItem('buylist_v3_products');
+      if (saved) { products = JSON.parse(saved); }
+    } catch(e) {}
+
+    function renderList() {
+      var itemList = document.getElementById('itemList');
+      if (!itemList) return;
+      itemList.innerHTML = '';
+
+      for (var i = 0; i < products.length; i++) {
+        var product = products[i];
+        if (!product.buyers) product.buyers = [];
+
+        var card = document.createElement('div');
+        card.className = 'item-card';
+
+        var buyerTagsHTML = '';
+        for (var j = 0; j < product.buyers.length; j++) {
+          var b = product.buyers[j];
+          buyerTagsHTML += '<span class="tag tag-buyer" data-item="' + i + '" data-buyer="' + j + '">' + b.name + ' +' + b.count + '</span>';
+        }
+
+        card.innerHTML = '<button class="btn-delete-item" data-del="' + i + '">✕</button>' +
+          '<div class="item-info">' +
+            '<div class="item-tags"><span class="tag tag-category">' + product.category + '</span>' + buyerTagsHTML + '</div>' +
+            '<div class="item-name">' + product.name + '</div>' +
+            (product.note ? '<div class="item-note">' + product.note + '</div>' : '') +
+          '</div>' +
+          '<button class="btn-buy-action" data-buy="' + i + '">+ 購買</button>';
+        
+        itemList.appendChild(card);
+      }
+      localStorage.setItem('buylist_v3_products', JSON.stringify(products));
+      bindEvents();
+    }
+
+    function bindEvents() {
+      var buyBtns = document.querySelectorAll('.btn-buy-action');
+      buyBtns.forEach(function(btn) {
+        btn.onclick = function() {
+          var idx = parseInt(this.getAttribute('data-buy'));
+          openQtyModal(idx);
+        };
+      });
+
+      var tagBtns = document.querySelectorAll('.tag-buyer');
+      tagBtns.forEach(function(btn) {
+        btn.onclick = function() {
+          var itemIdx = parseInt(this.getAttribute('data-item'));
+          var buyerIdx = parseInt(this.getAttribute('data-buyer'));
+          openEditBuyerModal(itemIdx, buyerIdx);
+        };
+      });
+
+      var delBtns = document.querySelectorAll('.btn-delete-item');
+      delBtns.forEach(function(btn) {
+        btn.onclick = function() {
+          var idx = parseInt(this.getAttribute('data-del'));
+          if (confirm('確定要刪除這個商品嗎？')) {
+            products.splice(idx, 1);
+            renderList();
+          }
+        };
+      });
+    }
+
+    function openQtyModal(index) {
+      currentEditIndex = index;
+      var product = products[index];
+      document.getElementById('editModalTitle').innerText = '新增購買：' + product.name;
+      document.getElementById('editBuyer').value = '';
+      tempEditQty = 1;
+      document.getElementById('editQtyVal').innerText = tempEditQty;
+      document.getElementById('qtyModal').className = 'modal-overlay active';
+    }
+
+    function openEditBuyerModal(itemIdx, buyerIdx) {
+      currentItemIndex = itemIdx;
+      currentBuyerIndex = buyerIdx;
+      var buyerObj = products[itemIdx].buyers[buyerIdx];
+      document.getElementById('existingBuyerName').value = buyerObj.name;
+      tempExistingQty = buyerObj.count;
+      document.getElementById('existingQtyVal').innerText = tempExistingQty;
+      document.getElementById('editBuyerModal').className = 'modal-overlay active';
+    }
+
+    function updateAdminStats() {
+      var contentList = document.getElementById('adminContentList');
+      contentList.innerHTML = '';
+      var grandTotal = 0;
+
+      for (var i = 0; i < products.length; i++) {
+        var p = products[i];
+        var itemTotal = 0;
+        var buyersHtml = '';
+        if (p.buyers && p.buyers.length > 0) {
+          for (var j = 0; j < p.buyers.length; j++) {
+            var b = p.buyers[j];
+            itemTotal += b.count;
+            buyersHtml += '<div class="admin-buyer-detail">👤 ' + b.name + ': <b>' + b.count + '</b> 件</div>';
+          }
+        } else {
+          buyersHtml = '<div class="admin-buyer-detail" style="color:#aaa;">尚無人登記購買</div>';
+        }
+        grandTotal += itemTotal;
+
+        var row = document.createElement('div');
+        row.className = 'admin-item-row';
+        row.innerHTML = '<div class="admin-item-title"><span>📦 ' + p.name + '</span><span style="color:var(--accent);">總計: ' + itemTotal + ' 件</span></div>' + buyersHtml;
+        contentList.appendChild(row);
+      }
+
+      var summaryHeader = document.createElement('div');
+      summaryHeader.style.cssText = "font-size:16px; font-weight:bold; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--border-color); color:var(--text-main);";
+      summaryHeader.innerText = '📊 總訂購商品件數：' + grandTotal + ' 件';
+      contentList.insertBefore(summaryHeader, contentList.firstChild);
+    }
+
+    document.getElementById('btnOpenAdmin').onclick = function() {
+      updateAdminStats();
+      document.getElementById('adminModal').className = 'modal-overlay active';
+    };
+    document.getElementById('btnCloseAdmin').onclick = function() { document.getElementById('adminModal').className = 'modal-overlay'; };
+    document.getElementById('btnCloseQty').onclick = function() { document.getElementById('qtyModal').className = 'modal-overlay'; };
+    document.getElementById('btnCloseEditBuyer').onclick = function() { document.getElementById('editBuyerModal').className = 'modal-overlay'; };
+
+    document.getElementById('btnQtyMinus').onclick = function() { if (tempEditQty > 1) { tempEditQty--; document.getElementById('editQtyVal').innerText = tempEditQty; } };
+    document.getElementById('btnQtyPlus').onclick = function() { tempEditQty++; document.getElementById('editQtyVal').innerText = tempEditQty; };
+
+    document.getElementById('btnExistMinus').onclick = function() { if (tempExistingQty > 0) { tempExistingQty--; document.getElementById('existingQtyVal').innerText = tempExistingQty; } };
+    document.getElementById('btnExistPlus').onclick = function() { tempExistingQty++; document.getElementById('existingQtyVal').innerText = tempExistingQty; };
+
+    document.getElementById('btnSaveNewBuy').onclick = function() {
+      if (currentEditIndex !== null) {
+        var buyerName = document.getElementById('editBuyer').value.trim();
+        if (!buyerName) { alert('請輸入購買人姓名！'); return; }
+        products[currentEditIndex].buyers.push({ name: buyerName, count: tempEditQty });
+        renderList();
+        document.getElementById('qtyModal').className = 'modal-overlay';
+      }
+    };
+
+    document.getElementById('btnSaveExistBuy').onclick = function() {
+      if (currentItemIndex !== null && currentBuyerIndex !== null) {
+        if (tempExistingQty === 0) {
+          products[currentItemIndex].buyers.splice(currentBuyerIndex, 1);
+        } else {
+          products[currentItemIndex].buyers[currentBuyerIndex].count = tempExistingQty;
+        }
+        renderList();
+        document.getElementById('editBuyerModal').className = 'modal-overlay';
+      }
+    };
+
+    document.getElementById('btnDelExistBuy').onclick = function() {
+      if (currentItemIndex !== null && currentBuyerIndex !== null) {
+        if (confirm('確定要刪除這位購買人的紀錄嗎？')) {
+          products[currentItemIndex].buyers.splice(currentBuyerIndex, 1);
+          renderList();
+          document.getElementById('editBuyerModal').className = 'modal-overlay';
+        }
+      }
+    };
+
+    document.getElementById('tabBtn1').onclick = function() {
+      this.className = 'admin-tab-btn active';
+      document.getElementById('tabBtn2').className = 'admin-tab-btn';
+      document.getElementById('adminSec1').className = 'admin-section active';
+      document.getElementById('adminSec2').className = 'admin-section';
+      updateAdminStats();
+    };
+
+    document.getElementById('tabBtn2').onclick = function() {
+      this.className = 'admin-tab-btn active';
+      document.getElementById('tabBtn1').className = 'admin-tab-btn';
+      document.getElementById('adminSec2').className = 'admin-section active';
+      document.getElementById('adminSec1').className = 'admin-section';
+    };
+
+    document.getElementById('btnSaveProd').onclick = function() {
+      var name = document.getElementById('itemName').value.trim();
+      var category = document.getElementById('itemCategory').value;
+      var note = document.getElementById('itemNote').value.trim();
+      if (!name) { alert('請填寫商品名稱！'); return; }
+      products.unshift({ id: Date.now(), name: name, buyers: [], category: category, note: note });
+      renderList();
+      document.getElementById('itemName').value = '';
+      document.getElementById('itemNote').value = '';
+      document.getElementById('adminModal').className = 'modal-overlay';
+    };
+
+    renderList();
+  </script>
+</body>
+</html>
