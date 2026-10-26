@@ -56,4 +56,80 @@
 
     .admin-nav { display: flex; gap: 10px; margin-bottom: 16px; }
     .admin-tab-btn { flex: 1; padding: 10px; border: none; background: #EFECE6; color: var(--text-sub); font-weight: 600; border-radius: 10px; cursor: pointer; }
-    .admin-tab-btn.active
+    .admin-tab-btn.active { background: var(--accent); color: white; }
+    .admin-section { display: none; }
+    .admin-section.active { display: block; }
+    .admin-item-row { background: #FAFAFA; padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; position: relative; }
+    .admin-thumb { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: #eee; flex-shrink: 0; }
+    .admin-item-info { flex: 1; min-width: 0; }
+    .admin-item-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; display: flex; justify-content: space-between; }
+    .admin-buyer-detail { font-size: 12px; color: var(--text-sub); }
+    .btn-edit-prod { background: var(--accent); color: white; border: none; padding: 4px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; margin-top: 4px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-title"><h1>Jane代購清單</h1></div>
+    </div>
+    
+    <div id="itemList"></div>
+
+    <div class="footer-admin-section">
+      <button class="btn-footer-admin" id="btnOpenLogin">管理者</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-content">
+      <div class="modal-header"><h2>🔐 管理者登入</h2><button class="btn-close" id="btnCloseLogin">✕</button></div>
+      <div class="form-group">
+        <label class="form-label">請輸入密碼</label>
+        <input type="password" id="adminPwdInput" class="form-input" placeholder="預設密碼: 1234" />
+      </div>
+      <button class="btn-submit" id="btnLoginSubmit">登入後台</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="qtyModal">
+    <div class="modal-content">
+      <div class="modal-header"><h2 id="editModalTitle">新增購買</h2><button class="btn-close" id="btnCloseQty">✕</button></div>
+      <div class="form-group"><label class="form-label">購買人 / 登記人</label><input type="text" id="editBuyer" class="form-input" placeholder="例如：敏敏..." /></div>
+      <div class="form-group"><label class="form-label">購買數量</label>
+        <div class="qty-modal-controls">
+          <button class="btn-qty-lg" id="btnQtyMinus">-</button>
+          <span class="qty-display-lg" id="editQtyVal">1</span>
+          <button class="btn-qty-lg plus" id="btnQtyPlus">+</button>
+        </div>
+      </div>
+      <button class="btn-submit" id="btnSaveNewBuy">確認新增購買人</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="editBuyerModal">
+    <div class="modal-content">
+      <div class="modal-header"><h2>修改購買數量</h2><button class="btn-close" id="btnCloseEditBuyer">✕</button></div>
+      <div class="form-group"><label class="form-label">購買人</label><input type="text" id="existingBuyerName" class="form-input" readonly style="background:#eee;" /></div>
+      <div class="form-group"><label class="form-label">購買數量</label>
+        <div class="qty-modal-controls">
+          <button class="btn-qty-lg" id="btnExistMinus">-</button>
+          <span class="qty-display-lg" id="existingQtyVal">1</span>
+          <button class="btn-qty-lg plus" id="btnExistPlus">+</button>
+        </div>
+      </div>
+      <button class="btn-submit" id="btnSaveExistBuy">儲存修改</button>
+      <button class="btn-submit btn-danger" id="btnDelExistBuy">刪除此購買紀錄</button>
+    </div>
+  </div>
+
+  <div class="modal-overlay" id="editProdModal">
+    <div class="modal-content">
+      <div class="modal-header"><h2>✏️ 修改商品資料</h2><button class="btn-close" id="btnCloseEditProd">✕</button></div>
+      <div class="form-group"><label class="form-label">商品名稱 *</label><input type="text" id="editProdName" class="form-input" /></div>
+      <div class="form-group"><label class="form-label">分類</label>
+        <select id="editProdCategory" class="form-select">
+          <option value="食品/食材">食品/食材</option>
+          <option value="日用品">日用品</option>
+          <option value="美妝保養">美妝保養</option>
+          <option value="文具雜貨">文具雜貨</option>
+        </select>
