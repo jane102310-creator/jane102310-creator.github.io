@@ -188,22 +188,15 @@
     var isAdminUnlocked = false;
     var ADMIN_PASSWORD = '1234';
 
-    var defaultProducts = [
+    var products = [
       { id: 1, name: '咖啡糖Americano', buyers: [{name: 'Jane', count: 1}], category: '食品/食材', note: '', image: '' },
       { id: 2, name: '咖啡糖espresso', buyers: [{name: '敏敏', count: 4}], category: '食品/食材', note: '', image: '' }
     ];
 
-    var products = defaultProducts;
-
     try {
-      var saved = localStorage.getItem('buylist_v10_products');
-      if (saved) {
-        var parsed = JSON.parse(saved);
-        if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
-      }
-    } catch(e) {
-      products = defaultProducts;
-    }
+      var saved = localStorage.getItem('buylist_v8_products');
+      if (saved) { products = JSON.parse(saved); }
+    } catch(e) {}
 
     function renderList() {
       var itemList = document.getElementById('itemList');
@@ -238,7 +231,7 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v10_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v8_products', JSON.stringify(products));
       } catch(e) {}
       bindEvents();
     }
