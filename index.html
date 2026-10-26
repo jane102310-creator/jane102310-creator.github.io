@@ -53,10 +53,14 @@
     .form-group { margin-bottom: 16px; }
     .form-label { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); display: block; }
     .form-input, .form-select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 14px; background: #FAFAFA; outline: none; }
-    .qty-modal-controls { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 20px 0; }
-    .btn-qty-lg { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--card-bg); font-size: 20px; font-weight: bold; cursor: pointer; color: var(--text-main); }
-    .btn-qty-lg.plus { background: var(--accent); color: white; border: none; }
-    .qty-display-lg { font-size: 24px; font-weight: bold; min-width: 40px; text-align: center; }
+    
+    /* 多單位選購控制項 */
+    .unit-qty-row { display: flex; justify-content: space-between; align-items: center; background: #FAFAFA; padding: 10px 12px; border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border-color); }
+    .unit-qty-controls { display: flex; align-items: center; gap: 12px; }
+    .btn-qty-sm { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); font-size: 16px; font-weight: bold; cursor: pointer; color: var(--text-main); }
+    .btn-qty-sm.plus { background: var(--accent); color: white; border: none; }
+    .qty-display-sm { font-size: 16px; font-weight: bold; min-width: 24px; text-align: center; }
+
     .btn-submit { width: 100%; background-color: var(--accent); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
     .btn-save-manual { width: 100%; background-color: #28A745; color: white; border: none; padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 12px; margin-bottom: 8px; }
     .btn-danger { background-color: #D9534F !important; margin-top: 8px; }
@@ -129,23 +133,16 @@
     </div>
   </div>
 
-  <!-- 一般購買 Modal -->
+  <!-- 同時選購多單位 Modal -->
   <div class="modal-overlay" id="qtyModal">
     <div class="modal-content">
       <div class="modal-header"><h2 id="editModalTitle">新增購買</h2><button class="btn-close" onclick="closeModal('qtyModal')">✕</button></div>
       <div class="form-group"><label class="form-label">購買人 / 登記人</label><input type="text" id="editBuyer" class="form-input" placeholder="例如：敏敏..." /></div>
       <div class="form-group">
-        <label class="form-label">數量單位</label>
-        <select id="editUnit" class="form-select"></select>
+        <label class="form-label">各單位購買數量</label>
+        <div id="unitQtyContainer"></div>
       </div>
-      <div class="form-group"><label class="form-label">購買數量</label>
-        <div class="qty-modal-controls">
-          <button class="btn-qty-lg" onclick="changeQty(-1)">-</button>
-          <span class="qty-display-lg" id="editQtyVal">1</span>
-          <button class="btn-qty-lg plus" onclick="changeQty(1)">+</button>
-        </div>
-      </div>
-      <button class="btn-submit" onclick="saveNewBuy()">確認新增購買人</button>
+      <button class="btn-submit" onclick="saveNewBuy()">確認新增登記</button>
     </div>
   </div>
 
@@ -155,10 +152,10 @@
       <div class="modal-header"><h2>修改購買數量</h2><button class="btn-close" onclick="closeModal('editBuyerModal')">✕</button></div>
       <div class="form-group"><label class="form-label">購買人與單位</label><input type="text" id="existingBuyerName" class="form-input" readonly style="background:#eee;" /></div>
       <div class="form-group"><label class="form-label">購買數量</label>
-        <div class="qty-modal-controls">
-          <button class="btn-qty-lg" onclick="changeExistQty(-1)">-</button>
+        <div class="qty-modal-controls" style="display:flex; align-items:center; justify-content:center; gap:16px; margin:20px 0;">
+          <button class="btn-qty-sm" style="width:44px; height:44px; font-size:20px;" onclick="changeExistQty(-1)">-</button>
           <span class="qty-display-lg" id="existingQtyVal">1</span>
-          <button class="btn-qty-lg plus" onclick="changeExistQty(1)">+</button>
+          <button class="btn-qty-sm plus" style="width:44px; height:44px; font-size:20px;" onclick="changeExistQty(1)">+</button>
         </div>
       </div>
       <button class="btn-submit" onclick="saveExistBuy()">儲存修改</button>
@@ -243,13 +240,12 @@
 
   <script>
     var currentEditIndex = null;
-    var tempEditQty = 1;
     var currentItemIndex = null;
     var currentBuyerIndex = null;
     var tempExistingQty = 1;
     var editingProdIndex = null;
     var isAuthed = false;
-    var currentCategoryFilter = 'default_all'; // 初始化分類避免與全域衝突
+    var currentCategoryFilter = 'default_all';
     
     var ADMIN_PASSWORD = localStorage.getItem('buylist_admin_pwd') || '1234';
 
@@ -261,7 +257,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v31_products');
+      var saved = localStorage.getItem('buylist_v32_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -272,7 +268,7 @@
 
     function manualSaveData() {
       try {
-        localStorage.setItem('buylist_v31_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v32_products', JSON.stringify(products));
         alert('💾 儲存成功！所有變更已安全儲存。');
       } catch (e) {
         alert('儲存空間已滿！');
@@ -287,7 +283,6 @@
       renderList();
     }
 
-    // 自動把各種圖床網址轉為真實圖片直連格式
     function fixImageUrl(url) {
       if (!url) return '';
       url = url.trim();
@@ -322,11 +317,27 @@
         var card = document.createElement('div');
         card.className = 'item-card' + (product.isCompleted ? ' completed' : '');
 
-        var buyerTagsHTML = '';
+        // 整合同一個人的不同單位（例如：敏敏 +1盒 5片）
+        var buyerMap = {};
         for (var j = 0; j < product.buyers.length; j++) {
           var b = product.buyers[j];
-          var unitStr = b.unit ? b.unit : '';
-          buyerTagsHTML += '<span class="tag tag-buyer" onclick="openEditBuyerModal(' + i + ', ' + j + ')">' + b.name + ' +' + b.count + unitStr + '</span>';
+          var name = b.name.trim();
+          if (!buyerMap[name]) buyerMap[name] = [];
+          buyerMap[name].push({ buyerIdx: j, count: b.count, unit: b.unit || '個' });
+        }
+
+        var buyerTagsHTML = '';
+        var buyerNames = Object.keys(buyerMap);
+        for (var k = 0; k < buyerNames.length; k++) {
+          var name = buyerNames[k];
+          var details = buyerMap[name];
+          var detailStr = '';
+          for (var d = 0; d < details.length; d++) {
+            detailStr += '+' + details[d].count + details[d].unit + ' ';
+          }
+          // 點擊標籤可直接修改第一筆或管理該顧客
+          var firstIdx = details[0].buyerIdx;
+          buyerTagsHTML += '<span class="tag tag-buyer" onclick="openEditBuyerModal(' + i + ', ' + firstIdx + ')">' + name + ' ' + detailStr.trim() + '</span>';
         }
 
         if (product.isCompleted) {
@@ -347,7 +358,7 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v31_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v32_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -406,39 +417,62 @@
       switchTab(1);
     }
 
+    // 開啟購買視窗（支援同時調整多個單位）
     function openQtyModal(index) {
       currentEditIndex = index;
       var product = products[index];
       document.getElementById('editModalTitle').innerText = '新增購買：' + product.name;
       document.getElementById('editBuyer').value = '';
       
-      var unitSelect = document.getElementById('editUnit');
-      unitSelect.innerHTML = '';
+      var container = document.getElementById('unitQtyContainer');
+      container.innerHTML = '';
       var units = product.units && product.units.length > 0 ? product.units : ['個'];
+
       for (var u = 0; u < units.length; u++) {
-        var opt = document.createElement('option');
-        opt.value = units[u];
-        opt.innerText = units[u];
-        unitSelect.appendChild(opt);
+        var unitName = units[u];
+        var row = document.createElement('div');
+        row.className = 'unit-qty-row';
+        row.innerHTML = '<span>' + unitName + '</span>' +
+          '<div class="unit-qty-controls">' +
+            '<button class="btn-qty-sm" onclick="adjustModalQty(\'qty_' + u + '\', -1)">-</button>' +
+            '<span class="qty-display-sm" id="qty_' + u + '">0</span>' +
+            '<button class="btn-qty-sm plus" onclick="adjustModalQty(\'qty_' + u + '\', 1)">+</button>' +
+          '</div>';
+        container.appendChild(row);
       }
 
-      tempEditQty = 1;
-      document.getElementById('editQtyVal').innerText = tempEditQty;
       document.getElementById('qtyModal').classList.add('active');
     }
 
-    function changeQty(val) {
-      tempEditQty += val;
-      if (tempEditQty < 1) tempEditQty = 1;
-      document.getElementById('editQtyVal').innerText = tempEditQty;
+    function adjustModalQty(elementId, delta) {
+      var el = document.getElementById(elementId);
+      var val = parseInt(el.innerText) + delta;
+      if (val < 0) val = 0;
+      el.innerText = val;
     }
 
     function saveNewBuy() {
       if (currentEditIndex !== null) {
         var buyerName = document.getElementById('editBuyer').value.trim();
-        var selectedUnit = document.getElementById('editUnit').value;
         if (!buyerName) { alert('請輸入購買人姓名！'); return; }
-        products[currentEditIndex].buyers.push({ name: buyerName, count: tempEditQty, unit: selectedUnit, bought: 0 });
+
+        var product = products[currentEditIndex];
+        var units = product.units && product.units.length > 0 ? product.units : ['個'];
+        var addedCount = 0;
+
+        for (var u = 0; u < units.length; u++) {
+          var qty = parseInt(document.getElementById('qty_' + u).innerText);
+          if (qty > 0) {
+            product.buyers.push({ name: buyerName, count: qty, unit: units[u], bought: 0 });
+            addedCount++;
+          }
+        }
+
+        if (addedCount === 0) {
+          alert('請至少選擇一項單量的數量！');
+          return;
+        }
+
         renderList();
         manualSaveData();
         closeModal('qtyModal');
@@ -467,9 +501,9 @@
         if (tempExistingQty === 0) {
           products[currentItemIndex].buyers.splice(currentBuyerIndex, 1);
         } else {
-          products[currentItemIndex].buyers[currentItemIndex].count = tempExistingQty;
-          if (products[currentItemIndex].buyers[currentItemIndex].bought > tempExistingQty) {
-            products[currentItemIndex].buyers[currentItemIndex].bought = tempExistingQty;
+          products[currentItemIndex].buyers[currentBuyerIndex].count = tempExistingQty;
+          if (products[currentItemIndex].buyers[currentBuyerIndex].bought > tempExistingQty) {
+            products[currentItemIndex].buyers[currentBuyerIndex].bought = tempExistingQty;
           }
         }
         renderList();
