@@ -45,7 +45,7 @@
     .item-note { font-size: 12px; color: #999; margin-top: 2px; }
     .btn-buy-action { background-color: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 14px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
 
-    /* 底部固定導覽列 (類似截圖設計) */
+    /* 底部固定導覽列（5個按鈕：首頁、分類、購物車、個人、管理者） */
     .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #FFFFFF; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 8px 0; z-index: 999; box-shadow: 0 -4px 12px rgba(0,0,0,0.05); }
     .nav-item { background: none; border: none; display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-sub); cursor: pointer; gap: 3px; flex: 1; }
     .nav-item.active { color: var(--accent); font-weight: bold; }
@@ -131,19 +131,19 @@
       <div id="itemListCategory"></div>
     </div>
 
-    <!-- 3. 購物車分頁 (即登記清單總覽) -->
+    <!-- 3. 購物車分頁 -->
     <div id="sectionCart" class="page-section">
       <div style="font-size: 16px; font-weight: bold; margin-bottom: 12px;">🛒 我的購物車 / 登記清單</div>
       <div id="cartContentList"></div>
     </div>
 
-    <!-- 4. 個人分頁 (需輸入信箱與密碼登入) -->
+    <!-- 4. 個人分頁 -->
     <div id="sectionProfile" class="page-section">
       <div id="profileLoggedOut" style="background: #FFF; padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); text-align: center;">
         <h2 style="font-size: 18px; margin-bottom: 12px;">🔐 會員專區登入</h2>
         <p style="font-size: 13px; color: var(--text-sub); margin-bottom: 20px;">請輸入您的信箱與密碼以查看您的個人訂單</p>
-        <div class="form-group" style="text-align: left;"><label class="form-label">信箱 (Email)</label><input type="email" id="profileEmailInput" class="form-input" placeholder="请输入您的信箱..." /></div>
-        <div class="form-group" style="text-align: left;"><label class="form-label">密碼</label><input type="password" id="profilePwdInput" class="form-input" placeholder="请输入密碼..." /></div>
+        <div class="form-group" style="text-align: left;"><label class="form-label">信箱 (Email)</label><input type="email" id="profileEmailInput" class="form-input" placeholder="請輸入您的信箱..." /></div>
+        <div class="form-group" style="text-align: left;"><label class="form-label">密碼</label><input type="password" id="profilePwdInput" class="form-input" placeholder="請輸入密碼..." /></div>
         <button class="btn-submit" onclick="submitProfileLogin()">登入會員專區</button>
       </div>
 
@@ -157,13 +157,9 @@
         <div id="profileMyOrdersList"></div>
       </div>
     </div>
-
-    <div class="footer-admin-section">
-      <button class="btn-footer-admin" onclick="openAdminPortal()">管理者後台</button>
-    </div>
   </div>
 
-  <!-- 底部導覽列 -->
+  <!-- 底部導覽列（5個按鈕） -->
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="switchSection('home', this)">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -180,6 +176,10 @@
     <button class="nav-item" onclick="switchSection('profile', this)">
       <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       <span>個人</span>
+    </button>
+    <button class="nav-item" onclick="openAdminPortal()">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <span>管理者</span>
     </button>
   </nav>
 
@@ -253,7 +253,7 @@
       
       <div class="admin-nav">
         <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 商品及統計</button>
-        <button class="admin-tab-btn" id="tabBtn2" onclick="switchTab(2)">👥 顧客與信箱</button>
+        <button class="admin-tab-btn" id="tabBtn2" onclick="switchTab(2)">👥 個案與訂單管理</button>
         <button class="admin-tab-btn" id="tabBtn3" onclick="switchTab(3)">➕ 新增商品</button>
         <button class="admin-tab-btn" id="tabBtn4" onclick="switchTab(4)">⚙️ 設定</button>
       </div>
@@ -263,6 +263,7 @@
         <button class="btn-save-manual" onclick="manualSaveData()">💾 儲存所有變更</button>
       </div>
 
+      <!-- 個案與訂單管理分頁 (支援後台直接刪除特定顧客訂單) -->
       <div class="admin-section" id="adminSec2">
         <div id="customerContentList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 12px;"></div>
         <button class="btn-save-manual" onclick="manualSaveData()">💾 儲存所有變更</button>
@@ -309,7 +310,7 @@
     var SITE_TITLE = localStorage.getItem('buylist_site_title') || '韓國代購清單';
     
     var currentUser = JSON.parse(localStorage.getItem('buylist_current_user') || 'null');
-    var customerAccounts = JSON.parse(localStorage.getItem('buylist_customer_accounts') || '{}'); // 格式: { email: { name: '敏敏', password: '123' } }
+    var customerAccounts = JSON.parse(localStorage.getItem('buylist_customer_accounts') || '{}');
 
     document.getElementById('pageTitleText').innerText = SITE_TITLE;
     document.getElementById('headerTitleDisplay').innerText = SITE_TITLE;
@@ -323,7 +324,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v38_products');
+      var saved = localStorage.getItem('buylist_v39_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -337,12 +338,11 @@
       renderList();
     };
 
-    // 切換底部導覽列分頁
     function switchSection(sectionName, btnElement) {
       var sections = document.querySelectorAll('.page-section');
       sections.forEach(function(s) { s.classList.remove('active'); });
 
-      var navItems = document.querySelectorAll('.nav-item');
+      var navItems = document.querySelectorAll('.bottom-nav .nav-item');
       navItems.forEach(function(n) { n.classList.remove('active'); });
 
       if (btnElement) btnElement.classList.add('active');
@@ -363,8 +363,7 @@
 
     function goToCategory(catName) {
       currentCategoryFilter = catName;
-      switchSection('home', document.querySelectorAll('.nav-item')[0]);
-      // 自動點擊對應分類按鈕
+      switchSection('home', document.querySelectorAll('.bottom-nav .nav-item')[0]);
       var pills = document.querySelectorAll('.filter-pill');
       pills.forEach(function(p) {
         if (p.innerText.includes(catName)) {
@@ -373,7 +372,6 @@
       });
     }
 
-    // 個人分頁登入狀態檢查
     function checkProfileLoginState() {
       var loggedOutDiv = document.getElementById('profileLoggedOut');
       var loggedInDiv = document.getElementById('profileLoggedIn');
@@ -397,7 +395,6 @@
       if (!email || !email.includes('@')) { alert('請輸入有效的信箱！'); return; }
       if (!pwd) { alert('請輸入密碼！'); return; }
 
-      // 檢查帳號是否存在或自動註冊
       if (!customerAccounts[email]) {
         var autoName = email.split('@')[0];
         customerAccounts[email] = { name: autoName, password: pwd };
@@ -503,7 +500,7 @@
 
     function manualSaveData() {
       try {
-        localStorage.setItem('buylist_v38_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v39_products', JSON.stringify(products));
         alert('💾 儲存成功！');
       } catch (e) {
         alert('儲存空間已滿！');
@@ -600,7 +597,7 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v38_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v39_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -653,7 +650,7 @@
     function openQtyModal(index) {
       if (!currentUser || !currentUser.name) {
         alert('請先至下方「個人」分頁登入會員！');
-        switchSection('profile', document.querySelectorAll('.nav-item')[3]);
+        switchSection('profile', document.querySelectorAll('.bottom-nav .nav-item')[3]);
         return;
       }
 
@@ -791,6 +788,7 @@
         renderList();
         manualSaveData();
         renderProfileMyOrders();
+        if (isAuthed) updateCustomerStats();
       }
     }
 
@@ -798,6 +796,24 @@
       if (currentItemIndex !== null && editingBuyerName) {
         deleteMyEntireOrder(currentItemIndex, editingBuyerName);
         closeModal('editBuyerModal');
+      }
+    }
+
+    // 後台管理員直接刪除某顧客在某個商品上的所有登記
+    function adminDeleteCustomerItem(itemIdx, buyerName) {
+      if (confirm('確定要從後台刪除 「' + buyerName + '」 的這筆商品訂單嗎？')) {
+        var product = products[itemIdx];
+        var newBuyers = [];
+        for (var j = 0; j < product.buyers.length; j++) {
+          if (product.buyers[j].name.trim() !== buyerName.trim()) {
+            newBuyers.push(product.buyers[j]);
+          }
+        }
+        product.buyers = newBuyers;
+        renderList();
+        updateCustomerStats();
+        updateAdminStats();
+        manualSaveData();
       }
     }
 
@@ -823,6 +839,7 @@
       updateAdminStats();
     }
 
+    // 更新後台個案管理清單（新增刪除訂單按鈕）
     function updateCustomerStats() {
       var customerList = document.getElementById('customerContentList');
       if (!customerList) return;
@@ -836,7 +853,12 @@
           var b = p.buyers[j];
           var cName = b.name.trim();
           if (!customerMap[cName]) customerMap[cName] = [];
-          customerMap[cName].push({ itemName: p.name, count: b.count, unit: b.unit || '個' });
+          customerMap[cName].push({
+            itemIdx: i,
+            itemName: p.name,
+            count: b.count,
+            unit: b.unit || '個'
+          });
         }
       }
 
@@ -860,7 +882,10 @@
         var itemsHtml = '';
         for (var m = 0; m < items.length; m++) {
           var it = items[m];
-          itemsHtml += '<div style="font-size:13px; margin-bottom:4px;">• ' + it.itemName + ': <b>' + it.count + ' ' + it.unit + '</b></div>';
+          itemsHtml += '<div style="font-size:13px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">' +
+            '<span>• ' + it.itemName + ': <b>' + it.count + ' ' + it.unit + '</b></span>' +
+            '<button class="btn-del-prod" style="padding:2px 8px; font-size:11px;" onclick="adminDeleteCustomerItem(' + it.itemIdx + ', \'' + name + '\')">刪除</button>' +
+          '</div>';
         }
 
         card.innerHTML = '<div class="customer-name"><span>👤 ' + name + '</span></div>' + itemsHtml;
