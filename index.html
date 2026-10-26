@@ -58,8 +58,8 @@
     .btn-submit { width: 100%; background-color: var(--accent); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
     .btn-danger { background-color: #D9534F !important; margin-top: 8px; }
 
-    .admin-nav { display: flex; gap: 10px; margin-bottom: 16px; }
-    .admin-tab-btn { flex: 1; padding: 10px; border: none; background: #EFECE6; color: var(--text-sub); font-weight: 600; border-radius: 10px; cursor: pointer; }
+    .admin-nav { display: flex; gap: 6px; margin-bottom: 16px; }
+    .admin-tab-btn { flex: 1; padding: 8px 4px; border: none; background: #EFECE6; color: var(--text-sub); font-weight: 600; border-radius: 10px; cursor: pointer; font-size: 12px; text-align: center; }
     .admin-tab-btn.active { background: var(--accent); color: white; }
     .admin-section { display: none; }
     .admin-section.active { display: block; }
@@ -174,14 +174,17 @@
       <div class="modal-header"><h2>🔐 管理者後台</h2><button class="btn-close" onclick="closeModal('adminModal')">✕</button></div>
       
       <div class="admin-nav">
-        <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 總數量統計</button>
+        <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 數量統計</button>
         <button class="admin-tab-btn" id="tabBtn2" onclick="switchTab(2)">➕ 新增商品</button>
+        <button class="admin-tab-btn" id="tabBtn3" onclick="switchTab(3)">⚙️ 管理者設定</button>
       </div>
 
+      <!-- 分頁 1：總數量統計 -->
       <div class="admin-section active" id="adminSec1">
         <div id="adminContentList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 16px;"></div>
       </div>
 
+      <!-- 分頁 2：新增商品 -->
       <div class="admin-section" id="adminSec2">
         <div class="form-group"><label class="form-label">商品名稱 *</label><input type="text" id="itemName" class="form-input" placeholder="例如：積雪草面膜..." /></div>
         <div class="form-group"><label class="form-label">分類</label>
@@ -200,6 +203,14 @@
         <div class="form-group"><label class="form-label">備註說明</label><input type="text" id="itemNote" class="form-input" placeholder="規格或口味..." /></div>
         <button class="btn-submit" onclick="saveNewProd()">確認新增商品</button>
       </div>
+
+      <!-- 分頁 3：管理者設定（修改密碼） -->
+      <div class="admin-section" id="adminSec3">
+        <div class="form-group"><label class="form-label">目前密碼</label><input type="password" id="oldPwd" class="form-input" placeholder="請輸入目前密碼..." /></div>
+        <div class="form-group"><label class="form-label">新密碼</label><input type="password" id="newPwd" class="form-input" placeholder="請輸入新密碼..." /></div>
+        <div class="form-group"><label class="form-label">確認新密碼</label><input type="password" id="confirmPwd" class="form-input" placeholder="再次輸入新密碼..." /></div>
+        <button class="btn-submit" onclick="saveNewPassword()">更新管理者密碼</button>
+      </div>
     </div>
   </div>
 
@@ -214,7 +225,9 @@
     var editingProdIndex = null;
     var isAuthed = false;
     var currentCategoryFilter = '全部';
-    var ADMIN_PASSWORD = '1234';
+    
+    // 預設密碼管理
+    var ADMIN_PASSWORD = localStorage.getItem('buylist_admin_pwd') || '1234';
 
     var defaultProducts = [
       { id: 1, name: '咖啡糖Americano', buyers: [{name: 'Jane', count: 1, unit: '包'}], category: '食品/食材', units: ['包', '個'], note: '', image: '' },
@@ -224,7 +237,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v18_products');
+      var saved = localStorage.getItem('buylist_v19_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -279,7 +292,7 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v18_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v19_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -307,6 +320,33 @@
       } else {
         alert('密碼錯誤！');
       }
+    }
+
+    function saveNewPassword() {
+      var oldP = document.getElementById('oldPwd').value;
+      var newP = document.getElementById('newPwd').value;
+      var confirmP = document.getElementById('confirmPwd').value;
+
+      if (oldP !== ADMIN_PASSWORD) {
+        alert('目前密碼輸入錯誤！');
+        return;
+      }
+      if (!newP) {
+        alert('新密碼不能為空！');
+        return;
+      }
+      if (newP !== confirmP) {
+        alert('兩次輸入的新密碼不一致！');
+        return;
+      }
+
+      ADMIN_PASSWORD = newP;
+      localStorage.setItem('buylist_admin_pwd', newP);
+      alert('密碼修改成功！');
+      document.getElementById('oldPwd').value = '';
+      document.getElementById('newPwd').value = '';
+      document.getElementById('confirmPwd').value = '';
+      switchTab(1);
     }
 
     function openQtyModal(index) {
@@ -404,7 +444,6 @@
         var p = products[i];
         if (!p.buyers) p.buyers = [];
         
-        // 自動按單位加總數量 (例如：{'盒': 4, '片': 7})
         var unitTotals = {};
         var buyersHtml = '';
 
@@ -418,7 +457,6 @@
           buyersHtml += '<div class="admin-buyer-detail">👤 ' + b.name + ': <b>' + b.count + '</b> ' + u + '</div>';
         }
 
-        // 組裝「共 4 盒，7 片」的統整文字
         var summaryArr = [];
         for (var unitKey in unitTotals) {
           summaryArr.push('共 ' + unitTotals[unitKey] + ' ' + unitKey);
@@ -561,17 +599,16 @@
     }
 
     function switchTab(tabNum) {
+      document.getElementById('tabBtn1').className = 'admin-tab-btn' + (tabNum === 1 ? ' active' : '');
+      document.getElementById('tabBtn2').className = 'admin-tab-btn' + (tabNum === 2 ? ' active' : '');
+      document.getElementById('tabBtn3').className = 'admin-tab-btn' + (tabNum === 3 ? ' active' : '');
+
+      document.getElementById('adminSec1').className = 'admin-section' + (tabNum === 1 ? ' active' : '');
+      document.getElementById('adminSec2').className = 'admin-section' + (tabNum === 2 ? ' active' : '');
+      document.getElementById('adminSec3').className = 'admin-section' + (tabNum === 3 ? ' active' : '');
+
       if (tabNum === 1) {
-        document.getElementById('tabBtn1').className = 'admin-tab-btn active';
-        document.getElementById('tabBtn2').className = 'admin-tab-btn';
-        document.getElementById('adminSec1').className = 'admin-section active';
-        document.getElementById('adminSec2').className = 'admin-section';
         updateAdminStats();
-      } else {
-        document.getElementById('tabBtn2').className = 'admin-tab-btn active';
-        document.getElementById('tabBtn1').className = 'admin-tab-btn';
-        document.getElementById('adminSec2').className = 'admin-section active';
-        document.getElementById('adminSec1').className = 'admin-section';
       }
     }
 
