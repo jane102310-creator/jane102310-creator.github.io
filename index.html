@@ -249,7 +249,7 @@
     var tempExistingQty = 1;
     var editingProdIndex = null;
     var isAuthed = false;
-    var currentCategoryFilter = '全部';
+    var currentCategoryFilter = 'default_all'; // 初始化分類避免與全域衝突
     
     var ADMIN_PASSWORD = localStorage.getItem('buylist_admin_pwd') || '1234';
 
@@ -261,7 +261,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v30_products');
+      var saved = localStorage.getItem('buylist_v31_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -272,7 +272,7 @@
 
     function manualSaveData() {
       try {
-        localStorage.setItem('buylist_v30_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v31_products', JSON.stringify(products));
         alert('💾 儲存成功！所有變更已安全儲存。');
       } catch (e) {
         alert('儲存空間已滿！');
@@ -283,15 +283,14 @@
       currentCategoryFilter = category;
       var pills = document.querySelectorAll('.filter-pill');
       pills.forEach(function(p) { p.classList.remove('active'); });
-      btnElement.classList.add('active');
+      if (btnElement) btnElement.classList.add('active');
       renderList();
     }
 
-    // 自動把 FreeImage 頁面網址轉成真實圖片直連網址
+    // 自動把各種圖床網址轉為真實圖片直連格式
     function fixImageUrl(url) {
       if (!url) return '';
       url = url.trim();
-      // 如果是 freeimage.host 的頁面網址，自動轉為直連圖床格式
       if (url.includes('freeimage.host/i/')) {
         var id = url.split('/i/').pop();
         return 'https://iili.io/' + id + '.jpg';
@@ -316,7 +315,7 @@
           }
         }
 
-        if (currentCategoryFilter !== '全部' && product.category !== currentCategoryFilter) {
+        if (currentCategoryFilter !== '全部' && currentCategoryFilter !== 'default_all' && product.category !== currentCategoryFilter) {
           continue;
         }
 
@@ -348,7 +347,7 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v30_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v31_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -468,9 +467,9 @@
         if (tempExistingQty === 0) {
           products[currentItemIndex].buyers.splice(currentBuyerIndex, 1);
         } else {
-          products[currentItemIndex].buyers[currentBuyerIndex].count = tempExistingQty;
-          if (products[currentItemIndex].buyers[currentBuyerIndex].bought > tempExistingQty) {
-            products[currentItemIndex].buyers[currentBuyerIndex].bought = tempExistingQty;
+          products[currentItemIndex].buyers[currentItemIndex].count = tempExistingQty;
+          if (products[currentItemIndex].buyers[currentItemIndex].bought > tempExistingQty) {
+            products[currentItemIndex].buyers[currentItemIndex].bought = tempExistingQty;
           }
         }
         renderList();
