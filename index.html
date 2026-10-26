@@ -257,7 +257,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v32_products');
+      var saved = localStorage.getItem('buylist_v33_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -266,12 +266,24 @@
       products = defaultProducts;
     }
 
+    // 自動清理空間與防爆儲存
     function manualSaveData() {
       try {
-        localStorage.setItem('buylist_v32_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v33_products', JSON.stringify(products));
         alert('💾 儲存成功！所有變更已安全儲存。');
       } catch (e) {
-        alert('儲存空間已滿！');
+        // 自動清除舊版本垃圾資料以釋放空間
+        try {
+          localStorage.removeItem('buylist_v27_products');
+          localStorage.removeItem('buylist_v28_products');
+          localStorage.removeItem('buylist_v29_products');
+          localStorage.removeItem('buylist_v30_products');
+          localStorage.removeItem('buylist_v31_products');
+          localStorage.setItem('buylist_v33_products', JSON.stringify(products));
+          alert('💾 儲存成功！系統已自動清理暫存空間並完成儲存。');
+        } catch (err) {
+          alert('儲存空間已滿，請清除部分瀏覽器快取！');
+        }
       }
     }
 
@@ -335,7 +347,6 @@
           for (var d = 0; d < details.length; d++) {
             detailStr += '+' + details[d].count + details[d].unit + ' ';
           }
-          // 點擊標籤可直接修改第一筆或管理該顧客
           var firstIdx = details[0].buyerIdx;
           buyerTagsHTML += '<span class="tag tag-buyer" onclick="openEditBuyerModal(' + i + ', ' + firstIdx + ')">' + name + ' ' + detailStr.trim() + '</span>';
         }
@@ -358,7 +369,7 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v32_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v33_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -417,7 +428,6 @@
       switchTab(1);
     }
 
-    // 開啟購買視窗（支援同時調整多個單位）
     function openQtyModal(index) {
       currentEditIndex = index;
       var product = products[index];
