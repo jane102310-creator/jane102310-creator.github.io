@@ -21,6 +21,12 @@
     .header { background: var(--card-bg); padding: 20px; border-radius: 20px; box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
     .header-title h1 { font-size: 22px; font-weight: 700; color: var(--text-main); }
 
+    /* 分類篩選列 */
+    .filter-bar { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 8px; margin-bottom: 16px; scrollbar-width: none; }
+    .filter-bar::-webkit-scrollbar { display: none; }
+    .filter-pill { background: var(--card-bg); border: 1px solid var(--border-color); color: var(--text-sub); padding: 8px 14px; border-radius: 20px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; box-shadow: var(--shadow); transition: all 0.2s; }
+    .filter-pill.active { background: var(--accent); color: white; border-color: var(--accent); }
+
     .item-card { background: var(--card-bg); border-radius: 16px; padding: 14px; display: flex; align-items: center; gap: 12px; margin-bottom: 12px; box-shadow: var(--shadow); border: 1px solid var(--border-color); position: relative; }
     .item-img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; background: #F4EBE1; flex-shrink: 0; }
     .item-info { flex: 1; min-width: 0; }
@@ -73,6 +79,15 @@
       <div class="header-title"><h1>Jane代購清單</h1></div>
     </div>
     
+    <!-- 分類篩選列 -->
+    <div class="filter-bar" id="filterBar">
+      <button class="filter-pill active" onclick="setCategoryFilter('全部', this)">全部商品</button>
+      <button class="filter-pill" onclick="setCategoryFilter('食品/食材', this)">食品/食材</button>
+      <button class="filter-pill" onclick="setCategoryFilter('日用品', this)">日用品</button>
+      <button class="filter-pill" onclick="setCategoryFilter('美妝保養', this)">美妝保養</button>
+      <button class="filter-pill" onclick="setCategoryFilter('文具雜貨', this)">文具雜貨</button>
+    </div>
+
     <div id="itemList"></div>
 
     <div class="footer-admin-section">
@@ -191,6 +206,7 @@
     var tempEditUploadedImg = '';
     var editingProdIndex = null;
     var isAuthed = false;
+    var currentCategoryFilter = '全部';
     var ADMIN_PASSWORD = '1234';
 
     var defaultProducts = [
@@ -201,13 +217,21 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v14_products');
+      var saved = localStorage.getItem('buylist_v15_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
       }
     } catch(e) {
       products = defaultProducts;
+    }
+
+    function setCategoryFilter(category, btnElement) {
+      currentCategoryFilter = category;
+      var pills = document.querySelectorAll('.filter-pill');
+      pills.forEach(function(p) { p.classList.remove('active'); });
+      btnElement.classList.add('active');
+      renderList();
     }
 
     function renderList() {
@@ -218,6 +242,11 @@
       for (var i = 0; i < products.length; i++) {
         var product = products[i];
         if (!product.buyers) product.buyers = [];
+
+        // 根據分類篩選
+        if (currentCategoryFilter !== '全部' && product.category !== currentCategoryFilter) {
+          continue;
+        }
 
         var card = document.createElement('div');
         card.className = 'item-card';
@@ -242,7 +271,7 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v14_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v15_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -441,7 +470,7 @@
 
         renderList();
         updateAdminStats();
-        closeEditProdModal();
+        closeEditProdModal(); // 編輯完直接關閉編輯框，留在後台
       }
     }
 
