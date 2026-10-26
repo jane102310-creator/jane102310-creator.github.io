@@ -84,10 +84,10 @@
     /* 顧客管理卡片樣式 */
     .customer-card { background: #FAFAFA; border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; margin-bottom: 12px; }
     .customer-name { font-size: 15px; font-weight: bold; color: var(--accent); margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; display: flex; justify-content: space-between; }
-    .customer-item-row { font-size: 13px; color: var(--text-main); margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px dashed var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .customer-item-row { font-size: 13px; color: var(--text-main); margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color); display: flex; flex-direction: column; gap: 6px; }
     .customer-item-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-    .cust-badge-done { font-size: 10px; background: #D4EDDA; color: #155724; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
-    .cust-badge-ongoing { font-size: 10px; background: #FFF3CD; color: #856404; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+    .customer-item-top { display: flex; justify-content: space-between; align-items: center; }
+    .customer-progress-bar { display: flex; justify-content: space-between; align-items: center; background: #FFF; padding: 6px 8px; border-radius: 6px; border: 1px solid var(--border-color); font-size: 12px; }
 
     .admin-action-btns { display: flex; gap: 6px; margin-top: 8px; }
     .btn-edit-prod { background: var(--accent); color: white; border: none; padding: 4px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
@@ -255,14 +255,14 @@
     var ADMIN_PASSWORD = localStorage.getItem('buylist_admin_pwd') || '1234';
 
     var defaultProducts = [
-      { id: 1, name: '咖啡糖Americano', buyers: [{name: 'Jane', count: 1, unit: '包'}], category: '食品/食材', units: ['包', '個'], note: '', image: '', purchasedCounts: {}, isCompleted: false },
-      { id: 2, name: '積雪草面膜', buyers: [{name: '敏敏', count: 1, unit: '盒'}, {name: '敏敏', count: 5, unit: '片'}], category: '美妝保養', units: ['盒', '片'], note: '', image: '', purchasedCounts: {}, isCompleted: false }
+      { id: 1, name: '咖啡糖Americano', buyers: [{name: 'Jane', count: 1, unit: '包', bought: 0}], category: '食品/食材', units: ['包', '個'], note: '', image: '', purchasedCounts: {}, isCompleted: false },
+      { id: 2, name: '積雪草面膜', buyers: [{name: '敏敏', count: 1, unit: '盒', bought: 0}, {name: '敏敏', count: 5, unit: '片', bought: 0}], category: '美妝保養', units: ['盒', '片'], note: '', image: '', purchasedCounts: {}, isCompleted: false }
     ];
 
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v22_products');
+      var saved = localStorage.getItem('buylist_v23_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -289,6 +289,13 @@
         if (!product.buyers) product.buyers = [];
         if (!product.units || !Array.isArray(product.units)) product.units = ['個'];
         if (!product.purchasedCounts) product.purchasedCounts = {};
+
+        // 確保每個 buyer 都有 bought 欄位
+        for (var j = 0; j < product.buyers.length; j++) {
+          if (product.buyers[j].bought === undefined) {
+            product.buyers[j].bought = 0;
+          }
+        }
 
         if (currentCategoryFilter !== '全部' && product.category !== currentCategoryFilter) {
           continue;
@@ -322,7 +329,7 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v22_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v23_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -413,7 +420,7 @@
         var buyerName = document.getElementById('editBuyer').value.trim();
         var selectedUnit = document.getElementById('editUnit').value;
         if (!buyerName) { alert('請輸入購買人姓名！'); return; }
-        products[currentEditIndex].buyers.push({ name: buyerName, count: tempEditQty, unit: selectedUnit });
+        products[currentEditIndex].buyers.push({ name: buyerName, count: tempEditQty, unit: selectedUnit, bought: 0 });
         renderList();
         closeModal('qtyModal');
       }
@@ -442,6 +449,10 @@
           products[currentItemIndex].buyers.splice(currentBuyerIndex, 1);
         } else {
           products[currentItemIndex].buyers[currentItemIndex].count = tempExistingQty;
+          // 確保已買數量不超過總數量
+          if (products[currentItemIndex].buyers[currentBuyerIndex].bought > tempExistingQty) {
+            products[currentItemIndex].buyers[currentBuyerIndex].bought = tempExistingQty;
+          }
         }
         renderList();
         closeModal('editBuyerModal');
@@ -479,6 +490,18 @@
       updateAdminStats();
     }
 
+    // 更新個別顧客項目的採買進度
+    function updateCustomerItemBought(itemIdx, buyerIdx, delta) {
+      var b = products[itemIdx].buyers[buyerIdx];
+      if (b.bought === undefined) b.bought = 0;
+      b.bought += delta;
+      if (b.bought < 0) b.bought = 0;
+      if (b.bought > b.count) b.bought = b.count; // 最多買到登記數量
+      
+      renderList();
+      updateCustomerStats();
+    }
+
     function toggleCompleteStatus(itemIdx) {
       var p = products[itemIdx];
       p.isCompleted = !p.isCompleted;
@@ -496,34 +519,21 @@
       for (var i = 0; i < products.length; i++) {
         var p = products[i];
         if (!p.buyers) continue;
-        if (!p.purchasedCounts) p.purchasedCounts = {};
-
-        // 計算該商品總需求量
-        var unitTotals = {};
-        for (var j = 0; j < p.buyers.length; j++) {
-          var b = p.buyers[j];
-          var u = b.unit || '個';
-          if (!unitTotals[u]) unitTotals[u] = 0;
-          unitTotals[u] += b.count;
-        }
-
         for (var j = 0; j < p.buyers.length; j++) {
           var b = p.buyers[j];
           var cName = b.name.trim();
           if (!customerMap[cName]) {
             customerMap[cName] = [];
           }
-          var u = b.unit || '個';
-          var bought = p.purchasedCounts[u] || 0;
-          var totalNeeded = unitTotals[u] || 0;
+          if (b.bought === undefined) b.bought = 0;
           
           customerMap[cName].push({
+            itemIdx: i,
+            buyerIdx: j,
             itemName: p.name,
             count: b.count,
-            unit: u,
-            boughtCount: bought,
-            totalNeeded: totalNeeded,
-            isCompleted: p.isCompleted
+            unit: b.unit || '個',
+            bought: b.bought
           });
         }
       }
@@ -549,13 +559,22 @@
         var itemsHtml = '';
         for (var m = 0; m < items.length; m++) {
           var it = items[m];
-          var badgeHtml = it.isCompleted 
-            ? '<span class="cust-badge-done">✅ 已完成</span>' 
-            : '<span class="cust-badge-ongoing">⏳ 已買 ' + it.boughtCount + '/' + it.totalNeeded + ' ' + it.unit + '</span>';
+          var isDone = it.bought >= it.count;
+          var badgeClass = isDone ? 'cust-badge-done' : 'cust-badge-ongoing';
+          var badgeText = isDone ? '✅ 已完成' : '⏳ 進行中';
 
           itemsHtml += '<div class="customer-item-row">' +
-            '<div>• ' + it.itemName + ' <b style="margin-left:4px;">' + it.count + ' ' + it.unit + '</b></div>' +
-            '<div>' + badgeHtml + '</div>' +
+            '<div class="customer-item-top">' +
+              '<span>• ' + it.itemName + ' <b style="margin-left:4px;">' + it.count + ' ' + it.unit + '</b></span>' +
+              '<span class="' + badgeClass + '">' + badgeText + '</span>' +
+            '</div>' +
+            '<div class="customer-progress-bar">' +
+              '<span>🛒 個人已買：<b>' + it.bought + ' / ' + it.count + ' ' + it.unit + '</b></span>' +
+              '<div class="progress-controls">' +
+                '<button class="btn-mini-qty" onclick="updateCustomerItemBought(' + it.itemIdx + ', ' + it.buyerIdx + ', -1)">-</button>' +
+                '<button class="btn-mini-qty" onclick="updateCustomerItemBought(' + it.itemIdx + ', ' + it.buyerIdx + ', 1)">+</button>' +
+              '</div>' +
+            '</div>' +
           '</div>';
         }
 
