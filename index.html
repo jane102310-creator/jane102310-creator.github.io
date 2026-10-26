@@ -310,7 +310,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v42_products');
+      var saved = localStorage.getItem('buylist_v43_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -451,10 +451,10 @@
 
     function manualSaveData() {
       try {
-        for (var i = 30; i < 43; i++) {
+        for (var i = 30; i < 44; i++) {
           localStorage.removeItem('buylist_v' + i + '_products');
         }
-        localStorage.setItem('buylist_v42_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v43_products', JSON.stringify(products));
         alert('💾 儲存成功！');
       } catch (e) {
         alert('儲存空間已滿，請清除部分瀏覽器快取！');
@@ -551,10 +551,10 @@
         itemList.appendChild(card);
       }
       try {
-        for (var cleanIdx = 30; cleanIdx < 43; cleanIdx++) {
+        for (var cleanIdx = 30; cleanIdx < 44; cleanIdx++) {
           localStorage.removeItem('buylist_v' + cleanIdx + '_products');
         }
-        localStorage.setItem('buylist_v42_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v43_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -756,14 +756,21 @@
       }
     }
 
-    // 後台：單項刪除某顧客在某個商品上的登記
-    function adminDeleteCustomerItem(itemIdx, buyerName) {
-      if (confirm('確定要從後台刪除 「' + buyerName + '」 的這筆商品訂單嗎？')) {
+    // 後台：精準單項刪除（只刪除該顧客在該商品上的登記紀錄）
+    function adminDeleteCustomerItem(itemIdx, buyerName, unitName, countVal) {
+      if (confirm('確定要從後台刪除 「' + buyerName + '」 的這筆商品訂單 (' + countVal + unitName + ') 嗎？')) {
         var product = products[itemIdx];
+        if (!product || !product.buyers) return;
+        
         var newBuyers = [];
+        var deleted = false;
+        // 為了避免一次刪除同名同單位的多筆，我們只精準移除找到的第一筆符合的紀錄
         for (var j = 0; j < product.buyers.length; j++) {
-          if (product.buyers[j].name.trim() !== buyerName.trim()) {
-            newBuyers.push(product.buyers[j]);
+          var b = product.buyers[j];
+          if (!deleted && b.name.trim() === buyerName.trim() && (b.unit || '個') === unitName && b.count === countVal) {
+            deleted = true; // 略過這一筆（即刪除）
+          } else {
+            newBuyers.push(b);
           }
         }
         product.buyers = newBuyers;
@@ -862,7 +869,7 @@
           var it = items[m];
           itemsHtml += '<div style="font-size:13px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">' +
             '<span>• ' + it.itemName + ': <b>' + it.count + ' ' + it.unit + '</b></span>' +
-            '<button class="btn-del-prod" style="padding:2px 8px; font-size:11px;" onclick="adminDeleteCustomerItem(' + it.itemIdx + ', \'' + name + '\')">刪除</button>' +
+            '<button class="btn-del-prod" style="padding:2px 8px; font-size:11px;" onclick="adminDeleteCustomerItem(' + it.itemIdx + ', \'' + name + '\', \'' + it.unit + '\', ' + it.count + ')">刪除</button>' +
           '</div>';
         }
 
