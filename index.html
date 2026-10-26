@@ -23,15 +23,16 @@
     .btn-admin-main { background-color: var(--accent); color: white; border: none; padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; }
 
     .item-card { background: var(--card-bg); border-radius: 16px; padding: 14px; display: flex; align-items: center; gap: 12px; margin-bottom: 12px; box-shadow: var(--shadow); border: 1px solid var(--border-color); position: relative; }
-    .item-info { flex: 1; }
+    .item-img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; background: #F4EBE1; flex-shrink: 0; }
+    .item-info { flex: 1; min-width: 0; }
     .item-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
     .tag { font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: 500; }
     .tag-category { background-color: var(--accent-light); color: var(--text-sub); }
     .tag-buyer { background-color: #E8E2D8; color: #5A4D41; cursor: pointer; }
-    .item-name { font-size: 15px; font-weight: 600; color: var(--text-main); }
+    .item-name { font-size: 15px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .item-note { font-size: 12px; color: #999; margin-top: 2px; }
     .btn-delete-item { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #CCC; font-size: 14px; cursor: pointer; padding: 4px; z-index: 2; }
-    .btn-buy-action { background-color: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 14px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
+    .btn-buy-action { background-color: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 14px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
 
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end; z-index: 1000; }
     .modal-overlay.active { display: flex; }
@@ -45,46 +46,4 @@
     .qty-modal-controls { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 20px 0; }
     .btn-qty-lg { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--card-bg); font-size: 20px; font-weight: bold; cursor: pointer; color: var(--text-main); }
     .btn-qty-lg.plus { background: var(--accent); color: white; border: none; }
-    .qty-display-lg { font-size: 24px; font-weight: bold; min-width: 40px; text-align: center; }
-    .btn-submit { width: 100%; background-color: var(--accent); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
-    .btn-danger { background-color: #D9534F !important; margin-top: 8px; }
-
-    .admin-nav { display: flex; gap: 10px; margin-bottom: 16px; }
-    .admin-tab-btn { flex: 1; padding: 10px; border: none; background: #EFECE6; color: var(--text-sub); font-weight: 600; border-radius: 10px; cursor: pointer; }
-    .admin-tab-btn.active { background: var(--accent); color: white; }
-    .admin-section { display: none; }
-    .admin-section.active { display: block; }
-    .admin-item-row { background: #FAFAFA; padding: 12px; border-radius: 12px; margin-bottom: 10px; border: 1px solid var(--border-color); }
-    .admin-item-title { font-weight: 600; font-size: 14px; margin-bottom: 4px; display: flex; justify-content: space-between; }
-    .admin-buyer-detail { font-size: 12px; color: var(--text-sub); margin-left: 10px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <div class="header-title"><h1>待購清單</h1></div>
-      <button class="btn-admin-main" id="btnOpenAdmin">🔐 管理者後台</button>
-    </div>
-    
-    <div id="itemList"></div>
-  </div>
-
-  <div class="modal-overlay" id="qtyModal">
-    <div class="modal-content">
-      <div class="modal-header"><h2 id="editModalTitle">新增購買</h2><button class="btn-close" id="btnCloseQty">✕</button></div>
-      <div class="form-group"><label class="form-label">購買人 / 登記人</label><input type="text" id="editBuyer" class="form-input" placeholder="例如：敏敏..." /></div>
-      <div class="form-group"><label class="form-label">購買數量</label>
-        <div class="qty-modal-controls">
-          <button class="btn-qty-lg" id="btnQtyMinus">-</button>
-          <span class="qty-display-lg" id="editQtyVal">1</span>
-          <button class="btn-qty-lg plus" id="btnQtyPlus">+</button>
-        </div>
-      </div>
-      <button class="btn-submit" id="btnSaveNewBuy">確認新增購買人</button>
-    </div>
-  </div>
-
-  <div class="modal-overlay" id="editBuyerModal">
-    <div class="modal-content">
-      <div class="modal-header"><h2>修改購買數量</h2><button class="btn-close" id="btnCloseEditBuyer">✕</button></div>
-      <div class="form-group"><label class="form-label">購買人</label><input type="text
+    .qty-display-lg { font-size: 24px;
