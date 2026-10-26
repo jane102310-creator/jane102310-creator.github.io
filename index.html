@@ -60,8 +60,8 @@
     .btn-submit { width: 100%; background-color: var(--accent); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
     .btn-danger { background-color: #D9534F !important; margin-top: 8px; }
 
-    .admin-nav { display: flex; gap: 6px; margin-bottom: 16px; }
-    .admin-tab-btn { flex: 1; padding: 8px 4px; border: none; background: #EFECE6; color: var(--text-sub); font-weight: 600; border-radius: 10px; cursor: pointer; font-size: 12px; text-align: center; }
+    .admin-nav { display: flex; gap: 4px; margin-bottom: 16px; }
+    .admin-tab-btn { flex: 1; padding: 8px 2px; border: none; background: #EFECE6; color: var(--text-sub); font-weight: 600; border-radius: 10px; cursor: pointer; font-size: 11px; text-align: center; }
     .admin-tab-btn.active { background: var(--accent); color: white; }
     .admin-section { display: none; }
     .admin-section.active { display: block; }
@@ -80,6 +80,11 @@
     .btn-status-toggle { width: 100%; margin-top: 6px; padding: 6px; border-radius: 6px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; }
     .status-ongoing { background: #FFF3CD; color: #856404; }
     .status-done { background: #D4EDDA; color: #155724; }
+
+    /* 顧客管理卡片樣式 */
+    .customer-card { background: #FAFAFA; border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; margin-bottom: 12px; }
+    .customer-name { font-size: 15px; font-weight: bold; color: var(--accent); margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; display: flex; justify-content: space-between; }
+    .customer-item-row { font-size: 13px; color: var(--text-main); margin-bottom: 4px; display: flex; justify-content: space-between; }
 
     .admin-action-btns { display: flex; gap: 6px; margin-top: 8px; }
     .btn-edit-prod { background: var(--accent); color: white; border: none; padding: 4px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
@@ -187,8 +192,9 @@
       
       <div class="admin-nav">
         <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 數量統計</button>
-        <button class="admin-tab-btn" id="tabBtn2" onclick="switchTab(2)">➕ 新增商品</button>
-        <button class="admin-tab-btn" id="tabBtn3" onclick="switchTab(3)">⚙️ 管理者設定</button>
+        <button class="admin-tab-btn" id="tabBtn2" onclick="switchTab(2)">👥 顧客管理</button>
+        <button class="admin-tab-btn" id="tabBtn3" onclick="switchTab(3)">➕ 新增商品</button>
+        <button class="admin-tab-btn" id="tabBtn4" onclick="switchTab(4)">⚙️ 設定</button>
       </div>
 
       <!-- 分頁 1：總數量統計與採購進度 -->
@@ -196,8 +202,13 @@
         <div id="adminContentList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 16px;"></div>
       </div>
 
-      <!-- 分頁 2：新增商品 -->
+      <!-- 分頁 2：顧客管理 -->
       <div class="admin-section" id="adminSec2">
+        <div id="customerContentList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 16px;"></div>
+      </div>
+
+      <!-- 分頁 3：新增商品 -->
+      <div class="admin-section" id="adminSec3">
         <div class="form-group"><label class="form-label">商品名稱 *</label><input type="text" id="itemName" class="form-input" placeholder="例如：積雪草面膜..." /></div>
         <div class="form-group"><label class="form-label">分類</label>
           <select id="itemCategory" class="form-select">
@@ -216,8 +227,8 @@
         <button class="btn-submit" onclick="saveNewProd()">確認新增商品</button>
       </div>
 
-      <!-- 分頁 3：管理者設定（修改密碼） -->
-      <div class="admin-section" id="adminSec3">
+      <!-- 分頁 4：管理者設定（修改密碼） -->
+      <div class="admin-section" id="adminSec4">
         <div class="form-group"><label class="form-label">目前密碼</label><input type="password" id="oldPwd" class="form-input" placeholder="請輸入目前密碼..." /></div>
         <div class="form-group"><label class="form-label">新密碼</label><input type="password" id="newPwd" class="form-input" placeholder="請輸入新密碼..." /></div>
         <div class="form-group"><label class="form-label">確認新密碼</label><input type="password" id="confirmPwd" class="form-input" placeholder="再次輸入新密碼..." /></div>
@@ -248,7 +259,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v20_products');
+      var saved = localStorage.getItem('buylist_v21_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -308,13 +319,14 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v20_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v21_products', JSON.stringify(products));
       } catch(e) {}
     }
 
     function openAdminPortal() {
       if (isAuthed) {
         updateAdminStats();
+        updateCustomerStats();
         document.getElementById('adminModal').classList.add('active');
       } else {
         document.getElementById('adminPwdInput').value = '';
@@ -332,6 +344,7 @@
         isAuthed = true;
         closeModal('loginModal');
         updateAdminStats();
+        updateCustomerStats();
         document.getElementById('adminModal').classList.add('active');
       } else {
         alert('密碼錯誤！');
@@ -425,7 +438,7 @@
         if (tempExistingQty === 0) {
           products[currentItemIndex].buyers.splice(currentBuyerIndex, 1);
         } else {
-          products[currentItemIndex].buyers[currentBuyerIndex].count = tempExistingQty;
+          products[currentItemIndex].buyers[currentItemIndex].count = tempExistingQty;
         }
         renderList();
         closeModal('editBuyerModal');
@@ -447,10 +460,10 @@
         products.splice(i, 1);
         renderList();
         updateAdminStats();
+        updateCustomerStats();
       }
     }
 
-    // 更新採購進度數量
     function updatePurchasedQty(itemIdx, unit, delta) {
       var p = products[itemIdx];
       if (!p.purchasedCounts) p.purchasedCounts = {};
@@ -458,18 +471,70 @@
       var next = current + delta;
       if (next < 0) next = 0;
       
-      // 計算總需求量作為上限提示（非強制限制）
       p.purchasedCounts[unit] = next;
       renderList();
       updateAdminStats();
     }
 
-    // 切換完成狀態
     function toggleCompleteStatus(itemIdx) {
       var p = products[itemIdx];
       p.isCompleted = !p.isCompleted;
       renderList();
       updateAdminStats();
+    }
+
+    function updateCustomerStats() {
+      var customerList = document.getElementById('customerContentList');
+      if (!customerList) return;
+      customerList.innerHTML = '';
+
+      var customerMap = {};
+
+      for (var i = 0; i < products.length; i++) {
+        var p = products[i];
+        if (!p.buyers) continue;
+        for (var j = 0; j < p.buyers.length; j++) {
+          var b = p.buyers[j];
+          var cName = b.name.trim();
+          if (!customerMap[cName]) {
+            customerMap[cName] = [];
+          }
+          customerMap[cName].push({
+            itemName: p.name,
+            count: b.count,
+            unit: b.unit || '個'
+          });
+        }
+      }
+
+      var customerNames = Object.keys(customerMap);
+      if (customerNames.length === 0) {
+        customerList.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">目前尚無任何顧客登記資料</div>';
+        return;
+      }
+
+      var header = document.createElement('div');
+      header.style.cssText = "font-size:16px; font-weight:bold; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--border-color); color:var(--text-main);";
+      header.innerText = '👥 總計顧客數：' + customerNames.length + ' 位';
+      customerList.appendChild(header);
+
+      for (var k = 0; k < customerNames.length; k++) {
+        var name = customerNames[k];
+        var items = customerMap[name];
+        
+        var card = document.createElement('div');
+        card.className = 'customer-card';
+
+        var itemsHtml = '';
+        var totalCountSummary = 0;
+        for (var m = 0; m < items.length; m++) {
+          totalCountSummary += items[m].count;
+          itemsHtml += '<div class="customer-item-row"><span>• ' + items[m].itemName + '</span><b>' + items[m].count + ' ' + items[m].unit + '</b></div>';
+        }
+
+        card.innerHTML = '<div class="customer-name"><span>👤 ' + name + '</span><span style="font-size:12px; color:var(--text-sub);">共登記 ' + items.length + ' 項商品</span></div>' + itemsHtml;
+        customerList.appendChild(card);
+      }
     }
 
     function updateAdminStats() {
@@ -609,6 +674,7 @@
 
         renderList();
         updateAdminStats();
+        updateCustomerStats();
         closeEditProdModal();
       }
     }
@@ -646,6 +712,7 @@
       products.unshift({ id: Date.now(), name: name, buyers: [], category: category, units: unitsArr, note: note, image: finalImg, purchasedCounts: {}, isCompleted: false });
       renderList();
       updateAdminStats();
+      updateCustomerStats();
       
       document.getElementById('itemName').value = '';
       document.getElementById('itemNote').value = '';
@@ -661,13 +728,17 @@
       document.getElementById('tabBtn1').className = 'admin-tab-btn' + (tabNum === 1 ? ' active' : '');
       document.getElementById('tabBtn2').className = 'admin-tab-btn' + (tabNum === 2 ? ' active' : '');
       document.getElementById('tabBtn3').className = 'admin-tab-btn' + (tabNum === 3 ? ' active' : '');
+      document.getElementById('tabBtn4').className = 'admin-tab-btn' + (tabNum === 4 ? ' active' : '');
 
       document.getElementById('adminSec1').className = 'admin-section' + (tabNum === 1 ? ' active' : '');
       document.getElementById('adminSec2').className = 'admin-section' + (tabNum === 2 ? ' active' : '');
       document.getElementById('adminSec3').className = 'admin-section' + (tabNum === 3 ? ' active' : '');
+      document.getElementById('adminSec4').className = 'admin-section' + (tabNum === 4 ? ' active' : '');
 
       if (tabNum === 1) {
         updateAdminStats();
+      } else if (tabNum === 2) {
+        updateCustomerStats();
       }
     }
 
