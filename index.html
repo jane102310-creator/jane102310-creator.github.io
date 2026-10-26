@@ -6,108 +6,44 @@
   <title>待購選物清單</title>
   <style>
     :root {
-      --bg: #FDFBF7;
-      --card: #FFFFFF;
-      --text: #5A4D41;
-      --sub: #8C705F;
+      --bg-color: #FDFBF7;
+      --card-bg: #FFFFFF;
+      --text-main: #5A4D41;
+      --text-sub: #8C705F;
       --accent: #8C705F;
       --accent-light: #F4EBE1;
-      --border: #EFECE6;
+      --border-color: #EFECE6;
+      --shadow: 0 4px 16px rgba(90, 77, 65, 0.06);
     }
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, sans-serif; }
-    body { background: var(--bg); color: var(--text); padding: 16px; padding-bottom: 100px; }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    body { background-color: var(--bg-color); color: var(--text-main); padding: 16px; padding-bottom: 120px; }
     .container { max-width: 480px; margin: 0 auto; }
-    .header { display: flex; justify-content: space-between; align-items: center; background: var(--card); padding: 16px; border-radius: 16px; margin-bottom: 16px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
-    .header h1 { font-size: 18px; color: var(--text); }
-    .btn-main { background: var(--accent); color: #fff; border: none; padding: 8px 12px; border-radius: 10px; font-size: 13px; font-weight: 600; cursor: pointer; }
-    .card { background: var(--card); border-radius: 14px; padding: 14px; display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; border: 1px solid var(--border); }
-    .item-title { font-weight: 600; font-size: 15px; margin-top: 4px; }
-    .tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; background: var(--accent-light); color: var(--sub); display: inline-block; }
-    .tag-buyer { background: #E8E2D8; color: var(--text); margin-left: 4px; }
-    .modal { position: fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); display:none; justify-content:center; align-items:flex-end; z-index:99; }
-    .modal.active { display:flex; }
-    .modal-box { background:#fff; width:100%; max-width:480px; padding:20px; border-radius:20px 20px 0 0; }
-    .input { width:100%; padding:10px; border:1px solid var(--border); border-radius:8px; margin:8px 0 16px; }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <div class="header">
-      <h1>待購選物清單</h1>
-      <button class="btn-main" onclick="openAdmin()">🔐 管理者後台</button>
-    </div>
-    <div id="list"></div>
-  </div>
+    .header { display: flex; justify-content: space-between; align-items: center; background: var(--card-bg); padding: 16px 20px; border-radius: 20px; box-shadow: var(--shadow); margin-bottom: 16px; }
+    .header-title h1 { font-size: 20px; font-weight: 700; color: var(--text-main); }
+    .btn-admin-main { background-color: var(--accent); color: white; border: none; padding: 10px 16px; border-radius: 12px; font-size: 14px; font-weight: 600; cursor: pointer; }
 
-  <div class="modal" id="buyModal">
-    <div class="modal-box">
-      <h3>新增登記購買</h3>
-      <input type="text" id="buyerInput" class="input" placeholder="請輸入您的名字..." />
-      <button class="btn-main" style="width:100%; padding:12px;" onclick="saveBuy()">確認登記</button>
-      <button class="btn-main" style="width:100%; padding:10px; background:#ccc; margin-top:8px;" onclick="closeModal()">取消</button>
-    </div>
-  </div>
+    .item-card { background: var(--card-bg); border-radius: 16px; padding: 14px; display: flex; align-items: center; gap: 12px; margin-bottom: 12px; box-shadow: var(--shadow); border: 1px solid var(--border-color); position: relative; }
+    .item-info { flex: 1; }
+    .item-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
+    .tag { font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: 500; }
+    .tag-category { background-color: var(--accent-light); color: var(--text-sub); }
+    .tag-buyer { background-color: #E8E2D8; color: #5A4D41; cursor: pointer; }
+    .item-name { font-size: 15px; font-weight: 600; color: var(--text-main); }
+    .item-note { font-size: 12px; color: #999; margin-top: 2px; }
+    .btn-delete-item { position: absolute; top: 10px; right: 10px; background: none; border: none; color: #CCC; font-size: 14px; cursor: pointer; padding: 4px; z-index: 2; }
+    .btn-buy-action { background-color: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 14px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; }
 
-  <div class="modal" id="adminModal">
-    <div class="modal-box">
-      <h3>🔐 新增商品</h3>
-      <input type="text" id="prodName" class="input" placeholder="商品名稱..." />
-      <button class="btn-main" style="width:100%; padding:12px;" onclick="saveProd()">確認新增</button>
-      <button class="btn-main" style="width:100%; padding:10px; background:#ccc; margin-top:8px;" onclick="closeAdmin()">關閉</button>
-    </div>
-  </div>
-
-  <script>
-    var items = [
-      { name: '咖啡糖Americano', buyers: ['Jane'] },
-      { name: '咖啡糖espresso', buyers: ['敏敏'] }
-    ];
-
-    try {
-      var local = localStorage.getItem('my_buylist_data');
-      if (local) { items = JSON.parse(local); }
-    } catch(e){}
-
-    var curIdx = -1;
-
-    function render() {
-      var el = document.getElementById('list');
-      el.innerHTML = '';
-      for (var i = 0; i < items.length; i++) {
-        var bTags = '';
-        for (var j = 0; j < items[i].buyers.length; j++) {
-          bTags += '<span class="tag tag-buyer">' + items[i].buyers[j] + '</span>';
-        }
-        el.innerHTML += '<div class="card"><div><span class="tag">食品</span>' + bTags + '<div class="item-title">' + items[i].name + '</div></div><button class="btn-main" onclick="openBuy(' + i + ')">+ 購買</button></div>';
-      }
-      localStorage.setItem('my_buylist_data', JSON.stringify(items));
-    }
-
-    function openBuy(i) { curIdx = i; document.getElementById('buyModal').classList.add('active'); }
-    function closeModal() { document.getElementById('buyModal').classList.remove('active'); }
-    function saveBuy() {
-      var val = document.getElementById('buyerInput').value.trim();
-      if (val && curIdx >= 0) {
-        items[curIdx].buyers.push(val);
-        document.getElementById('buyerInput').value = '';
-        closeModal();
-        render();
-      }
-    }
-
-    function openAdmin() { document.getElementById('adminModal').classList.add('active'); }
-    function closeAdmin() { document.getElementById('adminModal').classList.remove('active'); }
-    function saveProd() {
-      var p = document.getElementById('prodName').value.trim();
-      if (p) {
-        items.unshift({ name: p, buyers: [] });
-        document.getElementById('prodName').value = '';
-        closeAdmin();
-        render();
-      }
-    }
-
-    render();
-  </script>
-</body>
-</html>
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end; z-index: 1000; }
+    .modal-overlay.active { display: flex; }
+    .modal-content { background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-header h2 { font-size: 18px; font-weight: 700; }
+    .btn-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub); }
+    .form-group { margin-bottom: 16px; }
+    .form-label { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); display: block; }
+    .form-input, .form-select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 14px; background: #FAFAFA; outline: none; }
+    .qty-modal-controls { display: flex; align-items: center; justify-content: center; gap: 16px; margin: 20px 0; }
+    .btn-qty-lg { width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--border-color); background: var(--card-bg); font-size: 20px; font-weight: bold; cursor: pointer; color: var(--text-main); }
+    .btn-qty-lg.plus { background: var(--accent); color: white; border: none; }
+    .qty-display-lg { font-size: 24px; font-weight: bold; min-width: 40px; text-align: center; }
+    .btn-submit { width: 100%; background-color: var(--accent); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px
