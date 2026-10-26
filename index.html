@@ -76,10 +76,11 @@
     <div id="itemList"></div>
 
     <div class="footer-admin-section">
-      <button class="btn-footer-admin" onclick="openLoginModal()">管理者</button>
+      <button class="btn-footer-admin" onclick="openAdminPortal()">管理者</button>
     </div>
   </div>
 
+  <!-- 密碼登入 Modal -->
   <div class="modal-overlay" id="loginModal">
     <div class="modal-content">
       <div class="modal-header"><h2>🔐 管理者登入</h2><button class="btn-close" onclick="closeModal('loginModal')">✕</button></div>
@@ -91,6 +92,7 @@
     </div>
   </div>
 
+  <!-- 一般購買 Modal -->
   <div class="modal-overlay" id="qtyModal">
     <div class="modal-content">
       <div class="modal-header"><h2 id="editModalTitle">新增購買</h2><button class="btn-close" onclick="closeModal('qtyModal')">✕</button></div>
@@ -106,6 +108,7 @@
     </div>
   </div>
 
+  <!-- 修改購買數量 Modal -->
   <div class="modal-overlay" id="editBuyerModal">
     <div class="modal-content">
       <div class="modal-header"><h2>修改購買數量</h2><button class="btn-close" onclick="closeModal('editBuyerModal')">✕</button></div>
@@ -122,9 +125,10 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="editProdModal">
+  <!-- 修改商品資料 Modal (層級高於後台，修改完返回後台) -->
+  <div class="modal-overlay" id="editProdModal" style="z-index: 1100;">
     <div class="modal-content">
-      <div class="modal-header"><h2>✏️ 修改商品資料</h2><button class="btn-close" onclick="closeModal('editProdModal')">✕</button></div>
+      <div class="modal-header"><h2>✏️ 修改商品資料</h2><button class="btn-close" onclick="closeEditProdModal()">✕</button></div>
       <div class="form-group"><label class="form-label">商品名稱 *</label><input type="text" id="editProdName" class="form-input" /></div>
       <div class="form-group"><label class="form-label">分類</label>
         <select id="editProdCategory" class="form-select">
@@ -143,10 +147,4 @@
     </div>
   </div>
 
-  <div class="modal-overlay" id="adminModal">
-    <div class="modal-content">
-      <div class="modal-header"><h2>🔐 管理者後台</h2><button class="btn-close" onclick="closeModal('adminModal')">✕</button></div>
-      
-      <div class="admin-nav">
-        <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 總數量統計</button>
-        <button class="admin-tab-btn" id="tabBtn2
+  <!-- 管理者後台 Modal
