@@ -84,7 +84,10 @@
     /* 顧客管理卡片樣式 */
     .customer-card { background: #FAFAFA; border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; margin-bottom: 12px; }
     .customer-name { font-size: 15px; font-weight: bold; color: var(--accent); margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; display: flex; justify-content: space-between; }
-    .customer-item-row { font-size: 13px; color: var(--text-main); margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .customer-item-row { font-size: 13px; color: var(--text-main); margin-bottom: 6px; padding-bottom: 6px; border-bottom: 1px dashed var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .customer-item-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+    .cust-badge-done { font-size: 10px; background: #D4EDDA; color: #155724; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
+    .cust-badge-ongoing { font-size: 10px; background: #FFF3CD; color: #856404; padding: 2px 6px; border-radius: 4px; font-weight: bold; }
 
     .admin-action-btns { display: flex; gap: 6px; margin-top: 8px; }
     .btn-edit-prod { background: var(--accent); color: white; border: none; padding: 4px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
@@ -259,7 +262,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v21_products');
+      var saved = localStorage.getItem('buylist_v22_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -319,7 +322,7 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v21_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v22_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -493,16 +496,34 @@
       for (var i = 0; i < products.length; i++) {
         var p = products[i];
         if (!p.buyers) continue;
+        if (!p.purchasedCounts) p.purchasedCounts = {};
+
+        // 計算該商品總需求量
+        var unitTotals = {};
+        for (var j = 0; j < p.buyers.length; j++) {
+          var b = p.buyers[j];
+          var u = b.unit || '個';
+          if (!unitTotals[u]) unitTotals[u] = 0;
+          unitTotals[u] += b.count;
+        }
+
         for (var j = 0; j < p.buyers.length; j++) {
           var b = p.buyers[j];
           var cName = b.name.trim();
           if (!customerMap[cName]) {
             customerMap[cName] = [];
           }
+          var u = b.unit || '個';
+          var bought = p.purchasedCounts[u] || 0;
+          var totalNeeded = unitTotals[u] || 0;
+          
           customerMap[cName].push({
             itemName: p.name,
             count: b.count,
-            unit: b.unit || '個'
+            unit: u,
+            boughtCount: bought,
+            totalNeeded: totalNeeded,
+            isCompleted: p.isCompleted
           });
         }
       }
@@ -526,10 +547,16 @@
         card.className = 'customer-card';
 
         var itemsHtml = '';
-        var totalCountSummary = 0;
         for (var m = 0; m < items.length; m++) {
-          totalCountSummary += items[m].count;
-          itemsHtml += '<div class="customer-item-row"><span>• ' + items[m].itemName + '</span><b>' + items[m].count + ' ' + items[m].unit + '</b></div>';
+          var it = items[m];
+          var badgeHtml = it.isCompleted 
+            ? '<span class="cust-badge-done">✅ 已完成</span>' 
+            : '<span class="cust-badge-ongoing">⏳ 已買 ' + it.boughtCount + '/' + it.totalNeeded + ' ' + it.unit + '</span>';
+
+          itemsHtml += '<div class="customer-item-row">' +
+            '<div>• ' + it.itemName + ' <b style="margin-left:4px;">' + it.count + ' ' + it.unit + '</b></div>' +
+            '<div>' + badgeHtml + '</div>' +
+          '</div>';
         }
 
         card.innerHTML = '<div class="customer-name"><span>👤 ' + name + '</span><span style="font-size:12px; color:var(--text-sub);">共登記 ' + items.length + ' 項商品</span></div>' + itemsHtml;
