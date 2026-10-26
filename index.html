@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Jane代購清單</title>
+  <title id="pageTitleText">Jane代購清單</title>
   <style>
     :root {
       --bg-color: #FDFBF7;
@@ -102,7 +102,7 @@
 <body>
   <div class="container">
     <div class="header">
-      <div class="header-title"><h1>Jane代購清單</h1></div>
+      <div class="header-title"><h1 id="headerTitleDisplay">Jane代購清單</h1></div>
     </div>
     
     <!-- 分類篩選列 -->
@@ -146,7 +146,7 @@
     </div>
   </div>
 
-  <!-- 修改購買數量 Modal (支援各單位分別加減) -->
+  <!-- 修改購買數量 Modal -->
   <div class="modal-overlay" id="editBuyerModal">
     <div class="modal-content">
       <div class="modal-header"><h2 id="editBuyerModalTitle">修改購買數量</h2><button class="btn-close" onclick="closeModal('editBuyerModal')">✕</button></div>
@@ -160,7 +160,7 @@
     </div>
   </div>
 
-  <!-- 修改商品資料 Modal -->
+  <!-- 修改商品資料 Modal (含隱藏商品開關) -->
   <div class="modal-overlay" id="editProdModal" style="z-index: 1100;">
     <div class="modal-content">
       <div class="modal-header"><h2>✏️ 修改商品資料</h2><button class="btn-close" onclick="closeEditProdModal()">✕</button></div>
@@ -178,6 +178,10 @@
         <input type="text" id="editProdImage" class="form-input" placeholder="請貼上圖片網址..." />
       </div>
       <div class="form-group"><label class="form-label">備註說明</label><input type="text" id="editProdNote" class="form-input" /></div>
+      <div class="form-group" style="display: flex; align-items: center; gap: 10px; background: #FAFAFA; padding: 10px; border-radius: 12px; border: 1px solid var(--border-color);">
+        <input type="checkbox" id="editProdHidden" style="width: 20px; height: 20px; cursor: pointer;" />
+        <label for="editProdHidden" class="form-label" style="margin-bottom: 0; cursor: pointer;">隱藏此商品（主頁面暫不顯示）</label>
+      </div>
       <button class="btn-submit" onclick="saveEditProd()">儲存商品修改</button>
     </div>
   </div>
@@ -188,13 +192,13 @@
       <div class="modal-header"><h2>🔐 管理者後台</h2><button class="btn-close" onclick="closeModal('adminModal')">✕</button></div>
       
       <div class="admin-nav">
-        <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 數量統計</button>
+        <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 商品及統計數量</button>
         <button class="admin-tab-btn" id="tabBtn2" onclick="switchTab(2)">👥 顧客管理</button>
         <button class="admin-tab-btn" id="tabBtn3" onclick="switchTab(3)">➕ 新增商品</button>
         <button class="admin-tab-btn" id="tabBtn4" onclick="switchTab(4)">⚙️ 設定</button>
       </div>
 
-      <!-- 分頁 1：總數量統計與採購進度 -->
+      <!-- 分頁 1：商品及統計數量 -->
       <div class="admin-section active" id="adminSec1">
         <div id="adminContentList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 12px;"></div>
         <button class="btn-save-manual" onclick="manualSaveData()">💾 儲存所有變更</button>
@@ -225,12 +229,20 @@
         <button class="btn-submit" onclick="saveNewProd()">確認新增商品</button>
       </div>
 
-      <!-- 分頁 4：管理者設定（修改密碼） -->
+      <!-- 分頁 4：管理者設定（修改標題與密碼） -->
       <div class="admin-section" id="adminSec4">
-        <div class="form-group"><label class="form-label">目前密碼</label><input type="password" id="oldPwd" class="form-input" placeholder="請輸入目前密碼..." /></div>
-        <div class="form-group"><label class="form-label">新密碼</label><input type="password" id="newPwd" class="form-input" placeholder="請輸入新密碼..." /></div>
-        <div class="form-group"><label class="form-label">確認新密碼</label><input type="password" id="confirmPwd" class="form-input" placeholder="再次輸入新密碼..." /></div>
-        <button class="btn-submit" onclick="saveNewPassword()">更新管理者密碼</button>
+        <div class="form-group">
+          <label class="form-label">修改網頁標題名稱</label>
+          <input type="text" id="siteTitleInput" class="form-input" placeholder="Jane代購清單" />
+        </div>
+        <button class="btn-submit" onclick="saveSiteTitle()" style="margin-bottom: 20px;">更新網頁標題</button>
+        
+        <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+          <div class="form-group"><label class="form-label">目前密碼</label><input type="password" id="oldPwd" class="form-input" placeholder="請輸入目前密碼..." /></div>
+          <div class="form-group"><label class="form-label">新密碼</label><input type="password" id="newPwd" class="form-input" placeholder="請輸入新密碼..." /></div>
+          <div class="form-group"><label class="form-label">確認新密碼</label><input type="password" id="confirmPwd" class="form-input" placeholder="再次輸入新密碼..." /></div>
+          <button class="btn-submit" onclick="saveNewPassword()">更新管理者密碼</button>
+        </div>
       </div>
     </div>
   </div>
@@ -244,16 +256,22 @@
     var currentCategoryFilter = 'default_all';
     
     var ADMIN_PASSWORD = localStorage.getItem('buylist_admin_pwd') || '1234';
+    var SITE_TITLE = localStorage.getItem('buylist_site_title') || 'Jane代購清單';
+
+    // 初始化頁面標題
+    document.getElementById('pageTitleText').innerText = SITE_TITLE;
+    document.getElementById('headerTitleDisplay').innerText = SITE_TITLE;
+    document.getElementById('siteTitleInput').value = SITE_TITLE;
 
     var defaultProducts = [
-      { id: 1, name: '咖啡糖Americano', buyers: [{name: 'Jane', count: 1, unit: '包', bought: 0}], category: '食品/食材', units: ['包', '個'], note: '', image: '', purchasedCounts: {}, isCompleted: false },
-      { id: 2, name: '積雪草面膜', buyers: [{name: '敏敏', count: 1, unit: '盒', bought: 0}, {name: '敏敏', count: 5, unit: '片', bought: 0}], category: '美妝保養', units: ['盒', '片'], note: '', image: '', purchasedCounts: {}, isCompleted: false }
+      { id: 1, name: '咖啡糖Americano', buyers: [{name: 'Jane', count: 1, unit: '包', bought: 0}], category: '食品/食材', units: ['包', '個'], note: '', image: '', purchasedCounts: {}, isCompleted: false, isHidden: false },
+      { id: 2, name: '積雪草面膜', buyers: [{name: '敏敏', count: 1, unit: '盒', bought: 0}, {name: '敏敏', count: 5, unit: '片', bought: 0}], category: '美妝保養', units: ['盒', '片'], note: '', image: '', purchasedCounts: {}, isCompleted: false, isHidden: false }
     ];
 
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v34_products');
+      var saved = localStorage.getItem('buylist_v35_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -264,18 +282,28 @@
 
     function manualSaveData() {
       try {
-        localStorage.setItem('buylist_v34_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v35_products', JSON.stringify(products));
         alert('💾 儲存成功！所有變更已安全儲存。');
       } catch (e) {
         try {
-          localStorage.removeItem('buylist_v32_products');
           localStorage.removeItem('buylist_v33_products');
-          localStorage.setItem('buylist_v34_products', JSON.stringify(products));
+          localStorage.removeItem('buylist_v34_products');
+          localStorage.setItem('buylist_v35_products', JSON.stringify(products));
           alert('💾 儲存成功！系統已自動清理暫存空間並完成儲存。');
         } catch (err) {
           alert('儲存空間已滿！');
         }
       }
+    }
+
+    function saveSiteTitle() {
+      var newTitle = document.getElementById('siteTitleInput').value.trim();
+      if (!newTitle) { alert('網頁標題不能為空！'); return; }
+      SITE_TITLE = newTitle;
+      localStorage.setItem('buylist_site_title', newTitle);
+      document.getElementById('pageTitleText').innerText = newTitle;
+      document.getElementById('headerTitleDisplay').innerText = newTitle;
+      alert('網頁標題更新成功！');
     }
 
     function setCategoryFilter(category, btnElement) {
@@ -303,6 +331,8 @@
 
       for (var i = 0; i < products.length; i++) {
         var product = products[i];
+        if (product.isHidden) continue; // 如果設定為隱藏則不顯示在主頁面
+
         if (!product.buyers) product.buyers = [];
         if (!product.units || !Array.isArray(product.units)) product.units = ['個'];
         if (!product.purchasedCounts) product.purchasedCounts = {};
@@ -337,7 +367,6 @@
           for (var d = 0; d < details.length; d++) {
             detailStr += '+' + details[d].count + details[d].unit + ' ';
           }
-          // 點擊標籤時傳入商品索引與該顧客姓名
           buyerTagsHTML += '<span class="tag tag-buyer" onclick="openEditBuyerModal(' + i + ', \'' + name + '\')">' + name + ' ' + detailStr.trim() + '</span>';
         }
 
@@ -359,7 +388,7 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v34_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v35_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -418,7 +447,6 @@
       switchTab(1);
     }
 
-    // 開啟新增購買視窗
     function openQtyModal(index) {
       currentEditIndex = index;
       var product = products[index];
@@ -480,7 +508,6 @@
       }
     }
 
-    // 開啟修改購買數量視窗（支援各單位分別加減）
     function openEditBuyerModal(itemIdx, buyerName) {
       currentItemIndex = itemIdx;
       editingBuyerName = buyerName;
@@ -493,7 +520,6 @@
       container.innerHTML = '';
       var units = product.units && product.units.length > 0 ? product.units : ['個'];
 
-      // 取得該顧客現有的各單位數量
       var existingMap = {};
       for (var j = 0; j < product.buyers.length; j++) {
         var b = product.buyers[j];
@@ -525,7 +551,6 @@
         var product = products[currentItemIndex];
         var units = product.units && product.units.length > 0 ? product.units : ['個'];
 
-        // 先移除該顧客舊的紀錄
         var newBuyers = [];
         for (var j = 0; j < product.buyers.length; j++) {
           if (product.buyers[j].name.trim() !== editingBuyerName) {
@@ -533,7 +558,6 @@
           }
         }
 
-        // 收集視窗中調整後大於 0 的各單位數量重新加入
         for (var u = 0; u < units.length; u++) {
           var qty = parseInt(document.getElementById('edit_qty_' + u).innerText);
           if (qty > 0) {
@@ -736,12 +760,13 @@
         var unitsText = p.units ? p.units.join(',') : '個';
         var statusBtnClass = p.isCompleted ? 'btn-status-toggle status-done' : 'btn-status-toggle status-ongoing';
         var statusBtnText = p.isCompleted ? '✅ 已完成採購 (點擊改為進行中)' : '⏳ 採購進行中 (點擊標記為完成)';
+        var hiddenBadge = p.isHidden ? ' <span style="color:#D9534F; font-size:11px;">(已隱藏)</span>' : '';
 
         var row = document.createElement('div');
         row.className = 'admin-item-row';
         row.innerHTML = '<img src="' + thumbSrc + '" class="admin-thumb" alt="" />' +
           '<div class="admin-item-info">' +
-            '<div class="admin-item-title"><span>📦 ' + p.name + ' <small style="color:var(--text-sub);">(' + unitsText + ')</small></span></div>' +
+            '<div class="admin-item-title"><span>📦 ' + p.name + hiddenBadge + ' <small style="color:var(--text-sub);">(' + unitsText + ')</small></span></div>' +
             '<div class="admin-summary-total">📊 ' + summaryText + '</div>' +
             buyersHtml +
             progressHtml +
@@ -768,6 +793,7 @@
       document.getElementById('editProdUnits').value = p.units ? p.units.join(',') : '盒,片';
       document.getElementById('editProdNote').value = p.note || '';
       document.getElementById('editProdImage').value = p.image || '';
+      document.getElementById('editProdHidden').checked = !!p.isHidden;
       document.getElementById('editProdModal').classList.add('active');
     }
 
@@ -782,6 +808,7 @@
         var unitsStr = document.getElementById('editProdUnits').value.trim();
         var note = document.getElementById('editProdNote').value.trim();
         var imgUrl = document.getElementById('editProdImage').value.trim();
+        var isHidden = document.getElementById('editProdHidden').checked;
 
         if (!name) { alert('請填寫商品名稱！'); return; }
 
@@ -792,6 +819,7 @@
         products[editingProdIndex].units = unitsArr;
         products[editingProdIndex].note = note;
         products[editingProdIndex].image = imgUrl;
+        products[editingProdIndex].isHidden = isHidden;
 
         renderList();
         updateAdminStats();
@@ -812,7 +840,7 @@
       
       var unitsArr = unitsStr ? unitsStr.split(/[,，]/).map(function(s){ return s.trim(); }).filter(Boolean) : ['個'];
 
-      products.unshift({ id: Date.now(), name: name, buyers: [], category: category, units: unitsArr, note: note, image: imgUrl, purchasedCounts: {}, isCompleted: false });
+      products.unshift({ id: Date.now(), name: name, buyers: [], category: category, units: unitsArr, note: note, image: imgUrl, purchasedCounts: {}, isCompleted: false, isHidden: false });
       renderList();
       updateAdminStats();
       updateCustomerStats();
