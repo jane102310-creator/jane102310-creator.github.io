@@ -261,7 +261,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v29_products');
+      var saved = localStorage.getItem('buylist_v30_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -272,7 +272,7 @@
 
     function manualSaveData() {
       try {
-        localStorage.setItem('buylist_v29_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v30_products', JSON.stringify(products));
         alert('💾 儲存成功！所有變更已安全儲存。');
       } catch (e) {
         alert('儲存空間已滿！');
@@ -285,6 +285,18 @@
       pills.forEach(function(p) { p.classList.remove('active'); });
       btnElement.classList.add('active');
       renderList();
+    }
+
+    // 自動把 FreeImage 頁面網址轉成真實圖片直連網址
+    function fixImageUrl(url) {
+      if (!url) return '';
+      url = url.trim();
+      // 如果是 freeimage.host 的頁面網址，自動轉為直連圖床格式
+      if (url.includes('freeimage.host/i/')) {
+        var id = url.split('/i/').pop();
+        return 'https://iili.io/' + id + '.jpg';
+      }
+      return url;
     }
 
     function renderList() {
@@ -323,7 +335,7 @@
         }
 
         var defaultSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
-        var imgSrc = product.image ? product.image : defaultSvg;
+        var imgSrc = product.image ? fixImageUrl(product.image) : defaultSvg;
 
         card.innerHTML = '<img src="' + imgSrc + '" class="item-img" alt="商品圖片" />' +
           '<div class="item-info">' +
@@ -336,7 +348,7 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v29_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v30_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -644,7 +656,7 @@
         }
 
         var defaultThumb = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
-        var thumbSrc = p.image ? p.image : defaultThumb;
+        var thumbSrc = p.image ? fixImageUrl(p.image) : defaultThumb;
         var unitsText = p.units ? p.units.join(',') : '個';
         var statusBtnClass = p.isCompleted ? 'btn-status-toggle status-done' : 'btn-status-toggle status-ongoing';
         var statusBtnText = p.isCompleted ? '✅ 已完成採購 (點擊改為進行中)' : '⏳ 採購進行中 (點擊標記為完成)';
