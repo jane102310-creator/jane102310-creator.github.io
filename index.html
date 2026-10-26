@@ -89,7 +89,7 @@
     .status-done { background: #D4EDDA; color: #155724; }
 
     .customer-card { background: #FAFAFA; border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; margin-bottom: 12px; }
-    .customer-name { font-size: 15px; font-weight: bold; color: var(--accent); margin-bottom: 4px; display: flex; justify-content: space-between; }
+    .customer-name { font-size: 15px; font-weight: bold; color: var(--accent); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
     .customer-email-sub { font-size: 12px; color: var(--text-sub); margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
 
     .admin-action-btns { display: flex; gap: 6px; margin-top: 8px; }
@@ -127,7 +127,7 @@
       <div id="itemListCategory"></div>
     </div>
 
-    <!-- 3. 個人分頁 (強制要求：信箱、名稱、密碼) -->
+    <!-- 3. 個人分頁 -->
     <div id="sectionProfile" class="page-section">
       <div id="profileLoggedOut" style="background: #FFF; padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); text-align: center;">
         <h2 style="font-size: 18px; margin-bottom: 12px;">🔐 會員專區登入 / 註冊</h2>
@@ -150,7 +150,7 @@
     </div>
   </div>
 
-  <!-- 底部導覽列 (已取消購物車，保留：首頁、分類、個人、管理者) -->
+  <!-- 底部導覽列 -->
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="switchSection('home', this)">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
@@ -310,7 +310,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v41_products');
+      var saved = localStorage.getItem('buylist_v42_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -387,7 +387,6 @@
           alert('密碼錯誤！');
           return;
         }
-        // 更新名稱
         customerAccounts[email].name = name;
       }
 
@@ -452,10 +451,10 @@
 
     function manualSaveData() {
       try {
-        for (var i = 30; i < 42; i++) {
+        for (var i = 30; i < 43; i++) {
           localStorage.removeItem('buylist_v' + i + '_products');
         }
-        localStorage.setItem('buylist_v41_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v42_products', JSON.stringify(products));
         alert('💾 儲存成功！');
       } catch (e) {
         alert('儲存空間已滿，請清除部分瀏覽器快取！');
@@ -552,10 +551,10 @@
         itemList.appendChild(card);
       }
       try {
-        for (var cleanIdx = 30; cleanIdx < 42; cleanIdx++) {
+        for (var cleanIdx = 30; cleanIdx < 43; cleanIdx++) {
           localStorage.removeItem('buylist_v' + cleanIdx + '_products');
         }
-        localStorage.setItem('buylist_v41_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v42_products', JSON.stringify(products));
       } catch(e) {}
     }
 
@@ -757,6 +756,7 @@
       }
     }
 
+    // 後台：單項刪除某顧客在某個商品上的登記
     function adminDeleteCustomerItem(itemIdx, buyerName) {
       if (confirm('確定要從後台刪除 「' + buyerName + '」 的這筆商品訂單嗎？')) {
         var product = products[itemIdx];
@@ -771,6 +771,28 @@
         updateCustomerStats();
         updateAdminStats();
         manualSaveData();
+      }
+    }
+
+    // 後台：一次刪除該顧客的所有訂單
+    function adminDeleteAllCustomerOrders(buyerName) {
+      if (confirm('⚠️ 確定要一次刪除 「' + buyerName + '」 的所有商品訂單紀錄嗎？')) {
+        for (var i = 0; i < products.length; i++) {
+          var p = products[i];
+          if (!p.buyers) continue;
+          var newBuyers = [];
+          for (var j = 0; j < p.buyers.length; j++) {
+            if (p.buyers[j].name.trim() !== buyerName.trim()) {
+              newBuyers.push(p.buyers[j]);
+            }
+          }
+          p.buyers = newBuyers;
+        }
+        renderList();
+        updateCustomerStats();
+        updateAdminStats();
+        manualSaveData();
+        alert('已成功刪除該顧客的所有訂單！');
       }
     }
 
@@ -844,7 +866,9 @@
           '</div>';
         }
 
-        card.innerHTML = '<div class="customer-name"><span>👤 ' + name + '</span></div>' + itemsHtml;
+        card.innerHTML = '<div class="customer-name"><span>👤 ' + name + '</span>' +
+          '<button class="btn-del-prod" style="padding:3px 10px; font-size:11px;" onclick="adminDeleteAllCustomerOrders(\'' + name + '\')">🗑️ 刪除此人所有訂單</button>' +
+          '</div>' + itemsHtml;
         customerList.appendChild(card);
       }
     }
