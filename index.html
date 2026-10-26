@@ -756,7 +756,6 @@
       }
     }
 
-    // 後台：精準單項刪除（只刪除該顧客在該商品上的登記紀錄）
     function adminDeleteCustomerItem(itemIdx, buyerName, unitName, countVal) {
       if (confirm('確定要從後台刪除 「' + buyerName + '」 的這筆商品訂單 (' + countVal + unitName + ') 嗎？')) {
         var product = products[itemIdx];
@@ -764,11 +763,10 @@
         
         var newBuyers = [];
         var deleted = false;
-        // 為了避免一次刪除同名同單位的多筆，我們只精準移除找到的第一筆符合的紀錄
         for (var j = 0; j < product.buyers.length; j++) {
           var b = product.buyers[j];
           if (!deleted && b.name.trim() === buyerName.trim() && (b.unit || '個') === unitName && b.count === countVal) {
-            deleted = true; // 略過這一筆（即刪除）
+            deleted = true;
           } else {
             newBuyers.push(b);
           }
@@ -781,7 +779,6 @@
       }
     }
 
-    // 後台：一次刪除該顧客的所有訂單
     function adminDeleteAllCustomerOrders(buyerName) {
       if (confirm('⚠️ 確定要一次刪除 「' + buyerName + '」 的所有商品訂單紀錄嗎？')) {
         for (var i = 0; i < products.length; i++) {
