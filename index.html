@@ -97,10 +97,7 @@
     .customer-card { background: #FAFAFA; border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; margin-bottom: 12px; }
     .customer-name { font-size: 15px; font-weight: bold; color: var(--accent); margin-bottom: 4px; display: flex; justify-content: space-between; }
     .customer-email-sub { font-size: 12px; color: var(--text-sub); margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
-    .customer-item-row { font-size: 13px; color: var(--text-main); margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px dashed var(--border-color); display: flex; flex-direction: column; gap: 6px; }
-    .customer-item-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
-    .customer-item-top { display: flex; justify-content: space-between; align-items: center; }
-
+    
     .admin-action-btns { display: flex; gap: 6px; margin-top: 8px; }
     .btn-edit-prod { background: var(--accent); color: white; border: none; padding: 4px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
     .btn-del-prod { background: #D9534F; color: white; border: none; padding: 4px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
@@ -139,7 +136,7 @@
     </div>
   </div>
 
-  <!-- 顧客身分登入 Modal (進入時必填名稱與Email) -->
+  <!-- 顧客身分登入 Modal -->
   <div class="modal-overlay" id="customerLoginModal">
     <div class="modal-content">
       <div class="modal-header"><h2>✨ 歡迎參與代購</h2></div>
@@ -155,12 +152,26 @@
     </div>
   </div>
 
-  <!-- 我的訂單專屬 Modal (顧客可在此查看、修改、刪除自己的訂單) -->
+  <!-- 我的訂單專屬 Modal (統整同商品、支援修改與刪除) -->
   <div class="modal-overlay" id="myOrdersModal">
     <div class="modal-content">
       <div class="modal-header"><h2>🛒 我的訂單管理</h2><button class="btn-close" onclick="closeModal('myOrdersModal')">✕</button></div>
       <div id="myOrdersContentList" style="max-height: 60vh; overflow-y: auto; margin-bottom: 12px;"></div>
       <button class="btn-submit" onclick="closeModal('myOrdersModal')">關閉</button>
+    </div>
+  </div>
+
+  <!-- 修改購買數量 Modal (支援各單位分別加減) -->
+  <div class="modal-overlay" id="editBuyerModal">
+    <div class="modal-content">
+      <div class="modal-header"><h2 id="editBuyerModalTitle">修改購買數量</h2><button class="btn-close" onclick="closeModal('editBuyerModal')">✕</button></div>
+      <div class="form-group"><label class="form-label">購買人</label><input type="text" id="existingBuyerName" class="form-input" readonly style="background:#eee;" /></div>
+      <div class="form-group">
+        <label class="form-label">各單位購買數量（歸零即代表刪除該單位）</label>
+        <div id="editUnitQtyContainer"></div>
+      </div>
+      <button class="btn-submit" onclick="saveExistBuy()">儲存修改</button>
+      <button class="btn-submit btn-danger" onclick="delAllExistBuy()">刪除此人所有購買紀錄</button>
     </div>
   </div>
 
@@ -278,6 +289,8 @@
 
   <script>
     var currentEditIndex = null;
+    var currentItemIndex = null;
+    var editingBuyerName = '';
     var editingProdIndex = null;
     var isAuthed = false;
     var currentCategoryFilter = 'default_all';
@@ -285,12 +298,9 @@
     var ADMIN_PASSWORD = localStorage.getItem('buylist_admin_pwd') || '1234';
     var SITE_TITLE = localStorage.getItem('buylist_site_title') || '韓國代購清單';
     
-    // 顧客登入身分紀錄
     var currentUser = JSON.parse(localStorage.getItem('buylist_current_user') || 'null');
-    // 顧客 Email 簿紀錄 { "敏敏": "minmin@gmail.com", "Jane": "jane@gmail.com" }
     var customerEmails = JSON.parse(localStorage.getItem('buylist_customer_emails') || '{}');
 
-    // 初始化頁面標題
     document.getElementById('pageTitleText').innerText = SITE_TITLE;
     document.getElementById('headerTitleDisplay').innerText = SITE_TITLE;
     document.getElementById('siteTitleInput').value = SITE_TITLE;
@@ -303,7 +313,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v36_products');
+      var saved = localStorage.getItem('buylist_v37_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -312,7 +322,6 @@
       products = defaultProducts;
     }
 
-    // 檢查首次進入是否需要登入
     window.onload = function() {
       updateUserBadgeUI();
       if (!currentUser || !currentUser.name) {
@@ -357,14 +366,14 @@
 
     function manualSaveData() {
       try {
-        localStorage.setItem('buylist_v36_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v37_products', JSON.stringify(products));
         localStorage.setItem('buylist_customer_emails', JSON.stringify(customerEmails));
         alert('💾 儲存成功！所有變更已安全儲存。');
       } catch (e) {
         try {
-          localStorage.removeItem('buylist_v34_products');
           localStorage.removeItem('buylist_v35_products');
-          localStorage.setItem('buylist_v36_products', JSON.stringify(products));
+          localStorage.removeItem('buylist_v36_products');
+          localStorage.setItem('buylist_v37_products', JSON.stringify(products));
           alert('💾 儲存成功！系統已自動清理暫存空間並完成儲存。');
         } catch (err) {
           alert('儲存空間已滿！');
@@ -464,11 +473,11 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v36_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v37_products', JSON.stringify(products));
       } catch(e) {}
     }
 
-    // 開啟「我的訂單」Modal
+    // 開啟「我的訂單」Modal（已將同商品統整）
     function openMyOrdersModal() {
       if (!currentUser || !currentUser.name) {
         alert('請先設定您的身分！');
@@ -479,43 +488,50 @@
       var container = document.getElementById('myOrdersContentList');
       container.innerHTML = '';
 
-      var myItems = [];
+      var myProductMap = {}; // 用於將同一個商品的各單位統整在一起
+
       for (var i = 0; i < products.length; i++) {
         var p = products[i];
         if (!p.buyers) continue;
         for (var j = 0; j < p.buyers.length; j++) {
           var b = p.buyers[j];
           if (b.name.trim() === currentUser.name.trim()) {
-            myItems.push({
-              itemIdx: i,
-              buyerIdx: j,
-              itemName: p.name,
-              count: b.count,
-              unit: b.unit || '個',
-              bought: b.bought || 0,
-              isCompleted: !!p.isCompleted
-            });
+            if (!myProductMap[i]) {
+              myProductMap[i] = {
+                itemIdx: i,
+                itemName: p.name,
+                isCompleted: !!p.isCompleted,
+                unitsSummary: []
+              };
+            }
+            myProductMap[i].unitsSummary.push({ count: b.count, unit: b.unit || '個' });
           }
         }
       }
 
-      if (myItems.length === 0) {
+      var keys = Object.keys(myProductMap);
+      if (keys.length === 0) {
         container.innerHTML = '<div style="text-align:center; color:#999; padding:30px;">您目前尚無任何代購登記紀錄！趕快去選購吧 😊</div>';
       } else {
         var header = document.createElement('div');
         header.style.cssText = "font-size:14px; font-weight:bold; margin-bottom:10px; color:var(--text-sub);";
-        header.innerText = '📧 登入信箱：' + currentUser.email + ' (共登記 ' + myItems.length + ' 筆訂單)';
+        header.innerText = '📧 登入信箱：' + currentUser.email + ' (共登記 ' + keys.length + ' 項商品)';
         container.appendChild(header);
 
-        for (var m = 0; m < myItems.length; m++) {
-          var it = myItems[m];
+        for (var k = 0; k < keys.length; k++) {
+          var itemObj = myProductMap[keys[k]];
+          var detailStr = '';
+          for (var s = 0; s < itemObj.unitsSummary.length; s++) {
+            detailStr += itemObj.unitsSummary[s].count + itemObj.unitsSummary[s].unit + ' ';
+          }
+
           var row = document.createElement('div');
           row.className = 'customer-card';
-          row.innerHTML = '<div class="customer-name"><span>📦 ' + it.itemName + '</span><b>' + it.count + ' ' + it.unit + '</b></div>' +
-            '<div style="font-size:12px; color:var(--text-sub); margin-bottom:8px;">採購狀態：' + (it.isCompleted ? '✅ 已採購完成' : '⏳ 採購進行中') + '</div>' +
+          row.innerHTML = '<div class="customer-name"><span>📦 ' + itemObj.itemName + '</span><b>' + detailStr.trim() + '</b></div>' +
+            '<div style="font-size:12px; color:var(--text-sub); margin-bottom:8px;">採購狀態：' + (itemObj.isCompleted ? '✅ 已採購完成' : '⏳ 採購進行中') + '</div>' +
             '<div style="display:flex; gap:8px;">' +
-              '<button class="btn-edit-prod" style="flex:1;" onclick="openEditBuyerFromMyOrders(' + it.itemIdx + ', \'' + currentUser.name + '\')">✏️ 修改數量</button>' +
-              '<button class="btn-del-prod" style="flex:1;" onclick="deleteMyOrder(' + it.itemIdx + ', \'' + currentUser.name + '\', \'' + it.unit + '\')">🗑️ 刪除此項</button>' +
+              '<button class="btn-edit-prod" style="flex:1;" onclick="openEditBuyerFromMyOrders(' + itemObj.itemIdx + ', \'' + currentUser.name + '\')">✏️ 修改數量</button>' +
+              '<button class="btn-del-prod" style="flex:1;" onclick="deleteMyEntireOrder(' + itemObj.itemIdx + ', \'' + currentUser.name + '\')">🗑️ 刪除此商品</button>' +
             '</div>';
           container.appendChild(row);
         }
@@ -524,20 +540,18 @@
       document.getElementById('myOrdersModal').classList.add('active');
     }
 
-    // 從我的訂單直接修改某個商品的數量
     function openEditBuyerFromMyOrders(itemIdx, buyerName) {
       closeModal('myOrdersModal');
       openEditBuyerModal(itemIdx, buyerName);
     }
 
-    function deleteMyOrder(itemIdx, buyerName, unitName) {
-      if (confirm('確定要刪除這項訂單 (' + unitName + ') 嗎？')) {
+    function deleteMyEntireOrder(itemIdx, buyerName) {
+      if (confirm('確定要刪除您在此商品的所有登記數量嗎？')) {
         var product = products[itemIdx];
         var newBuyers = [];
         for (var j = 0; j < product.buyers.length; j++) {
-          var b = product.buyers[j];
-          if (!(b.name.trim() === buyerName.trim() && (b.unit || '個') === unitName)) {
-            newBuyers.push(b);
+          if (product.buyers[j].name.trim() !== buyerName.trim()) {
+            newBuyers.push(product.buyers[j]);
           }
         }
         product.buyers = newBuyers;
@@ -673,6 +687,9 @@
       editingBuyerName = buyerName;
       var product = products[itemIdx];
 
+      document.getElementById('editBuyerModalTitle').innerText = '修改購買數量：' + product.name;
+      document.getElementById('existingBuyerName').value = buyerName;
+
       var container = document.getElementById('editUnitQtyContainer');
       container.innerHTML = '';
       var units = product.units && product.units.length > 0 ? product.units : ['個'];
@@ -698,6 +715,52 @@
             '<button class="btn-qty-sm plus" onclick="adjustModalQty(\'edit_qty_' + u + '\', 1)">+</button>' +
           '</div>';
         container.appendChild(row);
+      }
+
+      document.getElementById('editBuyerModal').classList.add('active');
+    }
+
+    function saveExistBuy() {
+      if (currentItemIndex !== null && editingBuyerName) {
+        var product = products[currentItemIndex];
+        var units = product.units && product.units.length > 0 ? product.units : ['個'];
+
+        var newBuyers = [];
+        for (var j = 0; j < product.buyers.length; j++) {
+          if (product.buyers[j].name.trim() !== editingBuyerName) {
+            newBuyers.push(product.buyers[j]);
+          }
+        }
+
+        for (var u = 0; u < units.length; u++) {
+          var qty = parseInt(document.getElementById('edit_qty_' + u).innerText);
+          if (qty > 0) {
+            newBuyers.push({ name: editingBuyerName, count: qty, unit: units[u], bought: 0 });
+          }
+        }
+
+        product.buyers = newBuyers;
+        renderList();
+        manualSaveData();
+        closeModal('editBuyerModal');
+      }
+    }
+
+    function delAllExistBuy() {
+      if (currentItemIndex !== null && editingBuyerName) {
+        if (confirm('確定要刪除 ' + editingBuyerName + ' 在這個商品的所有購買紀錄嗎？')) {
+          var product = products[currentItemIndex];
+          var newBuyers = [];
+          for (var j = 0; j < product.buyers.length; j++) {
+            if (product.buyers[j].name.trim() !== editingBuyerName) {
+              newBuyers.push(product.buyers[j]);
+            }
+          }
+          product.buyers = newBuyers;
+          renderList();
+          manualSaveData();
+          closeModal('editBuyerModal');
+        }
       }
     }
 
