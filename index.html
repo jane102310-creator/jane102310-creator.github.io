@@ -50,4 +50,1006 @@
 
     .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end; z-index: 1000; }
     .modal-overlay.active { display: flex; }
-    .
+    .modal-content { background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px; max-height: 90vh; overflow-y: auto; }
+    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
+    .modal-header h2 { font-size: 18px; font-weight: 700; }
+    .btn-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub); }
+    .form-group { margin-bottom: 16px; }
+    .form-label { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); display: block; }
+    .form-input, .form-select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 14px; background: #FAFAFA; outline: none; }
+    
+    .unit-qty-row { display: flex; justify-content: space-between; align-items: center; background: #FAFAFA; padding: 10px 12px; border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border-color); }
+    .unit-qty-controls { display: flex; align-items: center; gap: 12px; }
+    .btn-qty-sm { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); font-size: 16px; font-weight: bold; cursor: pointer; color: var(--text-main); }
+    .btn-qty-sm.plus { background: var(--accent); color: white; border: none; }
+    .qty-display-sm { font-size: 16px; font-weight: bold; min-width: 24px; text-align: center; }
+
+    .btn-submit { width: 100%; background-color: var(--accent); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+    .btn-save-manual { width: 100%; background-color: #28A745; color: white; border: none; padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 12px; margin-bottom: 8px; }
+    .btn-danger { background-color: #D9534F !important; margin-top: 8px; }
+
+    .admin-nav { display: flex; gap: 4px; margin-bottom: 16px; }
+    .admin-tab-btn { flex: 1; padding: 8px 2px; border: none; background: #EFECE6; color: var(--text-sub); font-weight: 600; border-radius: 10px; cursor: pointer; font-size: 11px; text-align: center; }
+    .admin-tab-btn.active { background: var(--accent); color: white; }
+    .admin-section { display: none; }
+    .admin-section.active { display: block; }
+    .admin-item-row { background: #FAFAFA; padding: 12px; border-radius: 12px; margin-bottom: 12px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; position: relative; }
+    .admin-thumb { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; background: #eee; flex-shrink: 0; }
+    .admin-item-info { flex: 1; min-width: 0; }
+    .admin-item-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; display: flex; justify-content: space-between; }
+    .admin-buyer-detail { font-size: 12px; color: var(--text-sub); margin-left: 12px; }
+    .admin-summary-total { font-size: 13px; font-weight: bold; color: var(--accent); margin: 4px 0 6px 0; background: var(--accent-light); padding: 4px 8px; border-radius: 6px; display: inline-block; }
+    
+    .progress-box { background: #FFF; border: 1px solid var(--border-color); padding: 8px 10px; border-radius: 8px; margin: 6px 0; font-size: 12px; }
+    .progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+    .progress-controls { display: flex; align-items: center; gap: 6px; }
+    .btn-mini-qty { width: 22px; height: 22px; border-radius: 4px; border: 1px solid var(--border-color); background: #fff; font-weight: bold; cursor: pointer; font-size: 12px; display: flex; align-items: center; justify-content: center; }
+    .btn-status-toggle { width: 100%; margin-top: 6px; padding: 6px; border-radius: 6px; border: none; font-size: 12px; font-weight: 600; cursor: pointer; text-align: center; }
+    .status-ongoing { background: #FFF3CD; color: #856404; }
+    .status-done { background: #D4EDDA; color: #155724; }
+
+    .customer-card { background: #FAFAFA; border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; margin-bottom: 12px; }
+    .customer-name { font-size: 15px; font-weight: bold; color: var(--accent); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+    .customer-email-sub { font-size: 12px; color: var(--text-sub); margin-bottom: 8px; border-bottom: 1px solid var(--border-color); padding-bottom: 4px; }
+
+    .admin-action-btns { display: flex; gap: 6px; margin-top: 8px; }
+    .btn-edit-prod { background: var(--accent); color: white; border: none; padding: 4px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
+    .btn-del-prod { background: #D9534F; color: white; border: none; padding: 4px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <div class="header-title"><h1 id="headerTitleDisplay">韓國代購清單</h1></div>
+    </div>
+    
+    <!-- 1. 首頁分頁 -->
+    <div id="sectionHome" class="page-section active">
+      <div class="filter-bar" id="filterBar">
+        <button class="filter-pill active" onclick="setCategoryFilter('全部', this)">全部商品</button>
+        <button class="filter-pill" onclick="setCategoryFilter('食品/食材', this)">食品/食材</button>
+        <button class="filter-pill" onclick="setCategoryFilter('日用品', this)">日用品</button>
+        <button class="filter-pill" onclick="setCategoryFilter('美妝保養', this)">美妝保養</button>
+        <button class="filter-pill" onclick="setCategoryFilter('文具雜貨', this)">文具雜貨</button>
+      </div>
+      <div id="itemListHome"></div>
+    </div>
+
+    <!-- 2. 分類分頁 -->
+    <div id="sectionCategory" class="page-section">
+      <div style="font-size: 16px; font-weight: bold; margin-bottom: 12px;">📂 商品分類瀏覽</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 20px;">
+        <button onclick="goToCategory('食品/食材')" class="filter-pill" style="padding: 20px; text-align: center; font-size: 15px;">🍞 食品/食材</button>
+        <button onclick="goToCategory('日用品')" class="filter-pill" style="padding: 20px; text-align: center; font-size: 15px;">🧴 日用品</button>
+        <button onclick="goToCategory('美妝保養')" class="filter-pill" style="padding: 20px; text-align: center; font-size: 15px;">💄 美妝保養</button>
+        <button onclick="goToCategory('文具雜貨')" class="filter-pill" style="padding: 20px; text-align: center; font-size: 15px;">✏️ 文具雜貨</button>
+      </div>
+      <div id="itemListCategory"></div>
+    </div>
+
+    <!-- 3. 個人分頁 -->
+    <div id="sectionProfile" class="page-section">
+      <div id="profileLoggedOut" style="background: #FFF; padding: 24px; border-radius: 16px; border: 1px solid var(--border-color); text-align: center;">
+        <h2 style="font-size: 18px; margin-bottom: 12px;">🔐 會員專區登入 / 註冊</h2>
+        <p style="font-size: 13px; color: var(--text-sub); margin-bottom: 20px;">請輸入您的信箱、名稱與密碼以查看個人訂單</p>
+        <div class="form-group" style="text-align: left;"><label class="form-label">信箱 (Email)</label><input type="email" id="profileEmailInput" class="form-input" placeholder="請輸入您的信箱..." /></div>
+        <div class="form-group" style="text-align: left;"><label class="form-label">名稱 (姓名)</label><input type="text" id="profileNameInput" class="form-input" placeholder="請輸入您的名稱..." /></div>
+        <div class="form-group" style="text-align: left;"><label class="form-label">密碼</label><input type="password" id="profilePwdInput" class="form-input" placeholder="請輸入密碼..." /></div>
+        <button class="btn-submit" onclick="submitProfileLogin()">登入 / 註冊會員</button>
+      </div>
+
+      <div id="profileLoggedIn" style="display: none;">
+        <div style="background: #FFF; padding: 20px; border-radius: 16px; border: 1px solid var(--border-color); margin-bottom: 16px; text-align: center;">
+          <div style="font-size: 16px; font-weight: bold; color: var(--accent); margin-bottom: 4px;" id="profileUserGreeting"></div>
+          <div style="font-size: 13px; color: var(--text-sub);" id="profileUserEmailDisplay"></div>
+          <button class="btn-submit btn-danger" style="margin-top: 14px; padding: 8px;" onclick="profileLogout()">登出帳號</button>
+        </div>
+        <div style="font-size: 16px; font-weight: bold; margin-bottom: 10px;">📦 我的專屬訂單紀錄</div>
+        <div id="profileMyOrdersList"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 底部導覽列 -->
+  <nav class="bottom-nav">
+    <button class="nav-item active" onclick="switchSection('home', this)">
+      <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>首頁</span>
+    </button>
+    <button class="nav-item" onclick="switchSection('category', this)">
+      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
+      <span>分類</span>
+    </button>
+    <button class="nav-item" onclick="switchSection('profile', this)">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>個人</span>
+    </button>
+    <button class="nav-item" onclick="openAdminPortal()">
+      <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+      <span>管理者</span>
+    </button>
+  </nav>
+
+  <!-- 新增購買 Modal -->
+  <div class="modal-overlay" id="qtyModal">
+    <div class="modal-content">
+      <div class="modal-header"><h2 id="editModalTitle">新增購買</h2><button class="btn-close" onclick="closeModal('qtyModal')">✕</button></div>
+      <div class="form-group"><label class="form-label">登記購買人</label><input type="text" id="editBuyer" class="form-input" readonly style="background:#eee;" /></div>
+      <div class="form-group">
+        <label class="form-label">各單位購買數量</label>
+        <div id="unitQtyContainer"></div>
+      </div>
+      <button class="btn-submit" onclick="saveNewBuy()">確認新增登記</button>
+    </div>
+  </div>
+
+  <!-- 修改購買數量 Modal -->
+  <div class="modal-overlay" id="editBuyerModal">
+    <div class="modal-content">
+      <div class="modal-header"><h2 id="editBuyerModalTitle">修改購買數量</h2><button class="btn-close" onclick="closeModal('editBuyerModal')">✕</button></div>
+      <div class="form-group"><label class="form-label">購買人</label><input type="text" id="existingBuyerName" class="form-input" readonly style="background:#eee;" /></div>
+      <div class="form-group">
+        <label class="form-label">各單位購買數量（歸零即代表刪除該單位）</label>
+        <div id="editUnitQtyContainer"></div>
+      </div>
+      <button class="btn-submit" onclick="saveExistBuy()">儲存修改</button>
+      <button class="btn-submit btn-danger" onclick="delAllExistBuy()">刪除此人所有購買紀錄</button>
+    </div>
+  </div>
+
+  <!-- 修改商品資料 Modal -->
+  <div class="modal-overlay" id="editProdModal" style="z-index: 1100;">
+    <div class="modal-content">
+      <div class="modal-header"><h2>✏️ 修改商品資料</h2><button class="btn-close" onclick="closeEditProdModal()">✕</button></div>
+      <div class="form-group"><label class="form-label">商品名稱 *</label><input type="text" id="editProdName" class="form-input" /></div>
+      <div class="form-group"><label class="form-label">分類</label>
+        <select id="editProdCategory" class="form-select">
+          <option value="食品/食材">食品/食材</option>
+          <option value="日用品">日用品</option>
+          <option value="美妝保養">美妝保養</option>
+          <option value="文具雜貨">文具雜貨</option>
+        </select>
+      </div>
+      <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開，例如：盒,片）</label><input type="text" id="editProdUnits" class="form-input" placeholder="盒,片" /></div>
+      <div class="form-group"><label class="form-label">商品圖片網址 (URL)</label><input type="text" id="editProdImage" class="form-input" placeholder="請貼上圖片網址..." /></div>
+      <div class="form-group"><label class="form-label">備註說明</label><input type="text" id="editProdNote" class="form-input" /></div>
+      <div class="form-group" style="display: flex; align-items: center; gap: 10px; background: #FAFAFA; padding: 10px; border-radius: 12px; border: 1px solid var(--border-color);">
+        <input type="checkbox" id="editProdHidden" style="width: 20px; height: 20px; cursor: pointer;" />
+        <label for="editProdHidden" class="form-label" style="margin-bottom: 0; cursor: pointer;">隱藏此商品（主頁面暫不顯示）</label>
+      </div>
+      <button class="btn-submit" onclick="saveEditProd()">儲存商品修改</button>
+    </div>
+  </div>
+
+  <!-- 管理者登入 Modal -->
+  <div class="modal-overlay" id="loginModal">
+    <div class="modal-content">
+      <div class="modal-header"><h2>🔐 管理者登入</h2><button class="btn-close" onclick="closeModal('loginModal')">✕</button></div>
+      <div class="form-group">
+        <label class="form-label">請輸入密碼</label>
+        <input type="password" id="adminPwdInput" class="form-input" placeholder="預設密碼: 1234" />
+      </div>
+      <button class="btn-submit" onclick="submitLogin()">登入後台</button>
+    </div>
+  </div>
+
+  <!-- 管理者後台 Modal -->
+  <div class="modal-overlay" id="adminModal">
+    <div class="modal-content">
+      <div class="modal-header"><h2>🔐 管理者後台</h2><button class="btn-close" onclick="closeModal('adminModal')">✕</button></div>
+      
+      <div class="admin-nav">
+        <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 商品及統計</button>
+        <button class="admin-tab-btn" id="tabBtn2" onclick="switchTab(2)">👥 個案與訂單管理</button>
+        <button class="admin-tab-btn" id="tabBtn3" onclick="switchTab(3)">➕ 新增商品</button>
+        <button class="admin-tab-btn" id="tabBtn4" onclick="switchTab(4)">⚙️ 設定</button>
+      </div>
+
+      <div class="admin-section active" id="adminSec1">
+        <div id="adminContentList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 12px;"></div>
+        <button class="btn-save-manual" onclick="manualSaveData()">💾 儲存所有變更</button>
+      </div>
+
+      <div class="admin-section" id="adminSec2">
+        <div id="customerContentList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 12px;"></div>
+        <button class="btn-save-manual" onclick="manualSaveData()">💾 儲存所有變更</button>
+      </div>
+
+      <div class="admin-section" id="adminSec3">
+        <div class="form-group"><label class="form-label">商品名稱 *</label><input type="text" id="itemName" class="form-input" placeholder="例如：積雪草面膜..." /></div>
+        <div class="form-group"><label class="form-label">分類</label>
+          <select id="itemCategory" class="form-select">
+            <option value="食品/食材">食品/食材</option>
+            <option value="日用品">日用品</option>
+            <option value="美妝保養">美妝保養</option>
+            <option value="文具雜貨">文具雜貨</option>
+          </select>
+        </div>
+        <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開，例如：盒,片）</label><input type="text" id="itemUnits" class="form-input" value="盒,片" placeholder="盒,片" /></div>
+        <div class="form-group"><label class="form-label">商品圖片網址 (URL)</label><input type="text" id="itemImage" class="form-input" placeholder="請貼上圖片網址..." /></div>
+        <div class="form-group"><label class="form-label">備註說明</label><input type="text" id="itemNote" class="form-input" placeholder="規格或口味..." /></div>
+        <button class="btn-submit" onclick="saveNewProd()">確認新增商品</button>
+      </div>
+
+      <div class="admin-section" id="adminSec4">
+        <div class="form-group"><label class="form-label">修改網頁標題名稱</label><input type="text" id="siteTitleInput" class="form-input" placeholder="韓國代購清單" /></div>
+        <button class="btn-submit" onclick="saveSiteTitle()" style="margin-bottom: 20px;">更新網頁標題</button>
+        <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+          <div class="form-group"><label class="form-label">目前密碼</label><input type="password" id="oldPwd" class="form-input" placeholder="請輸入目前密碼..." /></div>
+          <div class="form-group"><label class="form-label">新密碼</label><input type="password" id="newPwd" class="form-input" placeholder="請輸入新密碼..." /></div>
+          <div class="form-group"><label class="form-label">確認新密碼</label><input type="password" id="confirmPwd" class="form-input" placeholder="再次輸入新密碼..." /></div>
+          <button class="btn-submit" onclick="saveNewPassword()">更新管理者密碼</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    var currentEditIndex = null;
+    var currentItemIndex = null;
+    var editingBuyerName = '';
+    var editingProdIndex = null;
+    var isAuthed = false;
+    var currentCategoryFilter = 'default_all';
+    
+    var ADMIN_PASSWORD = localStorage.getItem('buylist_admin_pwd') || '1234';
+    var SITE_TITLE = localStorage.getItem('buylist_site_title') || '韓國代購清單';
+    
+    var currentUser = JSON.parse(localStorage.getItem('buylist_current_user') || 'null');
+    var customerAccounts = JSON.parse(localStorage.getItem('buylist_customer_accounts') || '{}');
+
+    document.getElementById('pageTitleText').innerText = SITE_TITLE;
+    document.getElementById('headerTitleDisplay').innerText = SITE_TITLE;
+    document.getElementById('siteTitleInput').value = SITE_TITLE;
+
+    var defaultProducts = [
+      { id: 1, name: '咖啡糖Americano', buyers: [{name: 'Jane', count: 1, unit: '包', bought: 0}], category: '食品/食材', units: ['包', '個'], note: '', image: '', purchasedCounts: {}, isCompleted: false, isHidden: false },
+      { id: 2, name: '積雪草面膜', buyers: [{name: '敏敏', count: 1, unit: '盒', bought: 0}, {name: '敏敏', count: 5, unit: '片', bought: 0}], category: '美妝保養', units: ['盒', '片'], note: '', image: '', purchasedCounts: {}, isCompleted: false, isHidden: false }
+    ];
+
+    var products = defaultProducts;
+
+    try {
+      var saved = localStorage.getItem('buylist_v43_products');
+      if (saved) {
+        var parsed = JSON.parse(saved);
+        if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
+      }
+    } catch(e) {
+      products = defaultProducts;
+    }
+
+    window.onload = function() {
+      checkProfileLoginState();
+      renderList();
+    };
+
+    function switchSection(sectionName, btnElement) {
+      var sections = document.querySelectorAll('.page-section');
+      sections.forEach(function(s) { s.classList.remove('active'); });
+
+      var navItems = document.querySelectorAll('.bottom-nav .nav-item');
+      navItems.forEach(function(n) { n.classList.remove('active'); });
+
+      if (btnElement) btnElement.classList.add('active');
+
+      if (sectionName === 'home') {
+        document.getElementById('sectionHome').classList.add('active');
+        renderList();
+      } else if (sectionName === 'category') {
+        document.getElementById('sectionCategory').classList.add('active');
+      } else if (sectionName === 'profile') {
+        document.getElementById('sectionProfile').classList.add('active');
+        checkProfileLoginState();
+      }
+    }
+
+    function goToCategory(catName) {
+      currentCategoryFilter = catName;
+      switchSection('home', document.querySelectorAll('.bottom-nav .nav-item')[0]);
+      var pills = document.querySelectorAll('.filter-pill');
+      pills.forEach(function(p) {
+        if (p.innerText.includes(catName)) {
+          p.click();
+        }
+      });
+    }
+
+    function checkProfileLoginState() {
+      var loggedOutDiv = document.getElementById('profileLoggedOut');
+      var loggedInDiv = document.getElementById('profileLoggedIn');
+
+      if (currentUser && currentUser.email) {
+        loggedOutDiv.style.display = 'none';
+        loggedInDiv.style.display = 'block';
+        document.getElementById('profileUserGreeting').innerText = '👤 您好，' + currentUser.name;
+        document.getElementById('profileUserEmailDisplay').innerText = '📧 信箱：' + currentUser.email;
+        renderProfileMyOrders();
+      } else {
+        loggedOutDiv.style.display = 'block';
+        loggedInDiv.style.display = 'none';
+      }
+    }
+
+    function submitProfileLogin() {
+      var email = document.getElementById('profileEmailInput').value.trim();
+      var name = document.getElementById('profileNameInput').value.trim();
+      var pwd = document.getElementById('profilePwdInput').value.trim();
+
+      if (!email || !email.includes('@')) { alert('請輸入有效的信箱！'); return; }
+      if (!name) { alert('請輸入您的名稱！'); return; }
+      if (!pwd) { alert('請輸入密碼！'); return; }
+
+      if (!customerAccounts[email]) {
+        customerAccounts[email] = { name: name, password: pwd };
+      } else {
+        if (customerAccounts[email].password !== pwd) {
+          alert('密碼錯誤！');
+          return;
+        }
+        customerAccounts[email].name = name;
+      }
+
+      currentUser = { name: name, email: email };
+      localStorage.setItem('buylist_current_user', JSON.stringify(currentUser));
+      localStorage.setItem('buylist_customer_accounts', JSON.stringify(customerAccounts));
+
+      alert('🎉 登入成功！');
+      checkProfileLoginState();
+    }
+
+    function profileLogout() {
+      currentUser = null;
+      localStorage.removeItem('buylist_current_user');
+      checkProfileLoginState();
+    }
+
+    function renderProfileMyOrders() {
+      var container = document.getElementById('profileMyOrdersList');
+      container.innerHTML = '';
+      if (!currentUser) return;
+
+      var myProductMap = {};
+      for (var i = 0; i < products.length; i++) {
+        var p = products[i];
+        if (!p.buyers) continue;
+        for (var j = 0; j < p.buyers.length; j++) {
+          var b = p.buyers[j];
+          if (b.name.trim() === currentUser.name.trim()) {
+            if (!myProductMap[i]) {
+              myProductMap[i] = { itemIdx: i, itemName: p.name, isCompleted: !!p.isCompleted, unitsSummary: [] };
+            }
+            myProductMap[i].unitsSummary.push({ count: b.count, unit: b.unit || '個' });
+          }
+        }
+      }
+
+      var keys = Object.keys(myProductMap);
+      if (keys.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">您目前尚無任何訂單紀錄！</div>';
+        return;
+      }
+
+      for (var k = 0; k < keys.length; k++) {
+        var itemObj = myProductMap[keys[k]];
+        var detailStr = '';
+        for (var s = 0; s < itemObj.unitsSummary.length; s++) {
+          detailStr += itemObj.unitsSummary[s].count + itemObj.unitsSummary[s].unit + ' ';
+        }
+
+        var row = document.createElement('div');
+        row.className = 'customer-card';
+        row.innerHTML = '<div class="customer-name"><span>📦 ' + itemObj.itemName + '</span><b>' + detailStr.trim() + '</b></div>' +
+          '<div style="font-size:12px; color:var(--text-sub); margin-bottom:8px;">採購狀態：' + (itemObj.isCompleted ? '✅ 已採購完成' : '⏳ 採購進行中') + '</div>' +
+          '<div style="display:flex; gap:8px;">' +
+            '<button class="btn-edit-prod" style="flex:1;" onclick="openEditBuyerModal(' + itemObj.itemIdx + ', \'' + currentUser.name + '\')">✏️ 修改數量</button>' +
+            '<button class="btn-del-prod" style="flex:1;" onclick="deleteMyEntireOrder(' + itemObj.itemIdx + ', \'' + currentUser.name + '\')">🗑️ 刪除此商品</button>' +
+          '</div>';
+        container.appendChild(row);
+      }
+    }
+
+    function manualSaveData() {
+      try {
+        for (var i = 30; i < 44; i++) {
+          localStorage.removeItem('buylist_v' + i + '_products');
+        }
+        localStorage.setItem('buylist_v43_products', JSON.stringify(products));
+        alert('💾 儲存成功！');
+      } catch (e) {
+        alert('儲存空間已滿，請清除部分瀏覽器快取！');
+      }
+    }
+
+    function saveSiteTitle() {
+      var newTitle = document.getElementById('siteTitleInput').value.trim();
+      if (!newTitle) { alert('網頁標題不能為空！'); return; }
+      SITE_TITLE = newTitle;
+      localStorage.setItem('buylist_site_title', newTitle);
+      document.getElementById('pageTitleText').innerText = newTitle;
+      document.getElementById('headerTitleDisplay').innerText = newTitle;
+      alert('網頁標題更新成功！');
+    }
+
+    function setCategoryFilter(category, btnElement) {
+      currentCategoryFilter = category;
+      var pills = document.querySelectorAll('.filter-pill');
+      pills.forEach(function(p) { p.classList.remove('active'); });
+      if (btnElement) btnElement.classList.add('active');
+      renderList();
+    }
+
+    function fixImageUrl(url) {
+      if (!url) return '';
+      url = url.trim();
+      if (url.includes('freeimage.host/i/')) {
+        var id = url.split('/i/').pop();
+        return 'https://iili.io/' + id + '.jpg';
+      }
+      return url;
+    }
+
+    function renderList() {
+      var itemList = document.getElementById('itemListHome');
+      if (!itemList) return;
+      itemList.innerHTML = '';
+
+      for (var i = 0; i < products.length; i++) {
+        var product = products[i];
+        if (product.isHidden) continue;
+
+        if (!product.buyers) product.buyers = [];
+        if (!product.units || !Array.isArray(product.units)) product.units = ['個'];
+        if (!product.purchasedCounts) product.purchasedCounts = {};
+
+        for (var j = 0; j < product.buyers.length; j++) {
+          if (product.buyers[j].bought === undefined) product.buyers[j].bought = 0;
+        }
+
+        if (currentCategoryFilter !== '全部' && currentCategoryFilter !== 'default_all' && product.category !== currentCategoryFilter) {
+          continue;
+        }
+
+        var card = document.createElement('div');
+        card.className = 'item-card' + (product.isCompleted ? ' completed' : '');
+
+        var buyerMap = {};
+        for (var j = 0; j < product.buyers.length; j++) {
+          var b = product.buyers[j];
+          var name = b.name.trim();
+          if (!buyerMap[name]) buyerMap[name] = [];
+          buyerMap[name].push({ count: b.count, unit: b.unit || '個' });
+        }
+
+        var buyerTagsHTML = '';
+        var buyerNames = Object.keys(buyerMap);
+        for (var k = 0; k < buyerNames.length; k++) {
+          var name = buyerNames[k];
+          var details = buyerMap[name];
+          var detailStr = '';
+          for (var d = 0; d < details.length; d++) {
+            detailStr += '+' + details[d].count + details[d].unit + ' ';
+          }
+          buyerTagsHTML += '<span class="tag tag-buyer">' + name + ' ' + detailStr.trim() + '</span>';
+        }
+
+        if (product.isCompleted) {
+          buyerTagsHTML += '<span class="tag tag-status-done">✅ 已完成</span>';
+        }
+
+        var defaultSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+        var imgSrc = product.image ? fixImageUrl(product.image) : defaultSvg;
+
+        card.innerHTML = '<img src="' + imgSrc + '" class="item-img" alt="商品圖片" />' +
+          '<div class="item-info">' +
+            '<div class="item-tags"><span class="tag tag-category">' + product.category + '</span>' + buyerTagsHTML + '</div>' +
+            '<div class="item-name">' + product.name + '</div>' +
+            (product.note ? '<div class="item-note">' + product.note + '</div>' : '') +
+          '</div>' +
+          '<button class="btn-buy-action" onclick="openQtyModal(' + i + ')">+ 購買</button>';
+        
+        itemList.appendChild(card);
+      }
+      try {
+        for (var cleanIdx = 30; cleanIdx < 44; cleanIdx++) {
+          localStorage.removeItem('buylist_v' + cleanIdx + '_products');
+        }
+        localStorage.setItem('buylist_v43_products', JSON.stringify(products));
+      } catch(e) {}
+    }
+
+    function openAdminPortal() {
+      if (isAuthed) {
+        updateAdminStats();
+        updateCustomerStats();
+        document.getElementById('adminModal').classList.add('active');
+      } else {
+        document.getElementById('adminPwdInput').value = '';
+        document.getElementById('loginModal').classList.add('active');
+      }
+    }
+
+    function closeModal(modalId) {
+      document.getElementById(modalId).classList.remove('active');
+    }
+
+    function submitLogin() {
+      var pwd = document.getElementById('adminPwdInput').value;
+      if (pwd === ADMIN_PASSWORD) {
+        isAuthed = true;
+        closeModal('loginModal');
+        updateAdminStats();
+        updateCustomerStats();
+        document.getElementById('adminModal').classList.add('active');
+      } else {
+        alert('密碼錯誤！');
+      }
+    }
+
+    function saveNewPassword() {
+      var oldP = document.getElementById('oldPwd').value;
+      var newP = document.getElementById('newPwd').value;
+      var confirmP = document.getElementById('confirmPwd').value;
+
+      if (oldP !== ADMIN_PASSWORD) { alert('目前密碼輸入錯誤！'); return; }
+      if (!newP) { alert('新密碼不能為空！'); return; }
+      if (newP !== confirmP) { alert('兩次輸入的新密碼不一致！'); return; }
+
+      ADMIN_PASSWORD = newP;
+      localStorage.setItem('buylist_admin_pwd', newP);
+      alert('密碼修改成功！');
+      document.getElementById('oldPwd').value = '';
+      document.getElementById('newPwd').value = '';
+      document.getElementById('confirmPwd').value = '';
+      switchTab(1);
+    }
+
+    function openQtyModal(index) {
+      if (!currentUser || !currentUser.name) {
+        alert('請先至下方「個人」分頁登入會員！');
+        switchSection('profile', document.querySelectorAll('.bottom-nav .nav-item')[2]);
+        return;
+      }
+
+      currentEditIndex = index;
+      var product = products[index];
+      document.getElementById('editModalTitle').innerText = '新增購買：' + product.name;
+      document.getElementById('editBuyer').value = currentUser.name + ' (' + currentUser.email + ')';
+      
+      var container = document.getElementById('unitQtyContainer');
+      container.innerHTML = '';
+      var units = product.units && product.units.length > 0 ? product.units : ['個'];
+
+      for (var u = 0; u < units.length; u++) {
+        var unitName = units[u];
+        var row = document.createElement('div');
+        row.className = 'unit-qty-row';
+        row.innerHTML = '<span>' + unitName + '</span>' +
+          '<div class="unit-qty-controls">' +
+            '<button class="btn-qty-sm" onclick="adjustModalQty(\'qty_' + u + '\', -1)">-</button>' +
+            '<span class="qty-display-sm" id="qty_' + u + '">0</span>' +
+            '<button class="btn-qty-sm plus" onclick="adjustModalQty(\'qty_' + u + '\', 1)">+</button>' +
+          '</div>';
+        container.appendChild(row);
+      }
+
+      document.getElementById('qtyModal').classList.add('active');
+    }
+
+    function adjustModalQty(elementId, delta) {
+      var el = document.getElementById(elementId);
+      var val = parseInt(el.innerText) + delta;
+      if (val < 0) val = 0;
+      el.innerText = val;
+    }
+
+    function saveNewBuy() {
+      if (currentEditIndex !== null && currentUser) {
+        var buyerName = currentUser.name;
+        var product = products[currentEditIndex];
+        var units = product.units && product.units.length > 0 ? product.units : ['個'];
+        var addedCount = 0;
+
+        for (var u = 0; u < units.length; u++) {
+          var qty = parseInt(document.getElementById('qty_' + u).innerText);
+          if (qty > 0) {
+            product.buyers.push({ name: buyerName, count: qty, unit: units[u], bought: 0 });
+            addedCount++;
+          }
+        }
+
+        if (addedCount === 0) { alert('請至少選擇一項單量的數量！'); return; }
+
+        renderList();
+        manualSaveData();
+        closeModal('qtyModal');
+        alert('🎉 登記成功！已加入您的訂單中。');
+      }
+    }
+
+    function openEditBuyerModal(itemIdx, buyerName) {
+      currentItemIndex = itemIdx;
+      editingBuyerName = buyerName;
+      var product = products[itemIdx];
+
+      document.getElementById('editBuyerModalTitle').innerText = '修改購買數量：' + product.name;
+      document.getElementById('existingBuyerName').value = buyerName;
+
+      var container = document.getElementById('editUnitQtyContainer');
+      container.innerHTML = '';
+      var units = product.units && product.units.length > 0 ? product.units : ['個'];
+
+      var existingMap = {};
+      for (var j = 0; j < product.buyers.length; j++) {
+        var b = product.buyers[j];
+        if (b.name.trim() === buyerName) {
+          existingMap[b.unit || '個'] = b.count;
+        }
+      }
+
+      for (var u = 0; u < units.length; u++) {
+        var unitName = units[u];
+        var currentQty = existingMap[unitName] !== undefined ? existingMap[unitName] : 0;
+
+        var row = document.createElement('div');
+        row.className = 'unit-qty-row';
+        row.innerHTML = '<span>' + unitName + '</span>' +
+          '<div class="unit-qty-controls">' +
+            '<button class="btn-qty-sm" onclick="adjustModalQty(\'edit_qty_' + u + '\', -1)">-</button>' +
+            '<span class="qty-display-sm" id="edit_qty_' + u + '">' + currentQty + '</span>' +
+            '<button class="btn-qty-sm plus" onclick="adjustModalQty(\'edit_qty_' + u + '\', 1)">+</button>' +
+          '</div>';
+        container.appendChild(row);
+      }
+
+      document.getElementById('editBuyerModal').classList.add('active');
+    }
+
+    function saveExistBuy() {
+      if (currentItemIndex !== null && editingBuyerName) {
+        var product = products[currentItemIndex];
+        var units = product.units && product.units.length > 0 ? product.units : ['個'];
+
+        var newBuyers = [];
+        for (var j = 0; j < product.buyers.length; j++) {
+          if (product.buyers[j].name.trim() !== editingBuyerName) {
+            newBuyers.push(product.buyers[j]);
+          }
+        }
+
+        for (var u = 0; u < units.length; u++) {
+          var qty = parseInt(document.getElementById('edit_qty_' + u).innerText);
+          if (qty > 0) {
+            newBuyers.push({ name: editingBuyerName, count: qty, unit: units[u], bought: 0 });
+          }
+        }
+
+        product.buyers = newBuyers;
+        renderList();
+        manualSaveData();
+        closeModal('editBuyerModal');
+        if (currentUser) renderProfileMyOrders();
+      }
+    }
+
+    function deleteMyEntireOrder(itemIdx, buyerName) {
+      if (confirm('確定要刪除您在此商品的所有登記數量嗎？')) {
+        var product = products[itemIdx];
+        var newBuyers = [];
+        for (var j = 0; j < product.buyers.length; j++) {
+          if (product.buyers[j].name.trim() !== buyerName.trim()) {
+            newBuyers.push(product.buyers[j]);
+          }
+        }
+        product.buyers = newBuyers;
+        renderList();
+        manualSaveData();
+        renderProfileMyOrders();
+        if (isAuthed) updateCustomerStats();
+      }
+    }
+
+    function delAllExistBuy() {
+      if (currentItemIndex !== null && editingBuyerName) {
+        deleteMyEntireOrder(currentItemIndex, editingBuyerName);
+        closeModal('editBuyerModal');
+      }
+    }
+
+    function adminDeleteCustomerItem(itemIdx, buyerName, unitName, countVal) {
+      if (confirm('確定要從後台刪除 「' + buyerName + '」 的這筆商品訂單 (' + countVal + unitName + ') 嗎？')) {
+        var product = products[itemIdx];
+        if (!product || !product.buyers) return;
+        
+        var newBuyers = [];
+        var deleted = false;
+        for (var j = 0; j < product.buyers.length; j++) {
+          var b = product.buyers[j];
+          if (!deleted && b.name.trim() === buyerName.trim() && (b.unit || '個') === unitName && b.count === countVal) {
+            deleted = true;
+          } else {
+            newBuyers.push(b);
+          }
+        }
+        product.buyers = newBuyers;
+        renderList();
+        updateCustomerStats();
+        updateAdminStats();
+        manualSaveData();
+      }
+    }
+
+    function adminDeleteAllCustomerOrders(buyerName) {
+      if (confirm('⚠️ 確定要一次刪除 「' + buyerName + '」 的所有商品訂單紀錄嗎？')) {
+        for (var i = 0; i < products.length; i++) {
+          var p = products[i];
+          if (!p.buyers) continue;
+          var newBuyers = [];
+          for (var j = 0; j < p.buyers.length; j++) {
+            if (p.buyers[j].name.trim() !== buyerName.trim()) {
+              newBuyers.push(p.buyers[j]);
+            }
+          }
+          p.buyers = newBuyers;
+        }
+        renderList();
+        updateCustomerStats();
+        updateAdminStats();
+        manualSaveData();
+        alert('已成功刪除該顧客的所有訂單！');
+      }
+    }
+
+    function deleteItemFromAdmin(i) {
+      if (confirm('確定要從清單中徹底刪除這個商品嗎？')) {
+        products.splice(i, 1);
+        renderList();
+        updateAdminStats();
+        updateCustomerStats();
+        manualSaveData();
+      }
+    }
+
+    function updatePurchasedQty(itemIdx, unit, delta) {
+      var p = products[itemIdx];
+      if (!p.purchasedCounts) p.purchasedCounts = {};
+      var current = p.purchasedCounts[unit] || 0;
+      var next = current + delta;
+      if (next < 0) next = 0;
+      
+      p.purchasedCounts[unit] = next;
+      renderList();
+      updateAdminStats();
+    }
+
+    function updateCustomerStats() {
+      var customerList = document.getElementById('customerContentList');
+      if (!customerList) return;
+      customerList.innerHTML = '';
+
+      var customerMap = {};
+      for (var i = 0; i < products.length; i++) {
+        var p = products[i];
+        if (!p.buyers) continue;
+        for (var j = 0; j < p.buyers.length; j++) {
+          var b = p.buyers[j];
+          var cName = b.name.trim();
+          if (!customerMap[cName]) customerMap[cName] = [];
+          customerMap[cName].push({
+            itemIdx: i,
+            itemName: p.name,
+            count: b.count,
+            unit: b.unit || '個'
+          });
+        }
+      }
+
+      var customerNames = Object.keys(customerMap);
+      if (customerNames.length === 0) {
+        customerList.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">目前尚無任何顧客登記資料</div>';
+        return;
+      }
+
+      var header = document.createElement('div');
+      header.style.cssText = "font-size:16px; font-weight:bold; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--border-color); color:var(--text-main);";
+      header.innerText = '👥 總計顧客數：' + customerNames.length + ' 位';
+      customerList.appendChild(header);
+
+      for (var k = 0; k < customerNames.length; k++) {
+        var name = customerNames[k];
+        var items = customerMap[name];
+        var card = document.createElement('div');
+        card.className = 'customer-card';
+
+        var itemsHtml = '';
+        for (var m = 0; m < items.length; m++) {
+          var it = items[m];
+          itemsHtml += '<div style="font-size:13px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">' +
+            '<span>• ' + it.itemName + ': <b>' + it.count + ' ' + it.unit + '</b></span>' +
+            '<button class="btn-del-prod" style="padding:2px 8px; font-size:11px;" onclick="adminDeleteCustomerItem(' + it.itemIdx + ', \'' + name + '\', \'' + it.unit + '\', ' + it.count + ')">刪除</button>' +
+          '</div>';
+        }
+
+        card.innerHTML = '<div class="customer-name"><span>👤 ' + name + '</span>' +
+          '<button class="btn-del-prod" style="padding:3px 10px; font-size:11px;" onclick="adminDeleteAllCustomerOrders(\'' + name + '\')">🗑️ 刪除此人所有訂單</button>' +
+          '</div>' + itemsHtml;
+        customerList.appendChild(card);
+      }
+    }
+
+    function updateAdminStats() {
+      var contentList = document.getElementById('adminContentList');
+      if (!contentList) return;
+      contentList.innerHTML = '';
+      var totalRegistrationCount = 0;
+
+      for (var i = 0; i < products.length; i++) {
+        var p = products[i];
+        if (!p.buyers) p.buyers = [];
+        if (!p.purchasedCounts) p.purchasedCounts = {};
+        
+        var unitTotals = {};
+        var buyersHtml = '';
+
+        for (var j = 0; j < p.buyers.length; j++) {
+          var b = p.buyers[j];
+          totalRegistrationCount++;
+          var u = b.unit ? b.unit : '個';
+          if (!unitTotals[u]) unitTotals[u] = 0;
+          unitTotals[u] += b.count;
+
+          buyersHtml += '<div class="admin-buyer-detail">👤 ' + b.name + ': <b>' + b.count + '</b> ' + u + '</div>';
+        }
+
+        var summaryArr = [];
+        var progressHtml = '';
+
+        for (var unitKey in unitTotals) {
+          var totalNeeded = unitTotals[unitKey];
+          var boughtCount = p.purchasedCounts[unitKey] || 0;
+          summaryArr.push('共 ' + totalNeeded + ' ' + unitKey);
+
+          progressHtml += '<div class="progress-box">' +
+            '<div class="progress-row">' +
+              '<span>🛒 採購進度 (' + unitKey + ')：<b>已買 ' + boughtCount + ' / 共 ' + totalNeeded + ' ' + unitKey + '</b></span>' +
+              '<div class="progress-controls">' +
+                '<button class="btn-mini-qty" onclick="updatePurchasedQty(' + i + ', \'' + unitKey + '\', -1)">-</button>' +
+                '<button class="btn-mini-qty" onclick="updatePurchasedQty(' + i + ', \'' + unitKey + '\', 1)">+</button>' +
+              '</div>' +
+            '</div>' +
+          '</div>';
+        }
+
+        var summaryText = summaryArr.length > 0 ? summaryArr.join('，') : '尚無人登記';
+
+        if (p.buyers.length === 0) {
+          buyersHtml = '<div class="admin-buyer-detail" style="color:#aaa;">尚無人登記購買</div>';
+          progressHtml = '<div style="font-size:12px; color:#aaa; margin:4px 0;">尚無採購進度目標</div>';
+        }
+
+        var defaultThumb = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+        var thumbSrc = p.image ? fixImageUrl(p.image) : defaultThumb;
+        var unitsText = p.units ? p.units.join(',') : '個';
+        var statusBtnClass = p.isCompleted ? 'btn-status-toggle status-done' : 'btn-status-toggle status-ongoing';
+        var statusBtnText = p.isCompleted ? '✅ 已完成採購 (點擊改為進行中)' : '⏳ 採購進行中 (點擊標記為完成)';
+        var hiddenBadge = p.isHidden ? ' <span style="color:#D9534F; font-size:11px;">(已隱藏)</span>' : '';
+
+        var row = document.createElement('div');
+        row.className = 'admin-item-row';
+        row.innerHTML = '<img src="' + thumbSrc + '" class="admin-thumb" alt="" />' +
+          '<div class="admin-item-info">' +
+            '<div class="admin-item-title"><span>📦 ' + p.name + hiddenBadge + ' <small style="color:var(--text-sub);">(' + unitsText + ')</small></span></div>' +
+            '<div class="admin-summary-total">📊 ' + summaryText + '</div>' +
+            buyersHtml +
+            progressHtml +
+            '<button class="' + statusBtnClass + '" onclick="toggleCompleteStatus(' + i + ')">' + statusBtnText + '</button>' +
+            '<div class="admin-action-btns">' +
+              '<button class="btn-edit-prod" onclick="openEditProdModal(' + i + ')">✏️ 編輯</button>' +
+              '<button class="btn-del-prod" onclick="deleteItemFromAdmin(' + i + ')">🗑️ 刪除</button>' +
+            '</div>' +
+          '</div>';
+        contentList.appendChild(row);
+      }
+
+      var summaryHeader = document.createElement('div');
+      summaryHeader.style.cssText = "font-size:16px; font-weight:bold; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--border-color); color:var(--text-main);";
+      summaryHeader.innerText = '📊 總登記筆數：' + totalRegistrationCount + ' 筆';
+      contentList.insertBefore(summaryHeader, contentList.firstChild);
+    }
+
+    function toggleCompleteStatus(itemIdx) {
+      var p = products[itemIdx];
+      p.isCompleted = !p.isCompleted;
+      renderList();
+      updateAdminStats();
+      manualSaveData();
+    }
+
+    function openEditProdModal(index) {
+      editingProdIndex = index;
+      var p = products[index];
+      document.getElementById('editProdName').value = p.name;
+      document.getElementById('editProdCategory').value = p.category || '食品/食材';
+      document.getElementById('editProdUnits').value = p.units ? p.units.join(',') : '盒,片';
+      document.getElementById('editProdNote').value = p.note || '';
+      document.getElementById('editProdImage').value = p.image || '';
+      document.getElementById('editProdHidden').checked = !!p.isHidden;
+      document.getElementById('editProdModal').classList.add('active');
+    }
+
+    function closeEditProdModal() {
+      document.getElementById('editProdModal').classList.remove('active');
+    }
+
+    function saveEditProd() {
+      if (editingProdIndex !== null) {
+        var name = document.getElementById('editProdName').value.trim();
+        var category = document.getElementById('editProdCategory').value;
+        var unitsStr = document.getElementById('editProdUnits').value.trim();
+        var note = document.getElementById('editProdNote').value.trim();
+        var imgUrl = document.getElementById('editProdImage').value.trim();
+        var isHidden = document.getElementById('editProdHidden').checked;
+
+        if (!name) { alert('請填寫商品名稱！'); return; }
+
+        var unitsArr = unitsStr ? unitsStr.split(/[,，]/).map(function(s){ return s.trim(); }).filter(Boolean) : ['個'];
+
+        products[editingProdIndex].name = name;
+        products[editingProdIndex].category = category;
+        products[editingProdIndex].units = unitsArr;
+        products[editingProdIndex].note = note;
+        products[editingProdIndex].image = imgUrl;
+        products[editingProdIndex].isHidden = isHidden;
+
+        renderList();
+        updateAdminStats();
+        updateCustomerStats();
+        manualSaveData();
+        closeEditProdModal();
+      }
+    }
+
+    function saveNewProd() {
+      var name = document.getElementById('itemName').value.trim();
+      var category = document.getElementById('itemCategory').value;
+      var unitsStr = document.getElementById('itemUnits').value.trim();
+      var note = document.getElementById('itemNote').value.trim();
+      var imgUrl = document.getElementById('itemImage').value.trim();
+      
+      if (!name) { alert('請填寫商品名稱！'); return; }
+      
+      var unitsArr = unitsStr ? unitsStr.split(/[,，]/).map(function(s){ return s.trim(); }).filter(Boolean) : ['個'];
+
+      products.unshift({ id: Date.now(), name: name, buyers: [], category: category, units: unitsArr, note: note, image: imgUrl, purchasedCounts: {}, isCompleted: false, isHidden: false });
+      renderList();
+      updateAdminStats();
+      updateCustomerStats();
+      manualSaveData();
+      
+      document.getElementById('itemName').value = '';
+      document.getElementById('itemNote').value = '';
+      document.getElementById('itemImage').value = '';
+      document.getElementById('itemUnits').value = '盒,片';
+      
+      switchTab(1);
+    }
+
+    function switchTab(tabNum) {
+      document.getElementById('tabBtn1').className = 'admin-tab-btn' + (tabNum === 1 ? ' active' : '');
+      document.getElementById('tabBtn2').className = 'admin-tab-btn' + (tabNum === 2 ? ' active' : '');
+      document.getElementById('tabBtn3').className = 'admin-tab-btn' + (tabNum === 3 ? ' active' : '');
+      document.getElementById('tabBtn4').className = 'admin-tab-btn' + (tabNum === 4 ? ' active' : '');
+
+      document.getElementById('adminSec1').className = 'admin-section' + (tabNum === 1 ? ' active' : '');
+      document.getElementById('adminSec2').className = 'admin-section' + (tabNum === 2 ? ' active' : '');
+      document.getElementById('adminSec3').className = 'admin-section' + (tabNum === 3 ? ' active' : '');
+      document.getElementById('adminSec4').className = 'admin-section' + (tabNum === 4 ? ' active' : '');
+
+      if (tabNum === 1) updateAdminStats();
+      else if (tabNum === 2) updateCustomerStats();
+    }
+
+    renderList();
+  </script>
+</body>
+</html>
