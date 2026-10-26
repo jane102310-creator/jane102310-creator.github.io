@@ -261,7 +261,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v28_products');
+      var saved = localStorage.getItem('buylist_v29_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -272,7 +272,7 @@
 
     function manualSaveData() {
       try {
-        localStorage.setItem('buylist_v28_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v29_products', JSON.stringify(products));
         alert('💾 儲存成功！所有變更已安全儲存。');
       } catch (e) {
         alert('儲存空間已滿！');
@@ -336,7 +336,7 @@
         itemList.appendChild(card);
       }
       try {
-        localStorage.setItem('buylist_v28_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v29_products', JSON.stringify(products));
       } catch(e) {}
     }
 
