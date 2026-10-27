@@ -247,12 +247,14 @@
       <div class="admin-section" id="adminSec4">
         <div class="form-group"><label class="form-label">修改網頁標題名稱</label><input type="text" id="siteTitleInput" class="form-input" placeholder="韓國代購清單" /></div>
         <button class="btn-submit" onclick="saveSiteTitle()" style="margin-bottom: 20px;">更新網頁標題</button>
-        <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-bottom: 20px;">
+           <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-bottom: 20px;">
           <div class="form-group"><label class="form-label">目前密碼</label><input type="password" id="oldPwd" class="form-input" placeholder="請輸入目前密碼..." /></div>
           <div class="form-group"><label class="form-label">新密碼</label><input type="password" id="newPwd" class="form-input" placeholder="請輸入新密碼..." /></div>
           <div class="form-group"><label class="form-label">確認新密碼</label><input type="password" id="confirmPwd" class="form-input" placeholder="再次輸入新密碼..." /></div>
           <button class="btn-submit" onclick="saveNewPassword()">更新管理者密碼</button>
         </div>
+        <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+          <button class="btn-submit" style="background-color: #007BFF;" onclick="exportToExcel()">📥 匯出所有訂單至 Excel (CSV)</button>
         </div>
       </div>
     </div>
