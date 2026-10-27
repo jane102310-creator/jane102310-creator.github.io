@@ -210,7 +210,7 @@
       
       <div class="admin-nav">
         <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 商品及統計</button>
-        <button class="admin-tab-btn" id="tabBtn2" onclick="switchTab(2)">👥 個案與訂單管理</button>
+        <button class="admin-tab-btn" id="tabBtn2" onclick="switchTab(2)">👥 個案與訂單</button>
         <button class="admin-tab-btn" id="tabBtn3" onclick="switchTab(3)">➕ 新增商品</button>
         <button class="admin-tab-btn" id="tabBtn4" onclick="switchTab(4)">⚙️ 設定</button>
       </div>
@@ -242,6 +242,13 @@
       </div>
 
       <div class="admin-section" id="adminSec4">
+        <!-- 新增：手動匯入 Google 試算表資料區塊 -->
+        <div style="background:#F4EBE1; padding:14px; border-radius:12px; margin-bottom:20px;">
+          <div class="form-label" style="font-weight:bold; color:var(--accent);">📥 Google 試算表手動更新</div>
+          <p style="font-size:12px; color:var(--text-sub); margin-bottom:8px;">在試算表修改後，將資料匯出或貼上即可一鍵更新網頁資料。</p>
+          <button class="btn-submit" onclick="importFromSheetPrompt()" style="background:#28A745; margin-top:4px;">🔄 從 Google 試算表匯入更新</button>
+        </div>
+
         <div class="form-group"><label class="form-label">修改網頁標題名稱</label><input type="text" id="siteTitleInput" class="form-input" placeholder="韓國代購清單" /></div>
         <button class="btn-submit" onclick="saveSiteTitle()" style="margin-bottom: 20px;">更新網頁標題</button>
         <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-bottom: 20px;">
@@ -272,14 +279,14 @@
     document.getElementById('headerTitleDisplay').innerText = SITE_TITLE;
     document.getElementById('siteTitleInput').value = SITE_TITLE;
 
-    // 精確對應您 Google 試算表的真實資料與買家登記
     var defaultProducts = [
       {
         "id": 1,
         "name": "咖啡糖espresso",
         "buyers": [
           {"name": "敏敏", "count": 4, "unit": "個", "bought": 0},
-          {"name": "筱瑄", "count": 1, "unit": "個", "bought": 0}
+          {"name": "筱瑄", "count": 1, "unit": "個", "bought": 0},
+          {"name": "潔琪", "count": 13, "unit": "個", "bought": 0}
         ],
         "category": "食品/食材",
         "units": ["個"],
@@ -307,6 +314,7 @@
         "id": 3,
         "name": "咖啡糖Mint",
         "buyers": [
+          {"name": "筱瑄", "count": 3, "unit": "個", "bought": 0},
           {"name": "潔琪", "count": 1, "unit": "個", "bought": 0},
           {"name": "邇寧", "count": 2, "unit": "個", "bought": 0}
         ],
@@ -328,7 +336,8 @@
           {"name": "彩", "count": 1, "unit": "盒", "bought": 0},
           {"name": "Jane", "count": 1, "unit": "盒", "bought": 0},
           {"name": "邇寧", "count": 1, "unit": "盒", "bought": 0},
-          {"name": "安", "count": 1, "unit": "盒", "bought": 0}
+          {"name": "安", "count": 1, "unit": "盒", "bought": 0},
+          {"name": "七", "count": 1, "unit": "盒", "bought": 0}
         ],
         "category": "美妝保養",
         "units": ["盒", "片"],
@@ -343,8 +352,10 @@
         "name": "玫瑰提亮面膜（盒）",
         "buyers": [
           {"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0},
+          {"name": "Lemon", "count": 1, "unit": "盒", "bought": 0},
           {"name": "彩", "count": 1, "unit": "盒", "bought": 0},
           {"name": "Jane", "count": 1, "unit": "盒", "bought": 0},
+          {"name": "邇寧", "count": 1, "unit": "盒", "bought": 0},
           {"name": "安", "count": 1, "unit": "盒", "bought": 0},
           {"name": "七", "count": 1, "unit": "盒", "bought": 0}
         ],
@@ -1101,7 +1112,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v44_products');
+      var saved = localStorage.getItem('buylist_v45_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -1144,10 +1155,10 @@
 
     function manualSaveData() {
       try {
-        for (var i = 30; i < 45; i++) {
+        for (var i = 30; i < 46; i++) {
           localStorage.removeItem('buylist_v' + i + '_products');
         }
-        localStorage.setItem('buylist_v44_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v45_products', JSON.stringify(products));
         alert('💾 儲存成功！');
       } catch (e) {
         alert('儲存空間已滿，請清除部分瀏覽器快取！');
@@ -1170,6 +1181,54 @@
       document.getElementById('pageTitleText').innerText = newTitle;
       document.getElementById('headerTitleDisplay').innerText = newTitle;
       alert('網頁標題更新成功！');
+    }
+
+    // 新增：手動匯入 Google 試算表 CSV 資料功能
+    function importFromSheetPrompt() {
+      var csvData = prompt("請貼上從 Google 試算表複製的表格資料（或 CSV 文字）：");
+      if (!csvData) return;
+      
+      try {
+        var lines = csvData.split('\n');
+        if (lines.length < 2) { alert('格式不正確！'); return; }
+        
+        // 簡單解析標題行（品項名稱）
+        var headers = lines[0].split(/[\t,]/).map(function(s) { return s.replace(/^["']|["']$/g, '').trim(); });
+        
+        // 重設所有商品的 buyers 清單
+        for (var p = 0; p < products.length; p++) {
+          products[p].buyers = [];
+        }
+
+        // 從第 1 行或第 4 行開始解析買家列
+        for (var i = 1; i < lines.length; i++) {
+          var cols = lines[i].split(/[\t,]/).map(function(s) { return s.replace(/^["']|["']$/g, '').trim(); });
+          var buyerName = cols[0];
+          if (!buyerName || buyerName === '總計' || buyerName === '圖片' || buyerName === '購買進度') continue;
+
+          for (var c = 1; c < cols.length; c++) {
+            var val = parseInt(cols[c]);
+            if (!isNaN(val) && val > 0 && c < headers.length) {
+              var prodName = headers[c];
+              // 尋找對應的商品
+              for (var pr = 0; pr < products.length; pr++) {
+                if (products[pr].name.includes(prodName) || prodName.includes(products[pr].name)) {
+                  var unitName = products[pr].units ? products[pr].units[0] : '個';
+                  products[pr].buyers.push({ name: buyerName, count: val, unit: unitName, bought: 0 });
+                  break;
+                }
+              }
+            }
+          }
+        }
+
+        renderList();
+        updateAdminStats();
+        manualSaveData();
+        alert('🎉 成功從試算表資料更新所有買家訂單！');
+      } catch(e) {
+        alert('匯入解析失敗，請確認貼上的格式是否正確！');
+      }
     }
 
     function setCategoryFilter(category, btnElement) {
