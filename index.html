@@ -242,11 +242,11 @@
       </div>
 
       <div class="admin-section" id="adminSec4">
-        <!-- 新增：手動匯入 Google 試算表資料區塊 -->
+        <!-- 一鍵自動同步區塊 -->
         <div style="background:#F4EBE1; padding:14px; border-radius:12px; margin-bottom:20px;">
-          <div class="form-label" style="font-weight:bold; color:var(--accent);">📥 Google 試算表手動更新</div>
-          <p style="font-size:12px; color:var(--text-sub); margin-bottom:8px;">在試算表修改後，將資料匯出或貼上即可一鍵更新網頁資料。</p>
-          <button class="btn-submit" onclick="importFromSheetPrompt()" style="background:#28A745; margin-top:4px;">🔄 從 Google 試算表匯入更新</button>
+          <div class="form-label" style="font-weight:bold; color:var(--accent);">⚡ Google 試算表一鍵自動同步</div>
+          <p style="font-size:12px; color:var(--text-sub); margin-bottom:8px;">只要點擊下方按鈕，後台會自動向您的試算表抓取最新資料並更新！</p>
+          <button class="btn-submit" onclick="autoSyncFromSheet()" style="background:#28A745; margin-top:4px;">🔄 一鍵從試算表自動同步更新</button>
         </div>
 
         <div class="form-group"><label class="form-label">修改網頁標題名稱</label><input type="text" id="siteTitleInput" class="form-input" placeholder="韓國代購清單" /></div>
@@ -1112,7 +1112,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v45_products');
+      var saved = localStorage.getItem('buylist_v46_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -1155,10 +1155,10 @@
 
     function manualSaveData() {
       try {
-        for (var i = 30; i < 46; i++) {
+        for (var i = 30; i < 47; i++) {
           localStorage.removeItem('buylist_v' + i + '_products');
         }
-        localStorage.setItem('buylist_v45_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v46_products', JSON.stringify(products));
         alert('💾 儲存成功！');
       } catch (e) {
         alert('儲存空間已滿，請清除部分瀏覽器快取！');
@@ -1183,52 +1183,54 @@
       alert('網頁標題更新成功！');
     }
 
-    // 新增：手動匯入 Google 試算表 CSV 資料功能
-    function importFromSheetPrompt() {
-      var csvData = prompt("請貼上從 Google 試算表複製的表格資料（或 CSV 文字）：");
-      if (!csvData) return;
-      
-      try {
-        var lines = csvData.split('\n');
-        if (lines.length < 2) { alert('格式不正確！'); return; }
-        
-        // 簡單解析標題行（品項名稱）
-        var headers = lines[0].split(/[\t,]/).map(function(s) { return s.replace(/^["']|["']$/g, '').trim(); });
-        
-        // 重設所有商品的 buyers 清單
-        for (var p = 0; p < products.length; p++) {
-          products[p].buyers = [];
-        }
+    // ⚡ 一鍵自動從試算表同步更新（使用公開 CSV 連結直接讀取，無需手動輸入文字）
+    function autoSyncFromSheet() {
+      // 您的 Google 試算表公開 CSV 連結
+      var csvUrl = "https://docs.google.com/spreadsheets/d/1-Wo66I2C_pj6jbwKjaYn1ePWu-g7owFZ31t424X4QjI/export?format=csv";
 
-        // 從第 1 行或第 4 行開始解析買家列
-        for (var i = 1; i < lines.length; i++) {
-          var cols = lines[i].split(/[\t,]/).map(function(s) { return s.replace(/^["']|["']$/g, '').trim(); });
-          var buyerName = cols[0];
-          if (!buyerName || buyerName === '總計' || buyerName === '圖片' || buyerName === '購買進度') continue;
+      fetch(csvUrl)
+        .then(function(response) {
+          if (!response.ok) throw new Error('網路連線失敗');
+          return response.text();
+        })
+        .then(function(csvText) {
+          var lines = csvText.split('\n');
+          if (lines.length < 2) { alert('抓取到的資料格式不正確！'); return; }
 
-          for (var c = 1; c < cols.length; c++) {
-            var val = parseInt(cols[c]);
-            if (!isNaN(val) && val > 0 && c < headers.length) {
-              var prodName = headers[c];
-              // 尋找對應的商品
-              for (var pr = 0; pr < products.length; pr++) {
-                if (products[pr].name.includes(prodName) || prodName.includes(products[pr].name)) {
-                  var unitName = products[pr].units ? products[pr].units[0] : '個';
-                  products[pr].buyers.push({ name: buyerName, count: val, unit: unitName, bought: 0 });
-                  break;
+          var headers = lines[0].split(',').map(function(s) { return s.replace(/^["']|["']$/g, '').trim(); });
+
+          for (var p = 0; p < products.length; p++) {
+            products[p].buyers = [];
+          }
+
+          for (var i = 1; i < lines.length; i++) {
+            var cols = lines[i].split(',').map(function(s) { return s.replace(/^["']|["']$/g, '').trim(); });
+            var buyerName = cols[0];
+            if (!buyerName || buyerName === '總計' || buyerName === '圖片' || buyerName === '購買進度') continue;
+
+            for (var c = 1; c < cols.length; c++) {
+              var val = parseInt(cols[c]);
+              if (!isNaN(val) && val > 0 && c < headers.length) {
+                var prodName = headers[c];
+                for (var pr = 0; pr < products.length; pr++) {
+                  if (products[pr].name.includes(prodName) || prodName.includes(products[pr].name)) {
+                    var unitName = products[pr].units ? products[pr].units[0] : '個';
+                    products[pr].buyers.push({ name: buyerName, count: val, unit: unitName, bought: 0 });
+                    break;
+                  }
                 }
               }
             }
           }
-        }
 
-        renderList();
-        updateAdminStats();
-        manualSaveData();
-        alert('🎉 成功從試算表資料更新所有買家訂單！');
-      } catch(e) {
-        alert('匯入解析失敗，請確認貼上的格式是否正確！');
-      }
+          renderList();
+          updateAdminStats();
+          manualSaveData();
+          alert('🎉 成功一鍵同步 Google 試算表最新資料！');
+        })
+        .catch(function(err) {
+          alert('同步失敗！請確認您的 Google 試算表已設定為「公開檢視」或「發布到網路」。');
+        });
     }
 
     function setCategoryFilter(category, btnElement) {
