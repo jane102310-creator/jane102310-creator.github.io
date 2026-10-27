@@ -272,6 +272,7 @@
     document.getElementById('headerTitleDisplay').innerText = SITE_TITLE;
     document.getElementById('siteTitleInput').value = SITE_TITLE;
 
+    // 精確對應您 Google 試算表的真實資料與買家登記
     var defaultProducts = [
       {
         "id": 1,
@@ -306,7 +307,6 @@
         "id": 3,
         "name": "咖啡糖Mint",
         "buyers": [
-          {"name": "筱瑄", "count": 3, "unit": "個", "bought": 0},
           {"name": "潔琪", "count": 1, "unit": "個", "bought": 0},
           {"name": "邇寧", "count": 2, "unit": "個", "bought": 0}
         ],
@@ -320,13 +320,31 @@
       },
       {
         "id": 4,
-        "name": "積雪草面膜",
+        "name": "積雪草面膜 （盒）",
         "buyers": [
+          {"name": "敏敏", "count": 1, "unit": "盒", "bought": 0},
           {"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0},
           {"name": "Lemon", "count": 1, "unit": "盒", "bought": 0},
           {"name": "彩", "count": 1, "unit": "盒", "bought": 0},
           {"name": "Jane", "count": 1, "unit": "盒", "bought": 0},
           {"name": "邇寧", "count": 1, "unit": "盒", "bought": 0},
+          {"name": "安", "count": 1, "unit": "盒", "bought": 0}
+        ],
+        "category": "美妝保養",
+        "units": ["盒", "片"],
+        "note": "",
+        "image": "",
+        "purchasedCounts": {},
+        "isCompleted": false,
+        "isHidden": false
+      },
+      {
+        "id": 5,
+        "name": "玫瑰提亮面膜（盒）",
+        "buyers": [
+          {"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0},
+          {"name": "彩", "count": 1, "unit": "盒", "bought": 0},
+          {"name": "Jane", "count": 1, "unit": "盒", "bought": 0},
           {"name": "安", "count": 1, "unit": "盒", "bought": 0},
           {"name": "七", "count": 1, "unit": "盒", "bought": 0}
         ],
@@ -339,29 +357,11 @@
         "isHidden": false
       },
       {
-        "id": 5,
-        "name": "玫瑰提亮面膜",
+        "id": 6,
+        "name": "穀胱胜肽面膜(盒）",
         "buyers": [
-          {"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0},
           {"name": "彩", "count": 1, "unit": "盒", "bought": 0},
           {"name": "Jane", "count": 1, "unit": "盒", "bought": 0},
-          {"name": "邇寧", "count": 1, "unit": "盒", "bought": 0},
-          {"name": "七", "count": 1, "unit": "盒", "bought": 0}
-        ],
-        "category": "美妝保養",
-        "units": ["盒", "片"],
-        "note": "",
-        "image": "",
-        "purchasedCounts": {},
-        "isCompleted": false,
-        "isHidden": false
-      },
-      {
-        "id": 6,
-        "name": "穀胱胜肽面膜",
-        "buyers": [
-          {"name": "Jane", "count": 1, "unit": "盒", "bought": 0},
-          {"name": "潔琪", "count": 1, "unit": "盒", "bought": 0},
           {"name": "Dora", "count": 1, "unit": "盒", "bought": 0}
         ],
         "category": "美妝保養",
@@ -388,7 +388,7 @@
       },
       {
         "id": 8,
-        "name": "BIODANCE 水凝膠眼膜 膠原蛋白",
+        "name": "BIODANCE    水凝膠眼膜     膠原蛋白",
         "buyers": [
           {"name": "Jane", "count": 2, "unit": "個", "bought": 0}
         ],
@@ -402,7 +402,7 @@
       },
       {
         "id": 9,
-        "name": "BIODANCE 水凝膠眼膜 魚子醬 PDRN",
+        "name": "BIODANCE     水凝膠眼膜      魚子醬 PDRN",
         "buyers": [
           {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -418,7 +418,7 @@
         "id": 10,
         "name": "明太子海苔",
         "buyers": [
-          {"name": "Jane", "count": 2, "unit": "個", "bought": 0}
+          {"name": "Dora", "count": 2, "unit": "個", "bought": 0}
         ],
         "category": "食品/食材",
         "units": ["個"],
@@ -432,7 +432,7 @@
         "id": 11,
         "name": "巧克力貝果",
         "buyers": [
-          {"name": "Jane", "count": 2, "unit": "個", "bought": 0}
+          {"name": "Dora", "count": 2, "unit": "個", "bought": 0}
         ],
         "category": "食品/食材",
         "units": ["個"],
@@ -446,7 +446,7 @@
         "id": 12,
         "name": "蒜香奶油（大）",
         "buyers": [
-          {"name": "Lemon", "count": 2, "unit": "個", "bought": 0}
+          {"name": "筱瑄", "count": 2, "unit": "個", "bought": 0}
         ],
         "category": "食品/食材",
         "units": ["個"],
@@ -472,7 +472,7 @@
         "id": 14,
         "name": "蜂蜜奶油（大）",
         "buyers": [
-          {"name": "Lemon", "count": 2, "unit": "個", "bought": 0}
+          {"name": "筱瑄", "count": 2, "unit": "個", "bought": 0}
         ],
         "category": "食品/食材",
         "units": ["個"],
@@ -498,7 +498,7 @@
         "id": 16,
         "name": "玉米濃湯（大）",
         "buyers": [
-          {"name": "Lemon", "count": 2, "unit": "個", "bought": 0}
+          {"name": "筱瑄", "count": 2, "unit": "個", "bought": 0}
         ],
         "category": "食品/食材",
         "units": ["個"],
@@ -524,7 +524,7 @@
         "id": 18,
         "name": "魷魚原味（大）",
         "buyers": [
-          {"name": "Lemon", "count": 4, "unit": "個", "bought": 0}
+          {"name": "筱瑄", "count": 4, "unit": "個", "bought": 0}
         ],
         "category": "食品/食材",
         "units": ["個"],
@@ -538,7 +538,7 @@
         "id": 19,
         "name": "魷魚原味（小）",
         "buyers": [
-          {"name": "Dora", "count": 1, "unit": "個", "bought": 0}
+          {"name": "安", "count": 1, "unit": "個", "bought": 0}
         ],
         "category": "食品/食材",
         "units": ["個"],
@@ -552,7 +552,7 @@
         "id": 20,
         "name": "魷魚青陽辣椒（大）",
         "buyers": [
-          {"name": "筱瑄", "count": 1, "unit": "個", "bought": 0}
+          {"name": "邇寧", "count": 1, "unit": "個", "bought": 0}
         ],
         "category": "食品/食材",
         "units": ["個"],
@@ -566,8 +566,8 @@
         "id": 21,
         "name": "魷魚青陽辣椒（小）",
         "buyers": [
-          {"name": "Lemon", "count": 1, "unit": "個", "bought": 0},
-          {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
+          {"name": "筱瑄", "count": 1, "unit": "個", "bought": 0},
+          {"name": "安", "count": 1, "unit": "個", "bought": 0}
         ],
         "category": "食品/食材",
         "units": ["個"],
@@ -580,9 +580,7 @@
       {
         "id": 22,
         "name": "魷魚辣美乃滋（大）",
-        "buyers": [
-          {"name": "Dora", "count": 1, "unit": "個", "bought": 0}
-        ],
+        "buyers": [],
         "category": "食品/食材",
         "units": ["個"],
         "note": "",
@@ -595,7 +593,7 @@
         "id": 23,
         "name": "魷魚辣美乃滋（小）",
         "buyers": [
-          {"name": "Lemon", "count": 1, "unit": "個", "bought": 0}
+          {"name": "筱瑄", "count": 1, "unit": "個", "bought": 0}
         ],
         "category": "食品/食材",
         "units": ["個"],
@@ -652,7 +650,7 @@
         "id": 27,
         "name": "Ediya巧克力薄餅（大）",
         "buyers": [
-          {"name": "彩", "count": 1, "unit": "個", "bought": 0},
+          {"name": "Dora", "count": 1, "unit": "個", "bought": 0},
           {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
         ],
         "category": "食品/食材",
@@ -679,8 +677,9 @@
         "id": 29,
         "name": "嘴破藥膏",
         "buyers": [
+          {"name": "筱瑄", "count": 1, "unit": "個", "bought": 0},
           {"name": "Lemon", "count": 1, "unit": "個", "bought": 0},
-          {"name": "彩", "count": 1, "unit": "個", "bought": 0}
+          {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
         ],
         "category": "美妝保養",
         "units": ["個"],
@@ -694,9 +693,7 @@
         "id": 30,
         "name": "護足霜",
         "buyers": [
-          {"name": "敏敏", "count": 1, "unit": "個", "bought": 0},
-          {"name": "Lemon", "count": 1, "unit": "個", "bought": 0},
-          {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
+          {"name": "Lemon", "count": 1, "unit": "個", "bought": 0}
         ],
         "category": "美妝保養",
         "units": ["個"],
@@ -709,9 +706,7 @@
       {
         "id": 31,
         "name": "眼藥水mild",
-        "buyers": [
-          {"name": "七", "count": 1, "unit": "個", "bought": 0}
-        ],
+        "buyers": [],
         "category": "美妝保養",
         "units": ["個"],
         "note": "",
@@ -760,7 +755,7 @@
         "id": 35,
         "name": "Fwee唇膏sweet rose GN02",
         "buyers": [
-          {"name": "Lemon", "count": 1, "unit": "個", "bought": 0}
+          {"name": "筱瑄", "count": 1, "unit": "個", "bought": 0}
         ],
         "category": "美妝保養",
         "units": ["個"],
@@ -789,7 +784,7 @@
         "id": 37,
         "name": "Fixx 眼眉定妝",
         "buyers": [
-          {"name": "彩", "count": 1, "unit": "個", "bought": 0},
+          {"name": "Lemon", "count": 1, "unit": "個", "bought": 0},
           {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
         ],
         "category": "美妝保養",
@@ -873,7 +868,7 @@
         "id": 43,
         "name": "祛疤藥膏",
         "buyers": [
-          {"name": "敏敏", "count": 1, "unit": "個", "bought": 0}
+          {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
         ],
         "category": "美妝保養",
         "units": ["個"],
@@ -887,7 +882,7 @@
         "id": 44,
         "name": "epais頭皮精華",
         "buyers": [
-          {"name": "彩", "count": 1, "unit": "個", "bought": 0}
+          {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
         ],
         "category": "美妝保養",
         "units": ["個"],
@@ -960,8 +955,7 @@
         "id": 49,
         "name": "水光噴霧",
         "buyers": [
-          {"name": "Jane", "count": 1, "unit": "個", "bought": 0},
-          {"name": "邇寧", "count": 1, "unit": "個", "bought": 0}
+          {"name": "Lemon", "count": 2, "unit": "個", "bought": 0}
         ],
         "category": "美妝保養",
         "units": ["個"],
@@ -987,7 +981,7 @@
       },
       {
         "id": 51,
-        "name": "MEDITHERAPY\n保濕噴霧",
+        "name": "MEDITHERAPY 保濕噴霧",
         "buyers": [],
         "category": "美妝保養",
         "units": ["個"],
@@ -1039,7 +1033,7 @@
         "id": 55,
         "name": "定妝噴霧         毛孔柔焦款（組）",
         "buyers": [
-          {"name": "彩", "count": 1, "unit": "個", "bought": 0},
+          {"name": "Lemon", "count": 1, "unit": "個", "bought": 0},
           {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
         ],
         "category": "美妝保養",
@@ -1107,7 +1101,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v43_products');
+      var saved = localStorage.getItem('buylist_v44_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -1150,10 +1144,10 @@
 
     function manualSaveData() {
       try {
-        for (var i = 30; i < 44; i++) {
+        for (var i = 30; i < 45; i++) {
           localStorage.removeItem('buylist_v' + i + '_products');
         }
-        localStorage.setItem('buylist_v43_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v44_products', JSON.stringify(products));
         alert('💾 儲存成功！');
       } catch (e) {
         alert('儲存空間已滿，請清除部分瀏覽器快取！');
@@ -1656,7 +1650,6 @@
       var p = products[index];
       document.getElementById('editProdName').value = p.name;
       document.getElementById('editProdCategory').value = p.category || '食品/食材';
-      // 【修復】這裡確保開啟編輯時會正確把舊單位帶入輸入框中
       document.getElementById('editProdUnits').value = (p.units && p.units.length > 0) ? p.units.join(',') : '個';
       document.getElementById('editProdNote').value = p.note || '';
       document.getElementById('editProdImage').value = p.image || '';
@@ -1689,7 +1682,6 @@
         product.image = imgUrl;
         product.isHidden = isHidden;
 
-        // 【同步更新機制】若舊單位不在新單位清單中，自動轉為新單位的第一項
         if (product.buyers && product.buyers.length > 0) {
           var firstNewUnit = unitsArr[0];
           for (var j = 0; j < product.buyers.length; j++) {
@@ -1700,7 +1692,6 @@
           }
         }
 
-        // 同步更新採購進度記錄的單位索引鍵
         if (product.purchasedCounts) {
           var newPurchased = {};
           var firstNewUnit = unitsArr[0];
