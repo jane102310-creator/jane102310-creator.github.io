@@ -89,6 +89,7 @@
     .admin-action-btns { display: flex; gap: 6px; margin-top: 8px; }
     .btn-edit-prod { background: var(--accent); color: white; border: none; padding: 4px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
     .btn-del-prod { background: #D9534F; color: white; border: none; padding: 4px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
+    .btn-edit-order { background: var(--accent); color: white; border: none; padding: 2px 8px; font-size: 11px; border-radius: 6px; cursor: pointer; }
     .btn-submit { width: 100%; background-color: var(--accent); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
     .btn-save-manual { width: 100%; background-color: #28A745; color: white; border: none; padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 12px; margin-bottom: 8px; }
     .btn-danger { background-color: #D9534F !important; margin-top: 8px; }
@@ -130,7 +131,7 @@
     </div>
   </div>
 
-  <!-- 底部懸浮送出列 (當有勾選數量時顯示) -->
+  <!-- 底部懸浮送出列 -->
   <div class="floating-submit-bar" id="floatingSubmitBar">
     <div class="floating-submit-text" id="floatingText">已選 0 件商品</div>
     <button class="btn-floating-confirm" onclick="submitPendingCart()">確定送出</button>
@@ -151,6 +152,17 @@
       <span>管理者</span>
     </button>
   </nav>
+
+  <!-- 後台修改訂單數量 Modal -->
+  <div class="modal-overlay" id="editOrderModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end; z-index: 1200;">
+    <div class="modal-content" style="background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><h2 id="editOrderModalTitle" style="font-size: 18px; font-weight: 700;">修改訂單數量</h2><button class="btn-close" onclick="closeModal('editOrderModal')" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub);">✕</button></div>
+      <div class="form-group"><label class="form-label">購買人</label><input type="text" id="modalEditBuyerName" class="form-input" readonly style="background:#eee;" /></div>
+      <div class="form-group"><label class="form-label">商品名稱</label><input type="text" id="modalEditItemName" class="form-input" readonly style="background:#eee;" /></div>
+      <div class="form-group"><label class="form-label">數量 (<span id="modalEditUnitLabel"></span>)</label><input type="number" id="modalEditCountInput" class="form-input" min="1" /></div>
+      <button class="btn-submit" onclick="saveAdminEditOrder()">儲存修改</button>
+    </div>
+  </div>
 
   <!-- 修改商品資料 Modal -->
   <div class="modal-overlay" id="editProdModal" style="z-index: 1100; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end;">
@@ -229,11 +241,14 @@
       <div class="admin-section" id="adminSec4">
         <div class="form-group"><label class="form-label">修改網頁標題名稱</label><input type="text" id="siteTitleInput" class="form-input" placeholder="韓國代購清單" /></div>
         <button class="btn-submit" onclick="saveSiteTitle()" style="margin-bottom: 20px;">更新網頁標題</button>
-        <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+        <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-bottom: 20px;">
           <div class="form-group"><label class="form-label">目前密碼</label><input type="password" id="oldPwd" class="form-input" placeholder="請輸入目前密碼..." /></div>
           <div class="form-group"><label class="form-label">新密碼</label><input type="password" id="newPwd" class="form-input" placeholder="請輸入新密碼..." /></div>
           <div class="form-group"><label class="form-label">確認新密碼</label><input type="password" id="confirmPwd" class="form-input" placeholder="再次輸入新密碼..." /></div>
           <button class="btn-submit" onclick="saveNewPassword()">更新管理者密碼</button>
+        </div>
+        <div style="border-top: 1px solid var(--border-color); padding-top: 16px;">
+          <button class="btn-submit btn-danger" onclick="clearBrowserCacheAndReset()">🗑️ 清除所有瀏覽器快取並重設資料</button>
         </div>
       </div>
     </div>
@@ -241,10 +256,10 @@
 
   <script>
     var editingProdIndex = null;
+    var editingOrderInfo = null; // 用於後台修改訂單
     var isAuthed = false;
     var currentCategoryFilter = 'default_all';
     
-    // 暫存正要點選的商品數量 (格式: { productIndex: { unitName: count } })
     var pendingCart = {};
 
     var ADMIN_PASSWORD = localStorage.getItem('buylist_admin_pwd') || '1234';
@@ -1142,6 +1157,14 @@
       }
     }
 
+    function clearBrowserCacheAndReset() {
+      if (confirm('⚠️ 確定要清除所有瀏覽器快取並將資料重設回初始狀態嗎？')) {
+        localStorage.clear();
+        alert('已成功清除快取與資料！頁面即將重新載入。');
+        location.reload();
+      }
+    }
+
     function saveSiteTitle() {
       var newTitle = document.getElementById('siteTitleInput').value.trim();
       if (!newTitle) { alert('網頁標題不能為空！'); return; }
@@ -1221,7 +1244,6 @@
         var defaultSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
         var imgSrc = product.image ? fixImageUrl(product.image) : defaultSvg;
 
-        // 檢查目前暫存 cart 裡面這個商品選了幾個
         var currentCartUnits = pendingCart[i] || {};
         var units = product.units;
         var controlsHtml = '';
@@ -1324,7 +1346,6 @@
         }
       }
 
-      // 清空暫存與購買人欄位
       pendingCart = {};
       document.getElementById('globalBuyerInput').value = '';
 
@@ -1377,6 +1398,43 @@
       document.getElementById('newPwd').value = '';
       document.getElementById('confirmPwd').value = '';
       switchTab(1);
+    }
+
+    // 後台修改訂單數量相關函數
+    function openAdminEditOrderModal(itemIdx, buyerName, unitName, currentCount) {
+      editingOrderInfo = { itemIdx: itemIdx, buyerName: buyerName, unitName: unitName };
+      document.getElementById('modalEditBuyerName').value = buyerName;
+      document.getElementById('modalEditItemName').value = products[itemIdx].name;
+      document.getElementById('modalEditUnitLabel').innerText = unitName;
+      document.getElementById('modalEditCountInput').value = currentCount;
+      document.getElementById('editOrderModal').style.display = 'flex';
+    }
+
+    function saveAdminEditOrder() {
+      if (!editingOrderInfo) return;
+      var newCount = parseInt(document.getElementById('modalEditCountInput').value);
+      if (isNaN(newCount) || newCount < 1) {
+        alert('請輸入有效的數量（至少 1 以上）！');
+        return;
+      }
+
+      var p = products[editingOrderInfo.itemIdx];
+      if (!p || !p.buyers) return;
+
+      for (var j = 0; j < p.buyers.length; j++) {
+        var b = p.buyers[j];
+        if (b.name.trim() === editingOrderInfo.buyerName.trim() && (b.unit || '個') === editingOrderInfo.unitName) {
+          b.count = newCount;
+          break;
+        }
+      }
+
+      renderList();
+      updateCustomerStats();
+      updateAdminStats();
+      manualSaveData();
+      closeModal('editOrderModal');
+      alert('✅ 訂單數量修改成功！');
     }
 
     function adminDeleteCustomerItem(itemIdx, buyerName, unitName, countVal) {
@@ -1489,7 +1547,10 @@
           var it = items[m];
           itemsHtml += '<div style="font-size:13px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">' +
             '<span>• ' + it.itemName + ': <b>' + it.count + ' ' + it.unit + '</b></span>' +
-            '<button class="btn-del-prod" style="padding:2px 8px; font-size:11px;" onclick="adminDeleteCustomerItem(' + it.itemIdx + ', \'' + name + '\', \'' + it.unit + '\', ' + it.count + ')">刪除</button>' +
+            '<div style="display:flex; gap:4px;">' +
+              '<button class="btn-edit-order" onclick="openAdminEditOrderModal(' + it.itemIdx + ', \'' + name + '\', \'' + it.unit + '\', ' + it.count + ')">修改</button>' +
+              '<button class="btn-del-prod" style="padding:2px 8px; font-size:11px;" onclick="adminDeleteCustomerItem(' + it.itemIdx + ', \'' + name + '\', \'' + it.unit + '\', ' + it.count + ')">刪除</button>' +
+            '</div>' +
           '</div>';
         }
 
