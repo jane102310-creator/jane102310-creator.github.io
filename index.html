@@ -247,7 +247,7 @@
       <div class="admin-section" id="adminSec4">
         <div class="form-group"><label class="form-label">修改網頁標題名稱</label><input type="text" id="siteTitleInput" class="form-input" placeholder="韓國代購清單" /></div>
         <button class="btn-submit" onclick="saveSiteTitle()" style="margin-bottom: 20px;">更新網頁標題</button>
-           <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-bottom: 20px;">
+        <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-bottom: 20px;">
           <div class="form-group"><label class="form-label">目前密碼</label><input type="password" id="oldPwd" class="form-input" placeholder="請輸入目前密碼..." /></div>
           <div class="form-group"><label class="form-label">新密碼</label><input type="password" id="newPwd" class="form-input" placeholder="請輸入新密碼..." /></div>
           <div class="form-group"><label class="form-label">確認新密碼</label><input type="password" id="confirmPwd" class="form-input" placeholder="再次輸入新密碼..." /></div>
@@ -261,9 +261,7 @@
   </div>
 
   <script>
-  <script>
     function exportToExcel() {
-      // 建立 CSV 內容標頭 (加上 \uFEFF 讓 Excel 開啟時不會中文亂碼)
       var csvContent = "\uFEFF商品名稱,分類,單價(₩),單位,總需求數量,總金額(₩),已採購數量,購買人與數量明細\n";
 
       for (var i = 0; i < products.length; i++) {
@@ -346,7 +344,7 @@
         "price": "",
         "buyers": [
           {"name": "敏敏", "count": 4, "unit": "盒", "bought": 0},
-          {"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0},
+          {"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}
         ],
         "category": "食品/食材",
         "units": ["盒"],
@@ -1140,14 +1138,6 @@
       }
     }
 
-    function clearBrowserCacheAndReset() {
-      if (confirm('⚠️ 確定要清除所有瀏覽器快取並將資料重設回初始狀態嗎？')) {
-        localStorage.clear();
-        alert('已成功清除快取與資料！頁面即將重新載入。');
-        location.reload();
-      }
-    }
-
     function saveSiteTitle() {
       var newTitle = document.getElementById('siteTitleInput').value.trim();
       if (!newTitle) { alert('網頁標題不能為空！'); return; }
@@ -1219,7 +1209,6 @@
           }
           buyerTagsHTML += '<span class="tag tag-buyer">' + name + ' ' + detailStr.trim() + '</span>';
         }
-
 
         if (product.isCompleted) {
           buyerTagsHTML += '<span class="tag tag-status-done">✅ 已完成</span>';
@@ -1568,14 +1557,13 @@
           buyersHtml += '<div class="admin-buyer-detail">👤 ' + b.name + ': <b>' + b.count + '</b> ' + u + '</div>';
         }
 
-                var summaryArr = [];
+        var summaryArr = [];
         var progressHtml = '';
 
         for (var unitKey in unitTotals) {
           var totalNeeded = unitTotals[unitKey];
           var boughtCount = p.purchasedCounts[unitKey] || 0;
           
-          // 計算總金額（數量 × 單價，若無填寫單價則不計算）
           var priceNum = parseInt((p.price || '').replace(/,/g, '')) || 0;
           var totalPriceStr = '';
           if (priceNum > 0) {
@@ -1584,7 +1572,6 @@
           }
 
           summaryArr.push('共 ' + totalNeeded + ' ' + unitKey + totalPriceStr);
-
 
           progressHtml += '<div class="progress-box">' +
             '<div class="progress-row">' +
