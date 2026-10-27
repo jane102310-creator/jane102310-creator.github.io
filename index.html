@@ -22,6 +22,10 @@
     .header { background: var(--card-bg); padding: 18px; border-radius: 20px; box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
     .header-title h1 { font-size: 20px; font-weight: 700; color: var(--text-main); }
 
+    .global-buyer-bar { background: var(--card-bg); padding: 12px 16px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 16px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; }
+    .global-buyer-bar label { font-size: 13px; font-weight: 600; white-space: nowrap; color: var(--text-sub); }
+    .global-buyer-input { flex: 1; padding: 8px 12px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; background: #FAFAFA; outline: none; }
+
     .page-section { display: none; }
     .page-section.active { display: block; }
 
@@ -101,6 +105,12 @@
     <div class="header">
       <div class="header-title"><h1 id="headerTitleDisplay">韓國代購清單</h1></div>
     </div>
+
+    <!-- 頂部常駐購買人輸入欄 -->
+    <div class="global-buyer-bar">
+      <label for="globalBuyerInput">👤 購買人：</label>
+      <input type="text" id="globalBuyerInput" class="global-buyer-input" placeholder="請輸入購買人名字..." />
+    </div>
     
     <!-- 1. 首頁分頁 -->
     <div id="sectionHome" class="page-section active">
@@ -142,16 +152,15 @@
     </button>
   </nav>
 
-  <!-- 新增購買 Modal (可直接手動輸入登記購買人) -->
+  <!-- 數量與單位選擇 Modal -->
   <div class="modal-overlay" id="qtyModal">
     <div class="modal-content">
-      <div class="modal-header"><h2 id="editModalTitle">新增購買</h2><button class="btn-close" onclick="closeModal('qtyModal')">✕</button></div>
-      <div class="form-group"><label class="form-label">登記購買人</label><input type="text" id="editBuyerInput" class="form-input" placeholder="請輸入購買人名字..." /></div>
+      <div class="modal-header"><h2 id="editModalTitle">選擇數量</h2><button class="btn-close" onclick="closeModal('qtyModal')">✕</button></div>
       <div class="form-group">
         <label class="form-label">各單位購買數量</label>
         <div id="unitQtyContainer"></div>
       </div>
-      <button class="btn-submit" onclick="saveNewBuy()">確認新增登記</button>
+      <button class="btn-submit" onclick="saveNewBuy()">確定</button>
     </div>
   </div>
 
@@ -401,7 +410,7 @@
             '<div class="item-name">' + product.name + '</div>' +
             (product.note ? '<div class="item-note">' + product.note + '</div>' : '') +
           '</div>' +
-          '<button class="btn-buy-action" onclick="openQtyModal(' + i + ')">+ 購買</button>';
+          '<button class="btn-buy-action" onclick="openQtyModal(' + i + ')">+ 加入</button>';
         
         itemList.appendChild(card);
       }
@@ -460,10 +469,16 @@
     }
 
     function openQtyModal(index) {
+      var buyerName = document.getElementById('globalBuyerInput').value.trim();
+      if (!buyerName) {
+        alert('請先在上方輸入「購買人」姓名！');
+        document.getElementById('globalBuyerInput').focus();
+        return;
+      }
+
       currentEditIndex = index;
       var product = products[index];
-      document.getElementById('editModalTitle').innerText = '新增購買：' + product.name;
-      document.getElementById('editBuyerInput').value = ''; // 讓使用者自由手動輸入
+      document.getElementById('editModalTitle').innerText = product.name + ' (' + buyerName + ')';
       
       var container = document.getElementById('unitQtyContainer');
       container.innerHTML = '';
@@ -494,8 +509,8 @@
 
     function saveNewBuy() {
       if (currentEditIndex !== null) {
-        var buyerName = document.getElementById('editBuyerInput').value.trim();
-        if (!buyerName) { alert('請輸入登記購買人名稱！'); return; }
+        var buyerName = document.getElementById('globalBuyerInput').value.trim();
+        if (!buyerName) { alert('請輸入購買人名稱！'); return; }
 
         var product = products[currentEditIndex];
         var units = product.units && product.units.length > 0 ? product.units : ['個'];
@@ -514,7 +529,9 @@
         renderList();
         manualSaveData();
         closeModal('qtyModal');
-        alert('🎉 登記成功！');
+
+        // 清空上方購買人欄位，準備輸入下一位
+        document.getElementById('globalBuyerInput').value = '';
       }
     }
 
