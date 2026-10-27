@@ -42,6 +42,7 @@
     .tag { font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: 500; }
     .tag-category { background-color: var(--accent-light); color: var(--text-sub); }
     .tag-buyer { background-color: #E8E2D8; color: #5A4D41; }
+    .tag-price { background-color: #FFF3CD; color: #856404; font-weight: bold; }
     .tag-status-done { background-color: #D4EDDA; color: #155724; font-weight: bold; }
     .item-name { font-size: 15px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .item-note { font-size: 12px; color: #999; margin-top: 2px; }
@@ -180,6 +181,7 @@
           <option value="文具雜貨">文具雜貨</option>
         </select>
       </div>
+      <div class="form-group"><label class="form-label">韓幣金額 (₩)</label><input type="text" id="editProdPrice" class="form-input" placeholder="例如：15000 或 15,000" /></div>
       <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開，例如：盒,片）</label><input type="text" id="editProdUnits" class="form-input" placeholder="盒,片" /></div>
       <div class="form-group"><label class="form-label">商品圖片網址 (URL)</label><input type="text" id="editProdImage" class="form-input" placeholder="請貼上圖片網址..." /></div>
       <div class="form-group"><label class="form-label">備註說明</label><input type="text" id="editProdNote" class="form-input" /></div>
@@ -235,6 +237,7 @@
             <option value="文具雜貨">文具雜貨</option>
           </select>
         </div>
+        <div class="form-group"><label class="form-label">韓幣金額 (₩)</label><input type="text" id="itemPrice" class="form-input" placeholder="例如：15000 或 15,000" /></div>
         <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開，例如：盒,片）</label><input type="text" id="itemUnits" class="form-input" value="盒,片" placeholder="盒,片" /></div>
         <div class="form-group"><label class="form-label">商品圖片網址 (URL)</label><input type="text" id="itemImage" class="form-input" placeholder="請貼上圖片網址..." /></div>
         <div class="form-group"><label class="form-label">備註說明</label><input type="text" id="itemNote" class="form-input" placeholder="規格或口味..." /></div>
@@ -276,6 +279,7 @@
       {
         "id": 1,
         "name": "咖啡糖espresso",
+        "price": "",
         "buyers": [
           {"name": "敏敏", "count": 4, "unit": "個", "bought": 0},
           {"name": "筱瑄", "count": 1, "unit": "個", "bought": 0},
@@ -292,6 +296,7 @@
       {
         "id": 2,
         "name": "咖啡糖Americano",
+        "price": "",
         "buyers": [
           {"name": "筱瑄", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -306,6 +311,7 @@
       {
         "id": 3,
         "name": "咖啡糖Mint",
+        "price": "",
         "buyers": [
           {"name": "筱瑄", "count": 3, "unit": "個", "bought": 0},
           {"name": "潔琪", "count": 1, "unit": "個", "bought": 0},
@@ -322,6 +328,7 @@
       {
         "id": 4,
         "name": "積雪草面膜 （盒）",
+        "price": "",
         "buyers": [
           {"name": "敏敏", "count": 1, "unit": "盒", "bought": 0},
           {"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0},
@@ -343,6 +350,7 @@
       {
         "id": 5,
         "name": "玫瑰提亮面膜（盒）",
+        "price": "",
         "buyers": [
           {"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0},
           {"name": "Lemon", "count": 1, "unit": "盒", "bought": 0},
@@ -363,6 +371,7 @@
       {
         "id": 6,
         "name": "穀胱胜肽面膜(盒）",
+        "price": "",
         "buyers": [
           {"name": "彩", "count": 1, "unit": "盒", "bought": 0},
           {"name": "Jane", "count": 1, "unit": "盒", "bought": 0},
@@ -379,6 +388,7 @@
       {
         "id": 7,
         "name": "魚腥草棉片",
+        "price": "",
         "buyers": [
           {"name": "Dora", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -393,6 +403,7 @@
       {
         "id": 8,
         "name": "BIODANCE    水凝膠眼膜     膠原蛋白",
+        "price": "",
         "buyers": [
           {"name": "Jane", "count": 2, "unit": "個", "bought": 0}
         ],
@@ -407,6 +418,7 @@
       {
         "id": 9,
         "name": "BIODANCE     水凝膠眼膜      魚子醬 PDRN",
+        "price": "",
         "buyers": [
           {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -421,6 +433,7 @@
       {
         "id": 10,
         "name": "明太子海苔",
+        "price": "",
         "buyers": [
           {"name": "Dora", "count": 2, "unit": "個", "bought": 0}
         ],
@@ -435,6 +448,7 @@
       {
         "id": 11,
         "name": "巧克力貝果",
+        "price": "",
         "buyers": [
           {"name": "Dora", "count": 2, "unit": "個", "bought": 0}
         ],
@@ -449,6 +463,7 @@
       {
         "id": 12,
         "name": "蒜香奶油（大）",
+        "price": "",
         "buyers": [
           {"name": "筱瑄", "count": 2, "unit": "個", "bought": 0}
         ],
@@ -463,6 +478,7 @@
       {
         "id": 13,
         "name": "蒜香奶油（小）",
+        "price": "",
         "buyers": [],
         "category": "食品/食材",
         "units": ["個"],
@@ -475,6 +491,7 @@
       {
         "id": 14,
         "name": "蜂蜜奶油（大）",
+        "price": "",
         "buyers": [
           {"name": "筱瑄", "count": 2, "unit": "個", "bought": 0}
         ],
@@ -489,6 +506,7 @@
       {
         "id": 15,
         "name": "蜂蜜奶油（小）",
+        "price": "",
         "buyers": [],
         "category": "食品/食材",
         "units": ["個"],
@@ -501,6 +519,7 @@
       {
         "id": 16,
         "name": "玉米濃湯（大）",
+        "price": "",
         "buyers": [
           {"name": "筱瑄", "count": 2, "unit": "個", "bought": 0}
         ],
@@ -515,6 +534,7 @@
       {
         "id": 17,
         "name": "玉米濃湯（小）",
+        "price": "",
         "buyers": [],
         "category": "食品/食材",
         "units": ["個"],
@@ -527,6 +547,7 @@
       {
         "id": 18,
         "name": "魷魚原味（大）",
+        "price": "",
         "buyers": [
           {"name": "筱瑄", "count": 4, "unit": "個", "bought": 0}
         ],
@@ -541,6 +562,7 @@
       {
         "id": 19,
         "name": "魷魚原味（小）",
+        "price": "",
         "buyers": [
           {"name": "安", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -555,6 +577,7 @@
       {
         "id": 20,
         "name": "魷魚青陽辣椒（大）",
+        "price": "",
         "buyers": [
           {"name": "邇寧", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -569,6 +592,7 @@
       {
         "id": 21,
         "name": "魷魚青陽辣椒（小）",
+        "price": "",
         "buyers": [
           {"name": "筱瑄", "count": 1, "unit": "個", "bought": 0},
           {"name": "安", "count": 1, "unit": "個", "bought": 0}
@@ -584,6 +608,7 @@
       {
         "id": 22,
         "name": "魷魚辣美乃滋（大）",
+        "price": "",
         "buyers": [],
         "category": "食品/食材",
         "units": ["個"],
@@ -596,6 +621,7 @@
       {
         "id": 23,
         "name": "魷魚辣美乃滋（小）",
+        "price": "",
         "buyers": [
           {"name": "筱瑄", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -610,6 +636,7 @@
       {
         "id": 24,
         "name": "開心果奶昔",
+        "price": "",
         "buyers": [
           {"name": "Jane", "count": 10, "unit": "個", "bought": 0},
           {"name": "邇寧", "count": 5, "unit": "個", "bought": 0}
@@ -625,6 +652,7 @@
       {
         "id": 25,
         "name": "草莓奶昔",
+        "price": "",
         "buyers": [
           {"name": "Jane", "count": 10, "unit": "個", "bought": 0}
         ],
@@ -639,6 +667,7 @@
       {
         "id": 26,
         "name": "巧克力奶昔",
+        "price": "",
         "buyers": [
           {"name": "Jane", "count": 10, "unit": "個", "bought": 0}
         ],
@@ -653,6 +682,7 @@
       {
         "id": 27,
         "name": "Ediya巧克力薄餅（大）",
+        "price": "",
         "buyers": [
           {"name": "Dora", "count": 1, "unit": "個", "bought": 0},
           {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
@@ -668,6 +698,7 @@
       {
         "id": 28,
         "name": "Ediya巧克力薄餅（小）",
+        "price": "",
         "buyers": [],
         "category": "食品/食材",
         "units": ["個"],
@@ -680,6 +711,7 @@
       {
         "id": 29,
         "name": "嘴破藥膏",
+        "price": "",
         "buyers": [
           {"name": "筱瑄", "count": 1, "unit": "個", "bought": 0},
           {"name": "Lemon", "count": 1, "unit": "個", "bought": 0},
@@ -696,6 +728,7 @@
       {
         "id": 30,
         "name": "護足霜",
+        "price": "",
         "buyers": [
           {"name": "Lemon", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -710,6 +743,7 @@
       {
         "id": 31,
         "name": "眼藥水mild",
+        "price": "",
         "buyers": [],
         "category": "美妝保養",
         "units": ["個"],
@@ -722,6 +756,7 @@
       {
         "id": 32,
         "name": "眼藥水cool",
+        "price": "",
         "buyers": [],
         "category": "美妝保養",
         "units": ["個"],
@@ -734,6 +769,7 @@
       {
         "id": 33,
         "name": "眼藥水cool high",
+        "price": "",
         "buyers": [],
         "category": "美妝保養",
         "units": ["個"],
@@ -746,6 +782,7 @@
       {
         "id": 34,
         "name": "眼藥水ice",
+        "price": "",
         "buyers": [],
         "category": "美妝保養",
         "units": ["個"],
@@ -758,6 +795,7 @@
       {
         "id": 35,
         "name": "Fwee唇膏sweet rose GN02",
+        "price": "",
         "buyers": [
           {"name": "筱瑄", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -772,6 +810,7 @@
       {
         "id": 36,
         "name": "Fixx 妝前乳",
+        "price": "",
         "buyers": [
           {"name": "Lemon", "count": 1, "unit": "個", "bought": 0},
           {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
@@ -787,6 +826,7 @@
       {
         "id": 37,
         "name": "Fixx 眼眉定妝",
+        "price": "",
         "buyers": [
           {"name": "Lemon", "count": 1, "unit": "個", "bought": 0},
           {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
@@ -802,6 +842,7 @@
       {
         "id": 38,
         "name": "美容儀AGE-R PROx2",
+        "price": "",
         "buyers": [
           {"name": "Lemon", "count": 1, "unit": "個", "bought": 0},
           {"name": "Jane", "count": 2, "unit": "個", "bought": 0}
@@ -817,6 +858,7 @@
       {
         "id": 39,
         "name": "AnuaPDRN保濕噴霧",
+        "price": "",
         "buyers": [
           {"name": "Lemon", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -831,6 +873,7 @@
       {
         "id": 40,
         "name": "AnuaPDRN精華液（單）",
+        "price": "",
         "buyers": [
           {"name": "Lemon", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -845,6 +888,7 @@
       {
         "id": 41,
         "name": "AnuaPDRN精華液（組）",
+        "price": "",
         "buyers": [],
         "category": "美妝保養",
         "units": ["個"],
@@ -857,6 +901,7 @@
       {
         "id": 42,
         "name": "Medicube PDRN胜肽",
+        "price": "",
         "buyers": [
           {"name": "Lemon", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -871,6 +916,7 @@
       {
         "id": 43,
         "name": "祛疤藥膏",
+        "price": "",
         "buyers": [
           {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -885,6 +931,7 @@
       {
         "id": 44,
         "name": "epais頭皮精華",
+        "price": "",
         "buyers": [
           {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -899,6 +946,7 @@
       {
         "id": 45,
         "name": "頭皮噴霧迷迭香",
+        "price": "",
         "buyers": [
           {"name": "Jane", "count": 2, "unit": "個", "bought": 0},
           {"name": "邇寧", "count": 2, "unit": "個", "bought": 0}
@@ -914,6 +962,7 @@
       {
         "id": 46,
         "name": "頭皮噴霧茶樹",
+        "price": "",
         "buyers": [
           {"name": "Lemon", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -928,6 +977,7 @@
       {
         "id": 47,
         "name": "Anua魚腥草化妝水",
+        "price": "",
         "buyers": [
           {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -942,6 +992,7 @@
       {
         "id": 48,
         "name": "Torriden 化妝水",
+        "price": "",
         "buyers": [
           {"name": "Lemon", "count": 1, "unit": "個", "bought": 0},
           {"name": "Jane", "count": 1, "unit": "個", "bought": 0},
@@ -958,6 +1009,7 @@
       {
         "id": 49,
         "name": "水光噴霧",
+        "price": "",
         "buyers": [
           {"name": "Lemon", "count": 2, "unit": "個", "bought": 0}
         ],
@@ -972,6 +1024,7 @@
       {
         "id": 50,
         "name": "ongredients 化妝水",
+        "price": "",
         "buyers": [
           {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -986,6 +1039,7 @@
       {
         "id": 51,
         "name": "MEDITHERAPY 保濕噴霧",
+        "price": "",
         "buyers": [],
         "category": "美妝保養",
         "units": ["個"],
@@ -998,6 +1052,7 @@
       {
         "id": 52,
         "name": "定妝噴霧         奶油水光感（單）",
+        "price": "",
         "buyers": [
           {"name": "Lemon", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -1012,6 +1067,7 @@
       {
         "id": 53,
         "name": "定妝噴霧         奶油水光感（組）",
+        "price": "",
         "buyers": [],
         "category": "美妝保養",
         "units": ["個"],
@@ -1024,6 +1080,7 @@
       {
         "id": 54,
         "name": "定妝噴霧         毛孔柔焦款（單）",
+        "price": "",
         "buyers": [],
         "category": "美妝保養",
         "units": ["個"],
@@ -1036,6 +1093,7 @@
       {
         "id": 55,
         "name": "定妝噴霧         毛孔柔焦款（組）",
+        "price": "",
         "buyers": [
           {"name": "Lemon", "count": 1, "unit": "個", "bought": 0},
           {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
@@ -1051,6 +1109,7 @@
       {
         "id": 56,
         "name": "定妝噴霧         霧面柔光感（單）",
+        "price": "",
         "buyers": [
           {"name": "Lemon", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -1065,6 +1124,7 @@
       {
         "id": 57,
         "name": "定妝噴霧         霧面柔光感（組）",
+        "price": "",
         "buyers": [],
         "category": "美妝保養",
         "units": ["個"],
@@ -1077,6 +1137,7 @@
       {
         "id": 58,
         "name": "About tone #21.5",
+        "price": "",
         "buyers": [
           {"name": "Lemon", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -1091,6 +1152,7 @@
       {
         "id": 59,
         "name": "About tone #21",
+        "price": "",
         "buyers": [],
         "category": "美妝保養",
         "units": ["個"],
@@ -1105,7 +1167,7 @@
     var products = defaultProducts;
 
     try {
-      var saved = localStorage.getItem('buylist_v47_products');
+      var saved = localStorage.getItem('buylist_v48_products');
       if (saved) {
         var parsed = JSON.parse(saved);
         if (Array.isArray(parsed) && parsed.length > 0) { products = parsed; }
@@ -1148,10 +1210,10 @@
 
     function manualSaveData() {
       try {
-        for (var i = 30; i < 48; i++) {
+        for (var i = 30; i < 49; i++) {
           localStorage.removeItem('buylist_v' + i + '_products');
         }
-        localStorage.setItem('buylist_v47_products', JSON.stringify(products));
+        localStorage.setItem('buylist_v48_products', JSON.stringify(products));
         alert('💾 儲存成功！');
       } catch (e) {
         alert('儲存空間已滿，請清除部分瀏覽器快取！');
@@ -1236,6 +1298,10 @@
             detailStr += '+' + details[d].count + details[d].unit + ' ';
           }
           buyerTagsHTML += '<span class="tag tag-buyer">' + name + ' ' + detailStr.trim() + '</span>';
+        }
+
+        if (product.price) {
+          buyerTagsHTML += '<span class="tag tag-price">₩ ' + product.price + '</span>';
         }
 
         if (product.isCompleted) {
@@ -1614,6 +1680,7 @@
         var defaultThumb = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
         var thumbSrc = p.image ? fixImageUrl(p.image) : defaultThumb;
         var unitsText = p.units ? p.units.join(',') : '個';
+        var priceDisplay = p.price ? ' | ₩ ' + p.price : ' | ₩ 未填';
         var statusBtnClass = p.isCompleted ? 'btn-status-toggle status-done' : 'btn-status-toggle status-ongoing';
         var statusBtnText = p.isCompleted ? '✅ 已完成採購 (點擊改為進行中)' : '⏳ 採購進行中 (點擊標記為完成)';
         var hiddenBadge = p.isHidden ? ' <span style="color:#D9534F; font-size:11px;">(已隱藏)</span>' : '';
@@ -1622,7 +1689,7 @@
         row.className = 'admin-item-row';
         row.innerHTML = '<img src="' + thumbSrc + '" class="admin-thumb" alt="" />' +
           '<div class="admin-item-info">' +
-            '<div class="admin-item-title"><span>📦 ' + p.name + hiddenBadge + ' <small style="color:var(--text-sub);">(' + unitsText + ')</small></span></div>' +
+            '<div class="admin-item-title"><span>📦 ' + p.name + hiddenBadge + ' <small style="color:var(--text-sub);">(' + unitsText + priceDisplay + ')</small></span></div>' +
             '<div class="admin-summary-total">📊 ' + summaryText + '</div>' +
             buyersHtml +
             progressHtml +
@@ -1654,6 +1721,7 @@
       var p = products[index];
       document.getElementById('editProdName').value = p.name;
       document.getElementById('editProdCategory').value = p.category || '食品/食材';
+      document.getElementById('editProdPrice').value = p.price || '';
       document.getElementById('editProdUnits').value = (p.units && p.units.length > 0) ? p.units.join(',') : '個';
       document.getElementById('editProdNote').value = p.note || '';
       document.getElementById('editProdImage').value = p.image || '';
@@ -1669,6 +1737,7 @@
       if (editingProdIndex !== null) {
         var name = document.getElementById('editProdName').value.trim();
         var category = document.getElementById('editProdCategory').value;
+        var price = document.getElementById('editProdPrice').value.trim();
         var unitsStr = document.getElementById('editProdUnits').value.trim();
         var note = document.getElementById('editProdNote').value.trim();
         var imgUrl = document.getElementById('editProdImage').value.trim();
@@ -1681,6 +1750,7 @@
         var product = products[editingProdIndex];
         product.name = name;
         product.category = category;
+        product.price = price;
         product.units = unitsArr;
         product.note = note;
         product.image = imgUrl;
@@ -1714,13 +1784,14 @@
         updateCustomerStats();
         manualSaveData();
         closeEditProdModal();
-        alert('✅ 商品資料與舊訂單單位同步更新成功！');
+        alert('✅ 商品資料與韓幣金額更新成功！');
       }
     }
 
     function saveNewProd() {
       var name = document.getElementById('itemName').value.trim();
       var category = document.getElementById('itemCategory').value;
+      var price = document.getElementById('itemPrice').value.trim();
       var unitsStr = document.getElementById('itemUnits').value.trim();
       var note = document.getElementById('itemNote').value.trim();
       var imgUrl = document.getElementById('itemImage').value.trim();
@@ -1729,13 +1800,14 @@
       
       var unitsArr = unitsStr ? unitsStr.split(/[,，]/).map(function(s){ return s.trim(); }).filter(Boolean) : ['個'];
 
-      products.unshift({ id: Date.now(), name: name, buyers: [], category: category, units: unitsArr, note: note, image: imgUrl, purchasedCounts: {}, isCompleted: false, isHidden: false });
+      products.unshift({ id: Date.now(), name: name, price: price, buyers: [], category: category, units: unitsArr, note: note, image: imgUrl, purchasedCounts: {}, isCompleted: false, isHidden: false });
       renderList();
       updateAdminStats();
       updateCustomerStats();
       manualSaveData();
       
       document.getElementById('itemName').value = '';
+      document.getElementById('itemPrice').value = '';
       document.getElementById('itemNote').value = '';
       document.getElementById('itemImage').value = '';
       document.getElementById('itemUnits').value = '盒,片';
