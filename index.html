@@ -199,7 +199,7 @@
       <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><h2 style="font-size: 18px; font-weight: 700;">🔐 管理者登入</h2><button class="btn-close" onclick="closeModal('loginModal')" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub);">✕</button></div>
       <div class="form-group">
         <label class="form-label">請輸入密碼</label>
-        <input type="password" id="adminPwdInput" class="form-input" placeholder="預設密碼: 1234" />
+        <input type="password" id="adminPwdInput" class="form-input" placeholder="請輸入密碼" />
       </div>
       <button class="btn-submit" onclick="submitLogin()">登入後台</button>
     </div>
@@ -268,7 +268,7 @@
     
     var pendingCart = {};
 
-    var ADMIN_PASSWORD = localStorage.getItem('buylist_admin_pwd') || '1234';
+    var ADMIN_PASSWORD = localStorage.getItem('buylist_admin_pwd') || '1010520';
     var SITE_TITLE = localStorage.getItem('buylist_site_title') || '韓國代購清單';
 
     document.getElementById('pageTitleText').innerText = SITE_TITLE;
