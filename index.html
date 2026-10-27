@@ -261,6 +261,70 @@
   </div>
 
   <script>
+  <script>
+    function exportToExcel() {
+      // 建立 CSV 內容標頭 (加上 \uFEFF 讓 Excel 開啟時不會中文亂碼)
+      var csvContent = "\uFEFF商品名稱,分類,單價(₩),單位,總需求數量,總金額(₩),已採購數量,購買人與數量明細\n";
+
+      for (var i = 0; i < products.length; i++) {
+        var p = products[i];
+        if (!p.buyers) p.buyers = [];
+        if (!p.purchasedCounts) p.purchasedCounts = {};
+
+        var unitTotals = {};
+        var buyerDetailsArr = [];
+
+        for (var j = 0; j < p.buyers.length; j++) {
+          var b = p.buyers[j];
+          var u = b.unit || '個';
+          if (!unitTotals[u]) unitTotals[u] = 0;
+          unitTotals[u] += b.count;
+          buyerDetailsArr.push(b.name + " " + b.count + u);
+        }
+
+        var priceNum = parseInt((p.price || '').replace(/,/g, '')) || 0;
+        var unitsArr = p.units && p.units.length > 0 ? p.units : ['個'];
+
+        for (var uIdx = 0; uIdx < unitsArr.length; uIdx++) {
+          var unitKey = unitsArr[uIdx];
+          var totalNeeded = unitTotals[unitKey] || 0;
+          var boughtCount = p.purchasedCounts[unitKey] || 0;
+          var totalSum = priceNum > 0 ? totalNeeded * priceNum : 0;
+
+          var filteredBuyers = buyerDetailsArr.filter(function(item) {
+            return item.includes(unitKey);
+          }).join('; ');
+
+          var nameEscaped = '"' + (p.name || '').replace(/"/g, '""') + '"';
+          var categoryEscaped = '"' + (p.category || '') + '"';
+          var detailsEscaped = '"' + filteredBuyers.replace(/"/g, '""') + '"';
+
+          csvContent += [
+            nameEscaped,
+            categoryEscaped,
+            priceNum,
+            unitKey,
+            totalNeeded,
+            totalSum,
+            boughtCount,
+            detailsEscaped
+          ].join(",") + "\n";
+        }
+      }
+
+      var blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      var url = URL.createObjectURL(blob);
+      var link = document.createElement("a");
+      link.setAttribute("href", url);
+      
+      var dateStr = new Date().toISOString().slice(0, 10);
+      link.setAttribute("download", "韓國代購訂單統計_" + dateStr + ".csv");
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    }
+
     var editingProdIndex = null;
     var editingOrderInfo = null;
     var isAuthed = false;
