@@ -212,13 +212,14 @@
         <button class="admin-tab-btn" id="tabBtn4" onclick="switchTab(4)">⚙️ 設定</button>
       </div>
 
+      <!-- 高度縮小為 32vh，減少上下滑動 -->
       <div class="admin-section active" id="adminSec1">
-        <div id="adminContentList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 12px;"></div>
+        <div id="adminContentList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
         <button class="btn-save-manual" onclick="manualSaveData()">💾 儲存所有變更</button>
       </div>
 
       <div class="admin-section" id="adminSec2">
-        <div id="customerContentList" style="max-height: 50vh; overflow-y: auto; margin-bottom: 12px;"></div>
+        <div id="customerContentList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
         <button class="btn-save-manual" onclick="manualSaveData()">💾 儲存所有變更</button>
       </div>
 
@@ -256,7 +257,7 @@
 
   <script>
     var editingProdIndex = null;
-    var editingOrderInfo = null; // 用於後台修改訂單
+    var editingOrderInfo = null;
     var isAuthed = false;
     var currentCategoryFilter = 'default_all';
     
@@ -1400,7 +1401,6 @@
       switchTab(1);
     }
 
-    // 後台修改訂單數量相關函數
     function openAdminEditOrderModal(itemIdx, buyerName, unitName, currentCount) {
       editingOrderInfo = { itemIdx: itemIdx, buyerName: buyerName, unitName: unitName };
       document.getElementById('modalEditBuyerName').value = buyerName;
