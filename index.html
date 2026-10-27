@@ -93,6 +93,9 @@
     .btn-submit { width: 100%; background-color: var(--accent); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
     .btn-save-manual { width: 100%; background-color: #28A745; color: white; border: none; padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 12px; margin-bottom: 8px; }
     .btn-danger { background-color: #D9534F !important; margin-top: 8px; }
+    .form-group { margin-bottom: 12px; }
+    .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-sub); }
+    .form-input, .form-select { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; background: #FAFAFA; outline: none; }
   </style>
 </head>
 <body>
@@ -212,7 +215,6 @@
         <button class="admin-tab-btn" id="tabBtn4" onclick="switchTab(4)">⚙️ 設定</button>
       </div>
 
-      <!-- 高度縮小為 32vh，減少上下滑動 -->
       <div class="admin-section active" id="adminSec1">
         <div id="adminContentList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
         <button class="btn-save-manual" onclick="manualSaveData()">💾 儲存所有變更</button>
@@ -1654,7 +1656,8 @@
       var p = products[index];
       document.getElementById('editProdName').value = p.name;
       document.getElementById('editProdCategory').value = p.category || '食品/食材';
-      document.getElementById('editProdUnits').value = p.units ? p.units.join(',') : '盒,片';
+      // 【修復】這裡確保開啟編輯時會正確把舊單位帶入輸入框中
+      document.getElementById('editProdUnits').value = (p.units && p.units.length > 0) ? p.units.join(',') : '個';
       document.getElementById('editProdNote').value = p.note || '';
       document.getElementById('editProdImage').value = p.image || '';
       document.getElementById('editProdHidden').checked = !!p.isHidden;
@@ -1678,18 +1681,45 @@
 
         var unitsArr = unitsStr ? unitsStr.split(/[,，]/).map(function(s){ return s.trim(); }).filter(Boolean) : ['個'];
 
-        products[editingProdIndex].name = name;
-        products[editingProdIndex].category = category;
-        products[editingProdIndex].units = unitsArr;
-        products[editingProdIndex].note = note;
-        products[editingProdIndex].image = imgUrl;
-        products[editingProdIndex].isHidden = isHidden;
+        var product = products[editingProdIndex];
+        product.name = name;
+        product.category = category;
+        product.units = unitsArr;
+        product.note = note;
+        product.image = imgUrl;
+        product.isHidden = isHidden;
+
+        // 【同步更新機制】若舊單位不在新單位清單中，自動轉為新單位的第一項
+        if (product.buyers && product.buyers.length > 0) {
+          var firstNewUnit = unitsArr[0];
+          for (var j = 0; j < product.buyers.length; j++) {
+            var currentUnit = product.buyers[j].unit || '個';
+            if (!unitsArr.includes(currentUnit)) {
+              product.buyers[j].unit = firstNewUnit;
+            }
+          }
+        }
+
+        // 同步更新採購進度記錄的單位索引鍵
+        if (product.purchasedCounts) {
+          var newPurchased = {};
+          var firstNewUnit = unitsArr[0];
+          for (var uKey in product.purchasedCounts) {
+            if (unitsArr.includes(uKey)) {
+              newPurchased[uKey] = product.purchasedCounts[uKey];
+            } else {
+              newPurchased[firstNewUnit] = (newPurchased[firstNewUnit] || 0) + product.purchasedCounts[uKey];
+            }
+          }
+          product.purchasedCounts = newPurchased;
+        }
 
         renderList();
         updateAdminStats();
         updateCustomerStats();
         manualSaveData();
         closeEditProdModal();
+        alert('✅ 商品資料與舊訂單單位同步更新成功！');
       }
     }
 
