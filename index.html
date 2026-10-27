@@ -16,7 +16,7 @@
       --shadow: 0 4px 16px rgba(90, 77, 65, 0.06);
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
-    body { background-color: var(--bg-color); color: var(--text-main); padding: 16px; padding-bottom: 90px; }
+    body { background-color: var(--bg-color); color: var(--text-main); padding: 16px; padding-bottom: 150px; }
     .container { max-width: 480px; margin: 0 auto; }
     
     .header { background: var(--card-bg); padding: 18px; border-radius: 20px; box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
@@ -45,32 +45,23 @@
     .tag-status-done { background-color: #D4EDDA; color: #155724; font-weight: bold; }
     .item-name { font-size: 15px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .item-note { font-size: 12px; color: #999; margin-top: 2px; }
-    .btn-buy-action { background-color: var(--accent); color: white; border: none; padding: 8px 16px; border-radius: 14px; font-size: 13px; font-weight: 600; cursor: pointer; white-space: nowrap; flex-shrink: 0; }
+    
+    .item-action-box { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
+    .qty-inline-controls { display: flex; align-items: center; gap: 6px; background: #FAFAFA; padding: 4px 8px; border-radius: 10px; border: 1px solid var(--border-color); }
+    .btn-qty-mini { width: 26px; height: 26px; border-radius: 6px; border: 1px solid var(--border-color); background: #FFF; font-size: 14px; font-weight: bold; cursor: pointer; color: var(--text-main); display: flex; align-items: center; justify-content: center; }
+    .btn-qty-mini.plus { background: var(--accent); color: white; border: none; }
+    .qty-display-mini { font-size: 14px; font-weight: bold; min-width: 20px; text-align: center; }
+
+    /* 底部懸浮送出列 */
+    .floating-submit-bar { position: fixed; bottom: 65px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 440px; background: #8C705F; color: white; padding: 12px 18px; border-radius: 16px; box-shadow: 0 6px 20px rgba(0,0,0,0.2); display: none; justify-content: space-between; align-items: center; z-index: 998; }
+    .floating-submit-bar.active { display: flex; }
+    .floating-submit-text { font-size: 14px; font-weight: bold; }
+    .btn-floating-confirm { background: white; color: var(--accent); border: none; padding: 8px 16px; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; }
 
     .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #FFFFFF; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 8px 0; z-index: 999; box-shadow: 0 -4px 12px rgba(0,0,0,0.05); }
     .nav-item { background: none; border: none; display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-sub); cursor: pointer; gap: 3px; flex: 1; }
     .nav-item.active { color: var(--accent); font-weight: bold; }
     .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
-
-    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end; z-index: 1000; }
-    .modal-overlay.active { display: flex; }
-    .modal-content { background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px; max-height: 90vh; overflow-y: auto; }
-    .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
-    .modal-header h2 { font-size: 18px; font-weight: 700; }
-    .btn-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub); }
-    .form-group { margin-bottom: 16px; }
-    .form-label { font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-main); display: block; }
-    .form-input, .form-select { width: 100%; padding: 12px; border: 1px solid var(--border-color); border-radius: 12px; font-size: 14px; background: #FAFAFA; outline: none; }
-    
-    .unit-qty-row { display: flex; justify-content: space-between; align-items: center; background: #FAFAFA; padding: 10px 12px; border-radius: 12px; margin-bottom: 8px; border: 1px solid var(--border-color); }
-    .unit-qty-controls { display: flex; align-items: center; gap: 12px; }
-    .btn-qty-sm { width: 32px; height: 32px; border-radius: 8px; border: 1px solid var(--border-color); background: var(--card-bg); font-size: 16px; font-weight: bold; cursor: pointer; color: var(--text-main); }
-    .btn-qty-sm.plus { background: var(--accent); color: white; border: none; }
-    .qty-display-sm { font-size: 16px; font-weight: bold; min-width: 24px; text-align: center; }
-
-    .btn-submit { width: 100%; background-color: var(--accent); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
-    .btn-save-manual { width: 100%; background-color: #28A745; color: white; border: none; padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 12px; margin-bottom: 8px; }
-    .btn-danger { background-color: #D9534F !important; margin-top: 8px; }
 
     .admin-nav { display: flex; gap: 4px; margin-bottom: 16px; }
     .admin-tab-btn { flex: 1; padding: 8px 2px; border: none; background: #EFECE6; color: var(--text-sub); font-weight: 600; border-radius: 10px; cursor: pointer; font-size: 11px; text-align: center; }
@@ -98,6 +89,9 @@
     .admin-action-btns { display: flex; gap: 6px; margin-top: 8px; }
     .btn-edit-prod { background: var(--accent); color: white; border: none; padding: 4px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
     .btn-del-prod { background: #D9534F; color: white; border: none; padding: 4px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
+    .btn-submit { width: 100%; background-color: var(--accent); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
+    .btn-save-manual { width: 100%; background-color: #28A745; color: white; border: none; padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 12px; margin-bottom: 8px; }
+    .btn-danger { background-color: #D9534F !important; margin-top: 8px; }
   </style>
 </head>
 <body>
@@ -109,7 +103,7 @@
     <!-- 頂部常駐購買人輸入欄 -->
     <div class="global-buyer-bar">
       <label for="globalBuyerInput">👤 購買人：</label>
-      <input type="text" id="globalBuyerInput" class="global-buyer-input" placeholder="請輸入購買人名字..." />
+      <input type="text" id="globalBuyerInput" class="global-buyer-input" placeholder="請先輸入購買人名字..." oninput="checkPendingCart()" />
     </div>
     
     <!-- 1. 首頁分頁 -->
@@ -136,6 +130,12 @@
     </div>
   </div>
 
+  <!-- 底部懸浮送出列 (當有勾選數量時顯示) -->
+  <div class="floating-submit-bar" id="floatingSubmitBar">
+    <div class="floating-submit-text" id="floatingText">已選 0 件商品</div>
+    <button class="btn-floating-confirm" onclick="submitPendingCart()">確定送出</button>
+  </div>
+
   <!-- 底部導覽列 -->
   <nav class="bottom-nav">
     <button class="nav-item active" onclick="switchSection('home', this)">
@@ -152,22 +152,10 @@
     </button>
   </nav>
 
-  <!-- 數量與單位選擇 Modal -->
-  <div class="modal-overlay" id="qtyModal">
-    <div class="modal-content">
-      <div class="modal-header"><h2 id="editModalTitle">選擇數量</h2><button class="btn-close" onclick="closeModal('qtyModal')">✕</button></div>
-      <div class="form-group">
-        <label class="form-label">各單位購買數量</label>
-        <div id="unitQtyContainer"></div>
-      </div>
-      <button class="btn-submit" onclick="saveNewBuy()">確定</button>
-    </div>
-  </div>
-
   <!-- 修改商品資料 Modal -->
-  <div class="modal-overlay" id="editProdModal" style="z-index: 1100;">
-    <div class="modal-content">
-      <div class="modal-header"><h2>✏️ 修改商品資料</h2><button class="btn-close" onclick="closeEditProdModal()">✕</button></div>
+  <div class="modal-overlay" id="editProdModal" style="z-index: 1100; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end;">
+    <div class="modal-content" style="background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><h2 style="font-size: 18px; font-weight: 700;">✏️ 修改商品資料</h2><button class="btn-close" onclick="closeEditProdModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub);">✕</button></div>
       <div class="form-group"><label class="form-label">商品名稱 *</label><input type="text" id="editProdName" class="form-input" /></div>
       <div class="form-group"><label class="form-label">分類</label>
         <select id="editProdCategory" class="form-select">
@@ -189,9 +177,9 @@
   </div>
 
   <!-- 管理者登入 Modal -->
-  <div class="modal-overlay" id="loginModal">
-    <div class="modal-content">
-      <div class="modal-header"><h2>🔐 管理者登入</h2><button class="btn-close" onclick="closeModal('loginModal')">✕</button></div>
+  <div class="modal-overlay" id="loginModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end; z-index: 1000;">
+    <div class="modal-content" style="background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><h2 style="font-size: 18px; font-weight: 700;">🔐 管理者登入</h2><button class="btn-close" onclick="closeModal('loginModal')" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub);">✕</button></div>
       <div class="form-group">
         <label class="form-label">請輸入密碼</label>
         <input type="password" id="adminPwdInput" class="form-input" placeholder="預設密碼: 1234" />
@@ -201,9 +189,9 @@
   </div>
 
   <!-- 管理者後台 Modal -->
-  <div class="modal-overlay" id="adminModal">
-    <div class="modal-content">
-      <div class="modal-header"><h2>🔐 管理者後台</h2><button class="btn-close" onclick="closeModal('adminModal')">✕</button></div>
+  <div class="modal-overlay" id="adminModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end; z-index: 1000;">
+    <div class="modal-content" style="background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><h2 style="font-size: 18px; font-weight: 700;">🔐 管理者後台</h2><button class="btn-close" onclick="closeModal('adminModal')" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub);">✕</button></div>
       
       <div class="admin-nav">
         <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 商品及統計</button>
@@ -252,11 +240,13 @@
   </div>
 
   <script>
-    var currentEditIndex = null;
     var editingProdIndex = null;
     var isAuthed = false;
     var currentCategoryFilter = 'default_all';
     
+    // 暫存正要點選的商品數量 (格式: { productIndex: { unitName: count } })
+    var pendingCart = {};
+
     var ADMIN_PASSWORD = localStorage.getItem('buylist_admin_pwd') || '1234';
     var SITE_TITLE = localStorage.getItem('buylist_site_title') || '韓國代購清單';
 
@@ -264,7 +254,6 @@
     document.getElementById('headerTitleDisplay').innerText = SITE_TITLE;
     document.getElementById('siteTitleInput').value = SITE_TITLE;
 
-    // 從 CSV 匯入的 59 項完整商品與登記清單
     var defaultProducts = [
       {
         "id": 1,
@@ -381,7 +370,7 @@
       },
       {
         "id": 8,
-        "name": "BIODANCE    水凝膠眼膜     膠原蛋白",
+        "name": "BIODANCE 水凝膠眼膜 膠原蛋白",
         "buyers": [
           {"name": "Jane", "count": 2, "unit": "個", "bought": 0}
         ],
@@ -395,7 +384,7 @@
       },
       {
         "id": 9,
-        "name": "BIODANCE     水凝膠眼膜      魚子醬 PDRN",
+        "name": "BIODANCE 水凝膠眼膜 魚子醬 PDRN",
         "buyers": [
           {"name": "Jane", "count": 1, "unit": "個", "bought": 0}
         ],
@@ -1232,37 +1221,131 @@
         var defaultSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
         var imgSrc = product.image ? fixImageUrl(product.image) : defaultSvg;
 
+        // 檢查目前暫存 cart 裡面這個商品選了幾個
+        var currentCartUnits = pendingCart[i] || {};
+        var units = product.units;
+        var controlsHtml = '';
+        
+        for (var u = 0; u < units.length; u++) {
+          var unitName = units[u];
+          var qty = currentCartUnits[unitName] || 0;
+          controlsHtml += '<div style="display:flex; align-items:center; gap:4px; margin-bottom:2px;">' +
+            '<span style="font-size:11px; color:var(--text-sub);">' + (units.length > 1 ? unitName : '') + '</span>' +
+            '<div class="qty-inline-controls">' +
+              '<button class="btn-qty-mini" onclick="adjustPendingQty(' + i + ', \'' + unitName + '\', -1)">-</button>' +
+              '<span class="qty-display-mini" id="cart_qty_' + i + '_' + u + '">' + qty + '</span>' +
+              '<button class="btn-qty-mini plus" onclick="adjustPendingQty(' + i + ', \'' + unitName + '\', 1)">+</button>' +
+            '</div>' +
+          '</div>';
+        }
+
         card.innerHTML = '<img src="' + imgSrc + '" class="item-img" alt="商品圖片" />' +
           '<div class="item-info">' +
             '<div class="item-tags"><span class="tag tag-category">' + product.category + '</span>' + buyerTagsHTML + '</div>' +
             '<div class="item-name">' + product.name + '</div>' +
             (product.note ? '<div class="item-note">' + product.note + '</div>' : '') +
           '</div>' +
-          '<button class="btn-buy-action" onclick="openQtyModal(' + i + ')">+ 加入</button>';
+          '<div class="item-action-box">' + controlsHtml + '</div>';
         
         itemList.appendChild(card);
       }
-      try {
-        for (var cleanIdx = 30; cleanIdx < 44; cleanIdx++) {
-          localStorage.removeItem('buylist_v' + cleanIdx + '_products');
+      checkPendingCart();
+    }
+
+    function adjustPendingQty(itemIdx, unitName, delta) {
+      var buyerName = document.getElementById('globalBuyerInput').value.trim();
+      if (!buyerName) {
+        alert('請先在上方輸入「購買人」姓名！');
+        document.getElementById('globalBuyerInput').focus();
+        return;
+      }
+
+      if (!pendingCart[itemIdx]) {
+        pendingCart[itemIdx] = {};
+      }
+      var current = pendingCart[itemIdx][unitName] || 0;
+      var next = current + delta;
+      if (next < 0) next = 0;
+      
+      if (next === 0) {
+        delete pendingCart[itemIdx][unitName];
+        if (Object.keys(pendingCart[itemIdx]).length === 0) {
+          delete pendingCart[itemIdx];
         }
-        localStorage.setItem('buylist_v43_products', JSON.stringify(products));
-      } catch(e) {}
+      } else {
+        pendingCart[itemIdx][unitName] = next;
+      }
+
+      renderList();
+    }
+
+    function checkPendingCart() {
+      var bar = document.getElementById('floatingSubmitBar');
+      var textEl = document.getElementById('floatingText');
+      var buyerName = document.getElementById('globalBuyerInput').value.trim();
+
+      var totalItems = 0;
+      var keys = Object.keys(pendingCart);
+      for (var i = 0; i < keys.length; i++) {
+        var uMap = pendingCart[keys[i]];
+        var uKeys = Object.keys(uMap);
+        for (var j = 0; j < uKeys.length; j++) {
+          totalItems += uMap[uKeys[j]];
+        }
+      }
+
+      if (totalItems > 0 && buyerName) {
+        textEl.innerText = '👤 ' + buyerName + ' 已選 ' + totalItems + ' 件商品';
+        bar.classList.add('active');
+      } else {
+        bar.classList.remove('active');
+      }
+    }
+
+    function submitPendingCart() {
+      var buyerName = document.getElementById('globalBuyerInput').value.trim();
+      if (!buyerName) { alert('請輸入購買人名稱！'); return; }
+
+      var keys = Object.keys(pendingCart);
+      if (keys.length === 0) { alert('尚未選擇任何商品數量！'); return; }
+
+      for (var i = 0; i < keys.length; i++) {
+        var itemIdx = parseInt(keys[i]);
+        var product = products[itemIdx];
+        var uMap = pendingCart[itemIdx];
+        var unitNames = Object.keys(uMap);
+
+        for (var j = 0; j < unitNames.length; j++) {
+          var uName = unitNames[j];
+          var qty = uMap[uName];
+          if (qty > 0) {
+            product.buyers.push({ name: buyerName, count: qty, unit: uName, bought: 0 });
+          }
+        }
+      }
+
+      // 清空暫存與購買人欄位
+      pendingCart = {};
+      document.getElementById('globalBuyerInput').value = '';
+
+      renderList();
+      manualSaveData();
+      alert('🎉 登記成功！');
     }
 
     function openAdminPortal() {
       if (isAuthed) {
         updateAdminStats();
         updateCustomerStats();
-        document.getElementById('adminModal').classList.add('active');
+        document.getElementById('adminModal').style.display = 'flex';
       } else {
         document.getElementById('adminPwdInput').value = '';
-        document.getElementById('loginModal').classList.add('active');
+        document.getElementById('loginModal').style.display = 'flex';
       }
     }
 
     function closeModal(modalId) {
-      document.getElementById(modalId).classList.remove('active');
+      document.getElementById(modalId).style.display = 'none';
     }
 
     function submitLogin() {
@@ -1272,7 +1355,7 @@
         closeModal('loginModal');
         updateAdminStats();
         updateCustomerStats();
-        document.getElementById('adminModal').classList.add('active');
+        document.getElementById('adminModal').style.display = 'flex';
       } else {
         alert('密碼錯誤！');
       }
@@ -1294,73 +1377,6 @@
       document.getElementById('newPwd').value = '';
       document.getElementById('confirmPwd').value = '';
       switchTab(1);
-    }
-
-    function openQtyModal(index) {
-      var buyerName = document.getElementById('globalBuyerInput').value.trim();
-      if (!buyerName) {
-        alert('請先在上方輸入「購買人」姓名！');
-        document.getElementById('globalBuyerInput').focus();
-        return;
-      }
-
-      currentEditIndex = index;
-      var product = products[index];
-      document.getElementById('editModalTitle').innerText = product.name + ' (' + buyerName + ')';
-      
-      var container = document.getElementById('unitQtyContainer');
-      container.innerHTML = '';
-      var units = product.units && product.units.length > 0 ? product.units : ['個'];
-
-      for (var u = 0; u < units.length; u++) {
-        var unitName = units[u];
-        var row = document.createElement('div');
-        row.className = 'unit-qty-row';
-        row.innerHTML = '<span>' + unitName + '</span>' +
-          '<div class="unit-qty-controls">' +
-            '<button class="btn-qty-sm" onclick="adjustModalQty(\'qty_' + u + '\', -1)">-</button>' +
-            '<span class="qty-display-sm" id="qty_' + u + '">0</span>' +
-            '<button class="btn-qty-sm plus" onclick="adjustModalQty(\'qty_' + u + '\', 1)">+</button>' +
-          '</div>';
-        container.appendChild(row);
-      }
-
-      document.getElementById('qtyModal').classList.add('active');
-    }
-
-    function adjustModalQty(elementId, delta) {
-      var el = document.getElementById(elementId);
-      var val = parseInt(el.innerText) + delta;
-      if (val < 0) val = 0;
-      el.innerText = val;
-    }
-
-    function saveNewBuy() {
-      if (currentEditIndex !== null) {
-        var buyerName = document.getElementById('globalBuyerInput').value.trim();
-        if (!buyerName) { alert('請輸入購買人名稱！'); return; }
-
-        var product = products[currentEditIndex];
-        var units = product.units && product.units.length > 0 ? product.units : ['個'];
-        var addedCount = 0;
-
-        for (var u = 0; u < units.length; u++) {
-          var qty = parseInt(document.getElementById('qty_' + u).innerText);
-          if (qty > 0) {
-            product.buyers.push({ name: buyerName, count: qty, unit: units[u], bought: 0 });
-            addedCount++;
-          }
-        }
-
-        if (addedCount === 0) { alert('請至少選擇一項單量的數量！'); return; }
-
-        renderList();
-        manualSaveData();
-        closeModal('qtyModal');
-
-        // 清空上方購買人欄位，準備輸入下一位
-        document.getElementById('globalBuyerInput').value = '';
-      }
     }
 
     function adminDeleteCustomerItem(itemIdx, buyerName, unitName, countVal) {
@@ -1581,11 +1597,11 @@
       document.getElementById('editProdNote').value = p.note || '';
       document.getElementById('editProdImage').value = p.image || '';
       document.getElementById('editProdHidden').checked = !!p.isHidden;
-      document.getElementById('editProdModal').classList.add('active');
+      document.getElementById('editProdModal').style.display = 'flex';
     }
 
     function closeEditProdModal() {
-      document.getElementById('editProdModal').classList.remove('active');
+      document.getElementById('editProdModal').style.display = 'none';
     }
 
     function saveEditProd() {
