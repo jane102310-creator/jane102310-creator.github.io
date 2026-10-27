@@ -1543,13 +1543,23 @@
           buyersHtml += '<div class="admin-buyer-detail">👤 ' + b.name + ': <b>' + b.count + '</b> ' + u + '</div>';
         }
 
-        var summaryArr = [];
+                var summaryArr = [];
         var progressHtml = '';
 
         for (var unitKey in unitTotals) {
           var totalNeeded = unitTotals[unitKey];
           var boughtCount = p.purchasedCounts[unitKey] || 0;
-          summaryArr.push('共 ' + totalNeeded + ' ' + unitKey);
+          
+          // 計算總金額（數量 × 單價，若無填寫單價則不計算）
+          var priceNum = parseInt((p.price || '').replace(/,/g, '')) || 0;
+          var totalPriceStr = '';
+          if (priceNum > 0) {
+            var totalSum = totalNeeded * priceNum;
+            totalPriceStr = ' (總計 ₩ ' + totalSum.toLocaleString() + ')';
+          }
+
+          summaryArr.push('共 ' + totalNeeded + ' ' + unitKey + totalPriceStr);
+
 
           progressHtml += '<div class="progress-box">' +
             '<div class="progress-row">' +
