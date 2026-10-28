@@ -163,7 +163,15 @@
       <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><h2 id="editOrderModalTitle" style="font-size: 18px; font-weight: 700;">修改訂單數量</h2><button class="btn-close" onclick="closeModal('editOrderModal')" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub);">✕</button></div>
       <div class="form-group"><label class="form-label">購買人</label><input type="text" id="modalEditBuyerName" class="form-input" readonly style="background:#eee;" /></div>
       <div class="form-group"><label class="form-label">商品名稱</label><input type="text" id="modalEditItemName" class="form-input" readonly style="background:#eee;" /></div>
-      <div class="form-group"><label class="form-label">數量 (<span id="modalEditUnitLabel"></span>)</label><input type="number" id="modalEditCountInput" class="form-input" min="1" /></div>
+      <div class="form-group">
+        <label class="form-label">數量與單位</label>
+        <div style="display: flex; gap: 8px;">
+          <input type="number" id="modalEditCountInput" class="form-input" min="1" style="flex: 2;" />
+          <select id="modalEditUnitSelect" class="form-select" style="flex: 1;">
+            <!-- 動態帶入該商品的單位選項 -->
+          </select>
+        </div>
+      </div>
       <button class="btn-submit" onclick="saveAdminEditOrder()">儲存修改</button>
     </div>
   </div>
@@ -1374,17 +1382,35 @@
     }
 
     function openAdminEditOrderModal(itemIdx, buyerName, unitName, currentCount) {
-      editingOrderInfo = { itemIdx: itemIdx, buyerName: buyerName, unitName: unitName };
+      editingOrderInfo = { itemIdx: itemIdx, buyerName: buyerName, oldUnit: unitName };
+      var p = products[itemIdx];
+      
       document.getElementById('modalEditBuyerName').value = buyerName;
-      document.getElementById('modalEditItemName').value = products[itemIdx].name;
-      document.getElementById('modalEditUnitLabel').innerText = unitName;
+      document.getElementById('modalEditItemName').value = p.name;
       document.getElementById('modalEditCountInput').value = currentCount;
+
+      var unitSelect = document.getElementById('modalEditUnitSelect');
+      unitSelect.innerHTML = '';
+      var units = p.units && p.units.length > 0 ? p.units : ['個'];
+      
+      for (var i = 0; i < units.length; i++) {
+        var opt = document.createElement('option');
+        opt.value = units[i];
+        opt.innerText = units[i];
+        if (units[i] === unitName) {
+          opt.selected = true;
+        }
+        unitSelect.appendChild(opt);
+      }
+
       document.getElementById('editOrderModal').style.display = 'flex';
     }
 
     function saveAdminEditOrder() {
       if (!editingOrderInfo) return;
       var newCount = parseInt(document.getElementById('modalEditCountInput').value);
+      var newUnit = document.getElementById('modalEditUnitSelect').value;
+
       if (isNaN(newCount) || newCount < 1) {
         alert('請輸入有效的數量（至少 1 以上）！');
         return;
@@ -1395,8 +1421,9 @@
 
       for (var j = 0; j < p.buyers.length; j++) {
         var b = p.buyers[j];
-        if (b.name.trim() === editingOrderInfo.buyerName.trim() && (b.unit || '個') === editingOrderInfo.unitName) {
+        if (b.name.trim() === editingOrderInfo.buyerName.trim() && (b.unit || '個') === editingOrderInfo.oldUnit) {
           b.count = newCount;
+          b.unit = newUnit;
           break;
         }
       }
@@ -1406,7 +1433,7 @@
       updateAdminStats();
       manualSaveData();
       closeModal('editOrderModal');
-      alert('✅ 訂單數量修改成功！');
+      alert('✅ 訂單數量與單位修改成功！');
     }
 
     function adminDeleteCustomerItem(itemIdx, buyerName, unitName, countVal) {
