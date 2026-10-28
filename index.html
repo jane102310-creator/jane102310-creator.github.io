@@ -370,7 +370,7 @@
     }
 
     // -----------------------------------------------------------------
-    // 4. 介面邏輯 (與先前保持一致，寫入自動觸發 manualSaveData)
+    // 4. 介面邏輯
     // -----------------------------------------------------------------
     function exportToExcel() {
       var csvContent = "\uFEFF商品名稱,分類,單價(₩),單位,總需求數量,總金額(₩),已採購數量,購買人與數量明細\n";
@@ -980,7 +980,8 @@
       document.getElementById('itemImage').value = '';
       document.getElementById('itemUnits').value = '盒,片';
       
-      switchTab(1);
+      closeModal('adminModal');
+      alert('🎉 新增商品成功！資料已同步至雲端！');
     }
 
     function switchTab(tabNum) {
