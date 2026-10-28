@@ -274,7 +274,7 @@
 
   <script>
     // -----------------------------------------------------------------
-    // 1. Firebase 初始化設定 (使用您的專屬 Config)
+    // 1. Firebase 初始化設定
     // -----------------------------------------------------------------
     const firebaseConfig = {
       apiKey: "AIzaSyBHmyi3-dmv2Zcn8ULXwuIIODSWVdcDTdY",
@@ -310,7 +310,7 @@
     var isAuthed = false;
     var currentCategoryFilter = 'default_all';
     var pendingCart = {};
-    var isLocalMutating = false; // 避免本地操作被遠端即時監聽強制覆蓋畫面
+    var isBusySyncing = false; // 鎖定狀態，防止雲端監聽干擾本地操作
 
     var ADMIN_PASSWORD = localStorage.getItem('buylist_admin_pwd') || '1010520';
     var SITE_TITLE = localStorage.getItem('buylist_site_title') || '韓國代購清單';
@@ -320,13 +320,13 @@
     document.getElementById('siteTitleInput').value = SITE_TITLE;
 
     // -----------------------------------------------------------------
-    // 3. Firebase 雲端即時監聽 (Realtime Listener)
+    // 3. Firebase 雲端即時監聽與背景同步
     // -----------------------------------------------------------------
     window.onload = function() {
       const statusTag = document.getElementById('syncStatusTag');
       
       db.collection('storeData').doc('productsDoc').onSnapshot(doc => {
-        if (isLocalMutating) return; // 如果是本地剛動作，先不被動態重整打斷
+        if (isBusySyncing) return; // 本地正在寫入時暫不接收遠端干擾
         if (doc.exists) {
           const data = doc.data();
           if (data && Array.isArray(data.items)) {
@@ -358,7 +358,7 @@
       const statusTag = document.getElementById('syncStatusTag');
       statusTag.innerText = '🔄 正在儲存至雲端...';
       statusTag.classList.remove('online');
-      isLocalMutating = true;
+      isBusySyncing = true;
 
       db.collection('storeData').doc('productsDoc').set({
         items: products,
@@ -367,15 +367,15 @@
       }).then(() => {
         statusTag.innerText = '🟢 雲端已即時同步';
         statusTag.classList.add('online');
-        setTimeout(() => { isLocalMutating = false; }, 1000);
+        isBusySyncing = false;
       }).catch(err => {
-        isLocalMutating = false;
+        isBusySyncing = false;
         alert('儲存至雲端失敗：' + err.message);
       });
     }
 
     // -----------------------------------------------------------------
-    // 4. 介面邏輯
+    // 4. 介面與業務邏輯
     // -----------------------------------------------------------------
     function exportToExcel() {
       var csvContent = "\uFEFF商品名稱,分類,單價(₩),單位,總需求數量,總金額(₩),已採購數量,購買人與數量明細\n";
