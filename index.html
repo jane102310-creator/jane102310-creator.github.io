@@ -27,7 +27,7 @@
     .header { background: var(--card-bg); padding: 18px; border-radius: 20px; box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
     .header-title h1 { font-size: 20px; font-weight: 700; color: var(--text-main); }
 
-    .sync-status { font-size: 11px; padding: 4px 10px; border-radius: 12px; display: inline-block; margin-top: 6px; background: #D4EDDA; color: #155724; }
+    .sync-status { font-size: 11px; padding: 4px 10px; border-radius: 12px; display: inline-block; margin-top: 6px; background: #D4EDDA; color: #155724; cursor: pointer; }
 
     .global-buyer-bar { background: var(--card-bg); padding: 12px 16px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 16px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; }
     .global-buyer-bar label { font-size: 13px; font-weight: 600; white-space: nowrap; color: var(--text-sub); }
@@ -48,7 +48,8 @@
     .item-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 4px; }
     .tag { font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: 500; }
     .tag-category { background-color: var(--accent-light); color: var(--text-sub); }
-    .tag-buyer { background-color: #E8E2D8; color: #5A4D41; }
+    .tag-buyer { background-color: #E8E2D8; color: #5A4D41; cursor: pointer; transition: background 0.2s; }
+    .tag-buyer:hover { background-color: #d6ccbd; }
     .tag-status-done { background-color: #D4EDDA; color: #155724; font-weight: bold; }
     .item-name { font-size: 15px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .item-note { font-size: 12px; color: #999; margin-top: 2px; }
@@ -112,7 +113,7 @@
   <div class="container">
     <div class="header">
       <div class="header-title"><h1 id="headerTitleDisplay">韓國代購清單</h1></div>
-      <div id="syncStatusTag" class="sync-status">🟢 雲端即時監聽中 (自動同步)</div>
+      <div id="syncStatusTag" class="sync-status" onclick="manualFetchData()" title="點擊強制重新整理">🟢 雲端即時監聽中 (點擊重新整理)</div>
     </div>
 
     <!-- 頂部常駐購買人輸入欄 -->
@@ -190,18 +191,22 @@
     </button>
   </nav>
 
-  <!-- 後台修改訂單數量 Modal -->
+  <!-- 修改訂單數量 Modal (支援首頁點擊名字及後台修改) -->
   <div class="modal-overlay" id="editOrderModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end; z-index: 1200;">
     <div class="modal-content" style="background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px;">
-      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><h2 id="editOrderModalTitle" style="font-size: 18px; font-weight: 700;">修改訂單數量</h2><button class="btn-close" onclick="closeModal('editOrderModal')" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub);">✕</button></div>
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <h2 id="editOrderModalTitle" style="font-size: 18px; font-weight: 700;">修改訂單數量</h2>
+        <button class="btn-close" onclick="closeModal('editOrderModal')" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub);">✕</button>
+      </div>
       <div class="form-group"><label class="form-label">購買人</label><input type="text" id="modalEditBuyerName" class="form-input" readonly style="background:#eee;" /></div>
       <div class="form-group"><label class="form-label">商品名稱</label><input type="text" id="modalEditItemName" class="form-input" readonly style="background:#eee;" /></div>
       <div class="form-group">
         <label class="form-label">數量與單位</label>
         <div style="display: flex; gap: 8px;">
-          <input type="number" id="modalEditCountInput" class="form-input" min="1" style="flex: 2;" />
+          <input type="number" id="modalEditCountInput" class="form-input" min="0" style="flex: 2;" placeholder="填入0可刪除此筆" />
           <select id="modalEditUnitSelect" class="form-select" style="flex: 1;"></select>
         </div>
+        <div style="font-size: 11px; color: #999; margin-top: 4px;">💡 提示：若將數量改為 0 並儲存，即可直接刪除此筆登記。</div>
       </div>
       <button class="btn-submit" onclick="saveAdminEditOrder()">儲存修改</button>
     </div>
@@ -391,7 +396,7 @@
     document.getElementById('siteTitleInput').value = SITE_TITLE;
 
     // -----------------------------------------------------------------
-    // 3. 雲端即時監聽模式 (onSnapshot)
+    // 3. 雲端即時監聽與手動強制更新模式
     // -----------------------------------------------------------------
     window.onload = function() {
       initRealtimeListener();
@@ -446,7 +451,7 @@
           manualSaveData(false);
         }
 
-        statusTag.innerText = '🟢 雲端即時監聽中 (自動同步)';
+        statusTag.innerText = '🟢 雲端即時監聽中 (點擊重新整理)';
         renderList();
         renderWishList();
 
@@ -457,7 +462,26 @@
         }
       }, err => {
         console.error("Listener error:", err);
-        statusTag.innerText = '🔴 監聽連線異常';
+        statusTag.innerText = '🔴 監聽連線異常 (點擊重試)';
+      });
+    }
+
+    function manualFetchData() {
+      db.collection('storeData').doc('productsDoc').get().then(doc => {
+        if (doc.exists) {
+          const data = doc.data();
+          if (data && Array.isArray(data.items)) {
+            products = data.items;
+          }
+          if (data && Array.isArray(data.wishList)) {
+            wishList = data.wishList;
+          }
+          renderList();
+          renderWishList();
+          alert('🔄 已成功從雲端同步最新資料！');
+        }
+      }).catch(err => {
+        alert('同步失敗：' + err.message);
       });
     }
 
@@ -714,24 +738,13 @@
         var card = document.createElement('div');
         card.className = 'item-card' + (product.isCompleted ? ' completed' : '');
 
-        var buyerMap = {};
+        var buyerTagsHTML = '';
         for (var j = 0; j < product.buyers.length; j++) {
           var b = product.buyers[j];
           var name = b.name.trim();
-          if (!buyerMap[name]) buyerMap[name] = [];
-          buyerMap[name].push({ count: b.count, unit: b.unit || '個' });
-        }
-
-        var buyerTagsHTML = '';
-        var buyerNames = Object.keys(buyerMap);
-        for (var k = 0; k < buyerNames.length; k++) {
-          var name = buyerNames[k];
-          var details = buyerMap[name];
-          var detailStr = '';
-          for (var d = 0; d < details.length; d++) {
-            detailStr += '+' + details[d].count + details[d].unit + ' ';
-          }
-          buyerTagsHTML += '<span class="tag tag-buyer">' + name + ' ' + detailStr.trim() + '</span>';
+          var unit = b.unit || '個';
+          // 點擊卡片上的買家標籤即可直接修改該筆數量
+          buyerTagsHTML += '<span class="tag tag-buyer" onclick="openAdminEditOrderModal(' + i + ', \'' + name + '\', \'' + unit + '\', ' + b.count + ')" title="點擊修改數量">👤 ' + name + ' +' + b.count + unit + '</span>';
         }
 
         if (product.isCompleted) {
@@ -921,17 +934,27 @@
       var newCount = parseInt(document.getElementById('modalEditCountInput').value);
       var newUnit = document.getElementById('modalEditUnitSelect').value;
 
-      if (isNaN(newCount) || newCount < 1) { alert('請輸入有效數量！'); return; }
+      if (isNaN(newCount) || newCount < 0) { alert('請輸入有效數量！'); return; }
 
       var p = products[editingOrderInfo.itemIdx];
       if (!p || !p.buyers) return;
 
-      for (var j = 0; j < p.buyers.length; j++) {
-        var b = p.buyers[j];
-        if (b.name.trim() === editingOrderInfo.buyerName.trim() && (b.unit || '個') === editingOrderInfo.oldUnit) {
-          b.count = newCount;
-          b.unit = newUnit;
-          break;
+      if (newCount === 0) {
+        // 若數量改為 0，直接移除該筆登記
+        p.buyers = p.buyers.filter(b => !(b.name.trim() === editingOrderInfo.buyerName.trim() && (b.unit || '個') === editingOrderInfo.oldUnit));
+      } else {
+        var found = false;
+        for (var j = 0; j < p.buyers.length; j++) {
+          var b = p.buyers[j];
+          if (b.name.trim() === editingOrderInfo.buyerName.trim() && (b.unit || '個') === editingOrderInfo.oldUnit) {
+            b.count = newCount;
+            b.unit = newUnit;
+            found = true;
+            break;
+          }
+        }
+        if (!found) {
+          p.buyers.push({ name: editingOrderInfo.buyerName, count: newCount, unit: newUnit, bought: 0 });
         }
       }
 
