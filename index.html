@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="pageTitleText">韓國代購清單 (雲端同步版)</title>
+  <title id="pageTitleText">韓國代購清單 (即時同步版)</title>
   
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -27,7 +27,7 @@
     .header { background: var(--card-bg); padding: 18px; border-radius: 20px; box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
     .header-title h1 { font-size: 20px; font-weight: 700; color: var(--text-main); }
 
-    .sync-status { font-size: 11px; padding: 4px 10px; border-radius: 12px; display: inline-block; margin-top: 6px; background: #D4EDDA; color: #155724; cursor: pointer; }
+    .sync-status { font-size: 11px; padding: 4px 10px; border-radius: 12px; display: inline-block; margin-top: 6px; background: #D4EDDA; color: #155724; }
 
     .global-buyer-bar { background: var(--card-bg); padding: 12px 16px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 16px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; }
     .global-buyer-bar label { font-size: 13px; font-weight: 600; white-space: nowrap; color: var(--text-sub); }
@@ -107,7 +107,7 @@
   <div class="container">
     <div class="header">
       <div class="header-title"><h1 id="headerTitleDisplay">韓國代購清單</h1></div>
-      <div id="syncStatusTag" class="sync-status" onclick="loadDataFromCloud()" title="點擊手動重新整理/同步">🔄 點擊從雲端載入最新資料</div>
+      <div id="syncStatusTag" class="sync-status">🟢 雲端即時監聽中 (自動同步)</div>
     </div>
 
     <!-- 頂部常駐購買人輸入欄 -->
@@ -356,23 +356,24 @@
     document.getElementById('siteTitleInput').value = SITE_TITLE;
 
     // -----------------------------------------------------------------
-    // 3. 雲端讀寫模式 (自動比對與補充預設 48 項商品)
+    // 3. 雲端即時監聽模式 (onSnapshot)
     // -----------------------------------------------------------------
     window.onload = function() {
-      loadDataFromCloud();
+      initRealtimeListener();
     };
 
-    function loadDataFromCloud() {
+    function initRealtimeListener() {
       const statusTag = document.getElementById('syncStatusTag');
-      statusTag.innerText = '🔄 正在從雲端載入...';
+      statusTag.innerText = '🔄 正在連線雲端監聽...';
 
-      db.collection('storeData').doc('productsDoc').get().then(doc => {
+      // 使用 onSnapshot 即時監聽 Firestore 資料變更
+      db.collection('storeData').doc('productsDoc').onSnapshot(doc => {
         if (doc.exists) {
           const data = doc.data();
           if (data && Array.isArray(data.items) && data.items.length > 0) {
             var cloudItems = data.items;
             
-            // 比對是否缺失預設商品（若少於 48 項，自動補齊）
+            // 自動補齊 48 項預設商品
             if (cloudItems.length < defaultProducts.length) {
               var cloudNames = cloudItems.map(function(item) { return item.name.trim(); });
               var hasNewAdditions = false;
@@ -386,7 +387,7 @@
               }
               products = cloudItems;
               if (hasNewAdditions) {
-                manualSaveData(false); // 自動把補充完整的商品同步回雲端
+                manualSaveData(false);
               }
             } else {
               products = cloudItems;
@@ -395,6 +396,7 @@
             products = defaultProducts;
             manualSaveData(false);
           }
+
           if (data && data.siteTitle) {
             SITE_TITLE = data.siteTitle;
             document.getElementById('pageTitleText').innerText = SITE_TITLE;
@@ -402,39 +404,35 @@
           }
         } else {
           products = defaultProducts;
-          manualSaveData(false); // 第一次初始化寫入 48 項商品
+          manualSaveData(false);
         }
-        statusTag.innerText = '🟢 雲端已同步 (點擊重新整理)';
+
+        statusTag.innerText = '🟢 雲端即時監聽中 (自動同步)';
         renderList();
+
+        // 如果目前管理者後台正在開啟，同步刷新後台畫面
         if (document.getElementById('adminModal').style.display === 'flex') {
           updateAdminStats();
           updateCustomerStats();
         }
-      }).catch(err => {
-        console.error("Load error:", err);
-        statusTag.innerText = '🔴 載入失敗 (使用預設資料)';
-        products = defaultProducts;
-        renderList();
+      }, err => {
+        console.error("Listener error:", err);
+        statusTag.innerText = '🔴 監聽連線異常';
       });
     }
 
     function manualSaveData(showAlert) {
       if (showAlert === undefined) showAlert = true;
-      const statusTag = document.getElementById('syncStatusTag');
-      statusTag.innerText = '🔄 正在儲存至雲端...';
-
       db.collection('storeData').doc('productsDoc').set({
         items: products,
         siteTitle: SITE_TITLE,
         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
       }).then(() => {
-        statusTag.innerText = '🟢 雲端已同步 (點擊重新整理)';
         if (showAlert) {
           alert('✅ 資料已成功同步儲存至雲端！');
         }
       }).catch(err => {
         alert('儲存至雲端失敗：' + err.message);
-        statusTag.innerText = '🔴 儲存失敗';
       });
     }
 
@@ -687,7 +685,7 @@
       pendingCart = {};
       renderList();
       manualSaveData(false);
-      alert('🎉 登記成功！資料已同步至雲端！');
+      alert('🎉 登記成功！資料已即時同步至雲端！');
     }
 
     function openAdminPortal() {
