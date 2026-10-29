@@ -64,7 +64,7 @@
     .floating-submit-text { font-size: 14px; font-weight: bold; }
     .btn-floating-confirm { background: white; color: var(--accent); border: none; padding: 8px 16px; border-radius: 10px; font-size: 14px; font-weight: bold; cursor: pointer; }
 
-    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #FFFFFF; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 8px 0; z-index: 999; box-shadow: 0 -4px 12px rgba(0,0,0,0.05); }
+    .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #FFFFFF; border-top: 1px solid var(--border-color); display: flex; justify-around: space-around; padding: 8px 0; z-index: 999; box-shadow: 0 -4px 12px rgba(0,0,0,0.05); }
     .nav-item { background: none; border: none; display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-sub); cursor: pointer; gap: 3px; flex: 1; }
     .nav-item.active { color: var(--accent); font-weight: bold; }
     .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
@@ -230,12 +230,12 @@
 
       <div class="admin-section active" id="adminSec1">
         <div id="adminContentList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
-        <button class="btn-save-manual" onclick="manualSaveData()">💾 手動同步至雲端</button>
+        <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
       </div>
 
       <div class="admin-section" id="adminSec2">
         <div id="customerContentList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
-        <button class="btn-save-manual" onclick="manualSaveData()">💾 手動同步至雲端</button>
+        <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
       </div>
 
       <div class="admin-section" id="adminSec3">
@@ -356,7 +356,7 @@
     document.getElementById('siteTitleInput').value = SITE_TITLE;
 
     // -----------------------------------------------------------------
-    // 3. 雲端讀寫模式 (若雲端無資料則自動寫入完整的 48 項商品)
+    // 3. 雲端讀寫模式 (自動比對與補充預設 48 項商品)
     // -----------------------------------------------------------------
     window.onload = function() {
       loadDataFromCloud();
@@ -370,10 +370,30 @@
         if (doc.exists) {
           const data = doc.data();
           if (data && Array.isArray(data.items) && data.items.length > 0) {
-            products = data.items;
+            var cloudItems = data.items;
+            
+            // 比對是否缺失預設商品（若少於 48 項，自動補齊）
+            if (cloudItems.length < defaultProducts.length) {
+              var cloudNames = cloudItems.map(function(item) { return item.name.trim(); });
+              var hasNewAdditions = false;
+
+              for (var i = 0; i < defaultProducts.length; i++) {
+                var defItem = defaultProducts[i];
+                if (!cloudNames.includes(defItem.name.trim())) {
+                  cloudItems.push(defItem);
+                  hasNewAdditions = true;
+                }
+              }
+              products = cloudItems;
+              if (hasNewAdditions) {
+                manualSaveData(false); // 自動把補充完整的商品同步回雲端
+              }
+            } else {
+              products = cloudItems;
+            }
           } else {
             products = defaultProducts;
-            manualSaveData();
+            manualSaveData(false);
           }
           if (data && data.siteTitle) {
             SITE_TITLE = data.siteTitle;
@@ -382,7 +402,7 @@
           }
         } else {
           products = defaultProducts;
-          manualSaveData(); // 第一次初始化寫入 48 項商品
+          manualSaveData(false); // 第一次初始化寫入 48 項商品
         }
         statusTag.innerText = '🟢 雲端已同步 (點擊重新整理)';
         renderList();
@@ -398,7 +418,8 @@
       });
     }
 
-    function manualSaveData() {
+    function manualSaveData(showAlert) {
+      if (showAlert === undefined) showAlert = true;
       const statusTag = document.getElementById('syncStatusTag');
       statusTag.innerText = '🔄 正在儲存至雲端...';
 
@@ -408,6 +429,9 @@
         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
       }).then(() => {
         statusTag.innerText = '🟢 雲端已同步 (點擊重新整理)';
+        if (showAlert) {
+          alert('✅ 資料已成功同步儲存至雲端！');
+        }
       }).catch(err => {
         alert('儲存至雲端失敗：' + err.message);
         statusTag.innerText = '🔴 儲存失敗';
@@ -494,7 +518,7 @@
       SITE_TITLE = newTitle;
       document.getElementById('pageTitleText').innerText = newTitle;
       document.getElementById('headerTitleDisplay').innerText = newTitle;
-      manualSaveData();
+      manualSaveData(false);
       alert('網頁標題已成功更新至雲端！');
     }
 
@@ -662,7 +686,7 @@
 
       pendingCart = {};
       renderList();
-      manualSaveData();
+      manualSaveData(false);
       alert('🎉 登記成功！資料已同步至雲端！');
     }
 
@@ -757,7 +781,7 @@
       renderList();
       updateCustomerStats();
       updateAdminStats();
-      manualSaveData();
+      manualSaveData(false);
       closeModal('editOrderModal');
       alert('✅ 訂單數量與單位已修改並同步至雲端！');
     }
@@ -771,7 +795,7 @@
         renderList();
         updateCustomerStats();
         updateAdminStats();
-        manualSaveData();
+        manualSaveData(false);
       }
     }
 
@@ -783,7 +807,7 @@
         renderList();
         updateCustomerStats();
         updateAdminStats();
-        manualSaveData();
+        manualSaveData(false);
       }
     }
 
@@ -793,7 +817,7 @@
         renderList();
         updateAdminStats();
         updateCustomerStats();
-        manualSaveData();
+        manualSaveData(false);
       }
     }
 
@@ -805,7 +829,7 @@
       p.purchasedCounts[unit] = next;
       renderList();
       updateAdminStats();
-      manualSaveData();
+      manualSaveData(false);
     }
 
     function updateCustomerStats() {
@@ -947,7 +971,7 @@
       products[itemIdx].isCompleted = !products[itemIdx].isCompleted;
       renderList();
       updateAdminStats();
-      manualSaveData();
+      manualSaveData(false);
     }
 
     function openEditProdModal(index) {
@@ -993,7 +1017,7 @@
         renderList();
         updateAdminStats();
         updateCustomerStats();
-        manualSaveData();
+        manualSaveData(false);
         closeEditProdModal();
         alert('✅ 商品資料已修改並成功儲存至雲端！');
       }
@@ -1015,7 +1039,7 @@
       renderList();
       updateAdminStats();
       updateCustomerStats();
-      manualSaveData();
+      manualSaveData(false);
       
       document.getElementById('itemName').value = '';
       document.getElementById('itemPrice').value = '';
