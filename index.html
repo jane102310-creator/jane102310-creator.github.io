@@ -69,8 +69,8 @@
     .nav-item.active { color: var(--accent); font-weight: bold; }
     .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
 
-    .admin-nav { display: flex; gap: 4px; margin-bottom: 16px; }
-    .admin-tab-btn { flex: 1; padding: 8px 2px; border: none; background: #EFECE6; color: var(--text-sub); font-weight: 600; border-radius: 10px; cursor: pointer; font-size: 11px; text-align: center; }
+    .admin-nav { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
+    .admin-tab-btn { flex: 1; min-width: 20%; padding: 8px 2px; border: none; background: #EFECE6; color: var(--text-sub); font-weight: 600; border-radius: 10px; cursor: pointer; font-size: 11px; text-align: center; }
     .admin-tab-btn.active { background: var(--accent); color: white; }
     .admin-section { display: none; }
     .admin-section.active { display: block; }
@@ -91,6 +91,11 @@
 
     .customer-card { background: #FAFAFA; border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; margin-bottom: 12px; }
     .customer-name { font-size: 15px; font-weight: bold; color: var(--accent); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+
+    .wish-card { background: #FFF; border: 1px solid var(--border-color); border-radius: 14px; padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
+    .wish-title { font-size: 15px; font-weight: bold; color: var(--text-main); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+    .wish-note { font-size: 12px; color: var(--text-sub); margin-bottom: 6px; }
+    .wish-author { font-size: 11px; color: #999; }
 
     .admin-action-btns { display: flex; gap: 6px; margin-top: 8px; }
     .btn-edit-prod { background: var(--accent); color: white; border: none; padding: 4px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
@@ -138,6 +143,25 @@
         <button onclick="goToCategory('文具雜貨')" class="filter-pill" style="padding: 20px; text-align: center; font-size: 15px;">✏️ 文具雜貨</button>
       </div>
     </div>
+
+    <!-- 3. 願望清單 (許願池) 分頁 -->
+    <div id="sectionWish" class="page-section">
+      <div style="background: var(--card-bg); padding: 16px; border-radius: 16px; box-shadow: var(--shadow); border: 1px solid var(--border-color); margin-bottom: 16px;">
+        <div style="font-size: 16px; font-weight: bold; margin-bottom: 12px; color: var(--accent);">✨ 買家許願池</div>
+        <div class="form-group">
+          <label class="form-label">想要許願的商品名稱 *</label>
+          <input type="text" id="wishProdName" class="form-input" placeholder="例如：Kakao Friends 萬用軟膏..." />
+        </div>
+        <div class="form-group">
+          <label class="form-label">備註/規格說明 (選填)</label>
+          <input type="text" id="wishProdNote" class="form-input" placeholder="例如：想要桃子款、附圖片連結..." />
+        </div>
+        <button class="btn-submit" onclick="submitWish()">🌟 送出許願</button>
+      </div>
+
+      <div style="font-size: 15px; font-weight: bold; margin-bottom: 10px; color: var(--text-main);">📋 大家正在許願的商品</div>
+      <div id="wishListUserDisplay"></div>
+    </div>
   </div>
 
   <!-- 底部懸浮送出列 -->
@@ -155,6 +179,10 @@
     <button class="nav-item" onclick="switchSection('category', this)">
       <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
       <span>分類</span>
+    </button>
+    <button class="nav-item" onclick="switchSection('wish', this)">
+      <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+      <span>許願池</span>
     </button>
     <button class="nav-item" onclick="openAdminPortal()">
       <svg viewBox="0 0 24 24"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
@@ -224,6 +252,7 @@
       <div class="admin-nav">
         <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 商品及統計</button>
         <button class="admin-tab-btn" id="tabBtn2" onclick="switchTab(2)">👥 個案與訂單</button>
+        <button class="admin-tab-btn" id="tabBtn5" onclick="switchTab(5)">🌟 許願池管理</button>
         <button class="admin-tab-btn" id="tabBtn3" onclick="switchTab(3)">➕ 新增商品</button>
         <button class="admin-tab-btn" id="tabBtn4" onclick="switchTab(4)">⚙️ 設定</button>
       </div>
@@ -235,6 +264,11 @@
 
       <div class="admin-section" id="adminSec2">
         <div id="customerContentList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
+        <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
+      </div>
+
+      <div class="admin-section" id="adminSec5">
+        <div id="adminWishListDisplay" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
         <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
       </div>
 
@@ -342,6 +376,7 @@
     ];
 
     var products = defaultProducts;
+    var wishList = [];
     var editingProdIndex = null;
     var editingOrderInfo = null;
     var isAuthed = false;
@@ -366,14 +401,11 @@
       const statusTag = document.getElementById('syncStatusTag');
       statusTag.innerText = '🔄 正在連線雲端監聽...';
 
-      // 使用 onSnapshot 即時監聽 Firestore 資料變更
       db.collection('storeData').doc('productsDoc').onSnapshot(doc => {
         if (doc.exists) {
           const data = doc.data();
           if (data && Array.isArray(data.items) && data.items.length > 0) {
             var cloudItems = data.items;
-            
-            // 自動補齊 48 項預設商品
             if (cloudItems.length < defaultProducts.length) {
               var cloudNames = cloudItems.map(function(item) { return item.name.trim(); });
               var hasNewAdditions = false;
@@ -397,6 +429,12 @@
             manualSaveData(false);
           }
 
+          if (data && Array.isArray(data.wishList)) {
+            wishList = data.wishList;
+          } else {
+            wishList = [];
+          }
+
           if (data && data.siteTitle) {
             SITE_TITLE = data.siteTitle;
             document.getElementById('pageTitleText').innerText = SITE_TITLE;
@@ -404,16 +442,18 @@
           }
         } else {
           products = defaultProducts;
+          wishList = [];
           manualSaveData(false);
         }
 
         statusTag.innerText = '🟢 雲端即時監聽中 (自動同步)';
         renderList();
+        renderWishList();
 
-        // 如果目前管理者後台正在開啟，同步刷新後台畫面
         if (document.getElementById('adminModal').style.display === 'flex') {
           updateAdminStats();
           updateCustomerStats();
+          updateAdminWishStats();
         }
       }, err => {
         console.error("Listener error:", err);
@@ -425,6 +465,7 @@
       if (showAlert === undefined) showAlert = true;
       db.collection('storeData').doc('productsDoc').set({
         items: products,
+        wishList: wishList,
         siteTitle: SITE_TITLE,
         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
       }).then(() => {
@@ -434,6 +475,119 @@
       }).catch(err => {
         alert('儲存至雲端失敗：' + err.message);
       });
+    }
+
+    // -----------------------------------------------------------------
+    // 許願池邏輯 (Wish List)
+    // -----------------------------------------------------------------
+    function submitWish() {
+      var buyerName = document.getElementById('globalBuyerInput').value.trim();
+      var prodName = document.getElementById('wishProdName').value.trim();
+      var note = document.getElementById('wishProdNote').value.trim();
+
+      if (!buyerName) {
+        alert('請先在上方輸入您的「購買人」名字！');
+        document.getElementById('globalBuyerInput').focus();
+        return;
+      }
+
+      if (!prodName) {
+        alert('請填寫您想要許願的商品名稱！');
+        return;
+      }
+
+      wishList.unshift({
+        id: Date.now(),
+        buyerName: buyerName,
+        prodName: prodName,
+        note: note,
+        createdAt: new Date().toLocaleDateString()
+      });
+
+      document.getElementById('wishProdName').value = '';
+      document.getElementById('wishProdNote').value = '';
+
+      manualSaveData(false);
+      renderWishList();
+      alert('🎉 許願成功！商品已加入許願池！');
+    }
+
+    function renderWishList() {
+      var wishDisplay = document.getElementById('wishListUserDisplay');
+      if (!wishDisplay) return;
+      wishDisplay.innerHTML = '';
+
+      if (wishList.length === 0) {
+        wishDisplay.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">尚無人許願，成為第一個許願的人吧！</div>';
+        return;
+      }
+
+      for (var i = 0; i < wishList.length; i++) {
+        var w = wishList[i];
+        var card = document.createElement('div');
+        card.className = 'wish-card';
+        card.innerHTML = '<div class="wish-title"><span>🌟 ' + w.prodName + '</span></div>' +
+          (w.note ? '<div class="wish-note">💬 ' + w.note + '</div>' : '') +
+          '<div class="wish-author">👤 許願人：' + w.buyerName + ' (' + w.createdAt + ')</div>';
+        wishDisplay.appendChild(card);
+      }
+    }
+
+    function updateAdminWishStats() {
+      var adminWishDisplay = document.getElementById('adminWishListDisplay');
+      if (!adminWishDisplay) return;
+      adminWishDisplay.innerHTML = '';
+
+      if (wishList.length === 0) {
+        adminWishDisplay.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">目前尚無許願紀錄</div>';
+        return;
+      }
+
+      for (var i = 0; i < wishList.length; i++) {
+        var w = wishList[i];
+        var card = document.createElement('div');
+        card.className = 'customer-card';
+        card.innerHTML = '<div class="customer-name"><span>🌟 ' + w.prodName + '</span>' +
+          '<button class="btn-del-prod" style="padding:2px 8px; font-size:11px;" onclick="deleteWish(' + i + ')">刪除許願</button></div>' +
+          '<div style="font-size:13px; color:var(--text-sub); margin-bottom:4px;">👤 許願人：' + w.buyerName + '</div>' +
+          (w.note ? '<div style="font-size:12px; color:#666; margin-bottom:8px;">💬 備註：' + w.note + '</div>' : '') +
+          '<button class="btn-edit-order" style="padding:4px 10px; font-size:12px;" onclick="convertWishToProduct(' + i + ')">➕ 一鍵轉為正式上架商品</button>';
+        adminWishDisplay.appendChild(card);
+      }
+    }
+
+    function deleteWish(index) {
+      if (confirm('確定要刪除這筆許願資料嗎？')) {
+        wishList.splice(index, 1);
+        manualSaveData(false);
+        renderWishList();
+        updateAdminWishStats();
+      }
+    }
+
+    function convertWishToProduct(index) {
+      var w = wishList[index];
+      products.unshift({
+        id: Date.now(),
+        name: w.prodName,
+        price: '',
+        buyers: [{ name: w.buyerName, count: 1, unit: '個', bought: 0 }],
+        category: '食品/食材',
+        units: ['個'],
+        note: w.note || '',
+        image: '',
+        purchasedCounts: {},
+        isCompleted: false,
+        isHidden: false
+      });
+
+      wishList.splice(index, 1);
+      manualSaveData(false);
+      renderList();
+      renderWishList();
+      updateAdminStats();
+      updateAdminWishStats();
+      alert('🎉 已成功將 「' + w.prodName + '」 轉為上架商品並為 ' + w.buyerName + ' 預先登記 1 個！');
     }
 
     // -----------------------------------------------------------------
@@ -499,6 +653,9 @@
         renderList();
       } else if (sectionName === 'category') {
         document.getElementById('sectionCategory').classList.add('active');
+      } else if (sectionName === 'wish') {
+        document.getElementById('sectionWish').classList.add('active');
+        renderWishList();
       }
     }
 
@@ -692,6 +849,7 @@
       if (isAuthed) {
         updateAdminStats();
         updateCustomerStats();
+        updateAdminWishStats();
         document.getElementById('adminModal').style.display = 'flex';
       } else {
         document.getElementById('adminPwdInput').value = '';
@@ -710,6 +868,7 @@
         closeModal('loginModal');
         updateAdminStats();
         updateCustomerStats();
+        updateAdminWishStats();
         document.getElementById('adminModal').style.display = 'flex';
       } else {
         alert('密碼錯誤！');
@@ -1054,14 +1213,17 @@
       document.getElementById('tabBtn2').className = 'admin-tab-btn' + (tabNum === 2 ? ' active' : '');
       document.getElementById('tabBtn3').className = 'admin-tab-btn' + (tabNum === 3 ? ' active' : '');
       document.getElementById('tabBtn4').className = 'admin-tab-btn' + (tabNum === 4 ? ' active' : '');
+      document.getElementById('tabBtn5').className = 'admin-tab-btn' + (tabNum === 5 ? ' active' : '');
 
       document.getElementById('adminSec1').className = 'admin-section' + (tabNum === 1 ? ' active' : '');
       document.getElementById('adminSec2').className = 'admin-section' + (tabNum === 2 ? ' active' : '');
       document.getElementById('adminSec3').className = 'admin-section' + (tabNum === 3 ? ' active' : '');
       document.getElementById('adminSec4').className = 'admin-section' + (tabNum === 4 ? ' active' : '');
+      document.getElementById('adminSec5').className = 'admin-section' + (tabNum === 5 ? ' active' : '');
 
       if (tabNum === 1) updateAdminStats();
       else if (tabNum === 2) updateCustomerStats();
+      else if (tabNum === 5) updateAdminWishStats();
     }
   </script>
 </body>
