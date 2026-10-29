@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title id="pageTitleText">韓國代購清單 (穩定手動同步版)</title>
+  <title id="pageTitleText">韓國代購清單 (雲端同步版)</title>
   
   <!-- Firebase SDKs -->
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
@@ -288,19 +288,57 @@
     const db = firebase.firestore();
 
     // -----------------------------------------------------------------
-    // 2. 預設資料
+    // 2. 完整 48 項預設商品資料
     // -----------------------------------------------------------------
     var defaultProducts = [
-      { "id": 1, "name": "咖啡糖espresso", "price": "", "buyers": [{"name": "敏敏", "count": 4, "unit": "盒", "bought": 0},{"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nvxLcgf", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 1, "name": "咖啡糖espresso", "price": "", "buyers": [{"name": "敏敏", "count": 4, "unit": "盒", "bought": 0}, {"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nvxLcgf", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
       { "id": 2, "name": "咖啡糖Americano", "price": "", "buyers": [{"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nv310Fa", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 3, "name": "咖啡糖Mint", "price": "", "buyers": [{"name": "筱瑄", "count": 3, "unit": "盒", "bought": 0},{"name": "潔琪", "count": 1, "unit": "盒", "bought": 0},{"name": "邇寧", "count": 2, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nvxL6qg", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 4, "name": "積雪草面膜 ", "price": "", "buyers": [{"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0},{"name": "Lemon", "count": 1, "unit": "盒", "bought": 0},{"name": "彩", "count": 1, "unit": "盒", "bought": 0},{"name": "Jane", "count": 1, "unit": "盒", "bought": 0},{"name": "邇寧", "count": 1, "unit": "盒", "bought": 0},{"name": "安", "count": 1, "unit": "盒", "bought": 0},{"name": "七", "count": 1, "unit": "盒", "bought": 0}], "category": "美妝保養", "units": ["盒", "片"], "note": "", "image": "https://freeimage.host/i/nv3fCZP", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 5, "name": "玫瑰提亮面膜", "price": "", "buyers": [{"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0},{"name": "彩", "count": 1, "unit": "盒", "bought": 0},{"name": "Jane", "count": 1, "unit": "盒", "bought": 0},{"name": "安", "count": 1, "unit": "盒", "bought": 0},{"name": "七", "count": 1, "unit": "盒", "bought": 0}], "category": "美妝保養", "units": ["盒", "片"], "note": "", "image": "https://freeimage.host/i/nvxQ0Eg", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 6, "name": "穀胱胜肽面膜", "price": "", "buyers": [{"name": "彩", "count": 1, "unit": "盒", "bought": 0},{"name": "Jane", "count": 1, "unit": "盒", "bought": 0},{"name": "Dora", "count": 1, "unit": "盒", "bought": 0}], "category": "美妝保養", "units": ["盒", "片"], "note": "", "image": "https://freeimage.host/i/nvxQ4u2", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 3, "name": "咖啡糖Mint", "price": "", "buyers": [{"name": "筱瑄", "count": 3, "unit": "盒", "bought": 0}, {"name": "潔琪", "count": 1, "unit": "盒", "bought": 0}, {"name": "邇寧", "count": 2, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nvxL6qg", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 4, "name": "積雪草面膜 ", "price": "", "buyers": [{"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}, {"name": "Lemon", "count": 1, "unit": "盒", "bought": 0}, {"name": "彩", "count": 1, "unit": "盒", "bought": 0}, {"name": "Jane", "count": 1, "unit": "盒", "bought": 0}, {"name": "邇寧", "count": 1, "unit": "盒", "bought": 0}, {"name": "安", "count": 1, "unit": "盒", "bought": 0}, {"name": "七", "count": 1, "unit": "盒", "bought": 0}], "category": "美妝保養", "units": ["盒", "片"], "note": "", "image": "https://freeimage.host/i/nv3fCZP", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 5, "name": "玫瑰提亮面膜", "price": "", "buyers": [{"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}, {"name": "彩", "count": 1, "unit": "盒", "bought": 0}, {"name": "Jane", "count": 1, "unit": "盒", "bought": 0}, {"name": "安", "count": 1, "unit": "盒", "bought": 0}, {"name": "七", "count": 1, "unit": "盒", "bought": 0}], "category": "美妝保養", "units": ["盒", "片"], "note": "", "image": "https://freeimage.host/i/nvxQ0Eg", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 6, "name": "穀胱胜肽面膜", "price": "", "buyers": [{"name": "彩", "count": 1, "unit": "盒", "bought": 0}, {"name": "Jane", "count": 1, "unit": "盒", "bought": 0}, {"name": "Dora", "count": 1, "unit": "盒", "bought": 0}], "category": "美妝保養", "units": ["盒", "片"], "note": "", "image": "https://freeimage.host/i/nvxQ4u2", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
       { "id": 7, "name": "魚腥草棉片", "price": "", "buyers": [{"name": "Dora", "count": 1, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvxZxtI", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
       { "id": 8, "name": "BIODANCE 水凝膠眼膜膠原蛋白", "price": "", "buyers": [{"name": "Jane", "count": 2, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvxD9B1", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
       { "id": 9, "name": "BIODANCE 水凝膠眼膜魚子醬 PDRN", "price": "", "buyers": [{"name": "Jane", "count": 1, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvxDWyx", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 10, "name": "明太子海苔", "price": "", "buyers": [{"name": "Dora", "count": 2, "unit": "包", "bought": 0}], "category": "食品/食材", "units": ["包"], "note": "", "image": "https://freeimage.host/i/nvxb5cg", "purchasedCounts": {}, "isCompleted": false, "isHidden": false }
+      { "id": 10, "name": "明太子海苔", "price": "", "buyers": [{"name": "Dora", "count": 2, "unit": "包", "bought": 0}], "category": "食品/食材", "units": ["包"], "note": "", "image": "https://freeimage.host/i/nvxb5cg", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 11, "name": "巧克力貝果", "price": "", "buyers": [{"name": "Dora", "count": 2, "unit": "包", "bought": 0}], "category": "食品/食材", "units": ["包"], "note": "", "image": "https://freeimage.host/i/nvxbRKF", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 12, "name": "蒜香奶油", "price": "", "buyers": [{"name": "筱瑄", "count": 2, "unit": "大包", "bought": 0}], "category": "食品/食材", "units": ["大包", "小包"], "note": "", "image": "https://freeimage.host/i/nvxmQ7s", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 13, "name": "蜂蜜奶油", "price": "", "buyers": [{"name": "筱瑄", "count": 2, "unit": "大包", "bought": 0}], "category": "食品/食材", "units": ["大包", "小包"], "note": "", "image": "https://freeimage.host/i/nvxyC9s", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 14, "name": "玉米濃湯", "price": "", "buyers": [{"name": "筱瑄", "count": 2, "unit": "大包", "bought": 0}], "category": "食品/食材", "units": ["大包", "小包"], "note": "", "image": "https://freeimage.host/i/nvz9Azv", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 15, "name": "魷魚原味", "price": "", "buyers": [{"name": "筱瑄", "count": 4, "unit": "大包", "bought": 0}, {"name": "安", "count": 1, "unit": "小包", "bought": 0}], "category": "食品/食材", "units": ["大包", "小包"], "note": "", "image": "https://freeimage.host/i/nvzHFvn", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 16, "name": "魷魚青陽辣椒", "price": "", "buyers": [{"name": "敏敏", "count": 1, "unit": "大包", "bought": 0}, {"name": "邇寧", "count": 1, "unit": "小包", "bought": 0}, {"name": "筱瑄", "count": 1, "unit": "小包", "bought": 0}], "category": "食品/食材", "units": ["大包", "小包"], "note": "", "image": "https://freeimage.host/i/nvzHeGp", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 17, "name": "魷魚辣美乃滋", "price": "", "buyers": [{"name": "筱瑄", "count": 1, "unit": "小包", "bought": 0}, {"name": "安", "count": 1, "unit": "大包", "bought": 0}], "category": "食品/食材", "units": ["大包", "小包"], "note": "", "image": "https://freeimage.host/i/nvzJCHF", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 18, "name": "開心果奶昔", "price": "", "buyers": [{"name": "Jane", "count": 10, "unit": "包", "bought": 0}, {"name": "邇寧", "count": 5, "unit": "包", "bought": 0}], "category": "食品/食材", "units": ["包"], "note": "", "image": "https://freeimage.host/i/nvzJygI", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 19, "name": "草莓奶昔", "price": "", "buyers": [{"name": "Jane", "count": 10, "unit": "包", "bought": 0}], "category": "食品/食材", "units": ["包"], "note": "", "image": "https://freeimage.host/i/nvzdjBR", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 20, "name": "巧克力奶昔", "price": "", "buyers": [{"name": "Jane", "count": 10, "unit": "包", "bought": 0}], "category": "食品/食材", "units": ["包"], "note": "", "image": "https://freeimage.host/i/nvzdQY7", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 21, "name": "Ediya巧克力薄餅", "price": "", "buyers": [{"name": "Dora", "count": 1, "unit": "大盒", "bought": 0}, {"name": "彩", "count": 1, "unit": "大盒", "bought": 0}], "category": "食品/食材", "units": ["大盒", "小盒"], "note": "", "image": "https://freeimage.host/i/nvz2oCv", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 22, "name": "嘴破藥膏", "price": "", "buyers": [{"name": "筱瑄", "count": 1, "unit": "條", "bought": 0}, {"name": "Jane", "count": 1, "unit": "條", "bought": 0}], "category": "美妝保養", "units": ["條"], "note": "", "image": "https://freeimage.host/i/nvz39Nn", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 23, "name": "護足霜", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "條", "bought": 0}, {"name": "敏敏", "count": 1, "unit": "條", "bought": 0}, {"name": "潔琪", "count": 1, "unit": "條", "bought": 0}], "category": "美妝保養", "units": ["條"], "note": "", "image": "https://freeimage.host/i/nvzFAIn", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 24, "name": "眼藥水mild", "price": "", "buyers": [{"name": "七", "count": 1, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvzqC1j", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 25, "name": "眼藥水cool", "price": "", "buyers": [], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvzqbTP", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 26, "name": "眼藥水cool high", "price": "", "buyers": [], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvzB0Mu", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 27, "name": "眼藥水ice", "price": "", "buyers": [], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvzBPtt", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 28, "name": "Fwee唇膏sweet rose GN02", "price": "", "buyers": [{"name": "筱瑄", "count": 1, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvzCaJR", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 29, "name": "Fixx 妝前乳", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "個", "bought": 0}, {"name": "Jane", "count": 1, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvznYBe", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 30, "name": "Fixx 眼眉定妝", "price": "", "buyers": [{"name": "彩", "count": 1, "unit": "個", "bought": 0}, {"name": "Jane", "count": 1, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvzui67", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 31, "name": "美容儀AGE-R PROx2", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "支", "bought": 0}, {"name": "Jane", "count": 2, "unit": "支", "bought": 0}], "category": "美妝保養", "units": ["支"], "note": "", "image": "https://freeimage.host/i/nvz5Khv", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 32, "name": "AnuaPDRN保濕噴霧", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvz73c7", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 33, "name": "AnuaPDRN精華液", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶", "組"], "note": "", "image": "https://freeimage.host/i/nvzYus4", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 34, "name": "Medicube PDRN胜肽", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvzYZIs", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 35, "name": "祛疤藥膏", "price": "", "buyers": [{"name": "敏敏", "count": 1, "unit": "條", "bought": 0}], "category": "美妝保養", "units": ["條"], "note": "", "image": "https://freeimage.host/i/nvzaWjs", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 36, "name": "epais頭皮精華", "price": "", "buyers": [{"name": "彩", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvzcsxs", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 37, "name": "頭皮噴霧迷迭香", "price": "", "buyers": [{"name": "Jane", "count": 1, "unit": "組", "bought": 0}, {"name": "邇寧", "count": 2, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶", "組"], "note": "", "image": "https://freeimage.host/i/nvzliYB", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 38, "name": "頭皮噴霧茶樹", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶", "組"], "note": "", "image": "https://freeimage.host/i/nvz0E8B", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 39, "name": "Anua魚腥草化妝水", "price": "", "buyers": [{"name": "Jane", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvz1ASp", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 40, "name": "Torriden 化妝水", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "瓶", "bought": 0}, {"name": "Jane", "count": 1, "unit": "瓶", "bought": 0}, {"name": "小白", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvzE51j", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 41, "name": "水光噴霧", "price": "", "buyers": [{"name": "Jane", "count": 1, "unit": "瓶", "bought": 0}, {"name": "邇寧", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvzGCGa", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 42, "name": "ongredients 化妝水", "price": "", "buyers": [{"name": "Jane", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvzGkcx", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 43, "name": "MEDITHERAPY 保濕噴霧", "price": "", "buyers": [], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvzMaDP", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 44, "name": "定妝噴霧奶油水光感", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶", "組"], "note": "", "image": "https://freeimage.host/i/nvzM8fs", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 45, "name": "定妝噴霧毛孔柔焦款", "price": "", "buyers": [{"name": "Jane", "count": 1, "unit": "組", "bought": 0}, {"name": "彩", "count": 1, "unit": "組", "bought": 0}], "category": "美妝保養", "units": ["瓶", "組"], "note": "", "image": "https://freeimage.host/i/nvzVy4s", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 46, "name": "定妝噴霧霧面柔光感", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvzVc74", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 47, "name": "About tone #21.5", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvzXks1", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 48, "name": "About tone #21", "price": "", "buyers": [], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvzhw2s", "purchasedCounts": {}, "isCompleted": false, "isHidden": false }
     ];
 
     var products = defaultProducts;
@@ -318,7 +356,7 @@
     document.getElementById('siteTitleInput').value = SITE_TITLE;
 
     // -----------------------------------------------------------------
-    // 3. 手動雲端讀寫模式 (穩定不卡頓)
+    // 3. 雲端讀寫模式 (若雲端無資料則自動寫入完整的 48 項商品)
     // -----------------------------------------------------------------
     window.onload = function() {
       loadDataFromCloud();
@@ -331,16 +369,20 @@
       db.collection('storeData').doc('productsDoc').get().then(doc => {
         if (doc.exists) {
           const data = doc.data();
-          if (data && Array.isArray(data.items)) {
+          if (data && Array.isArray(data.items) && data.items.length > 0) {
             products = data.items;
-            if (data.siteTitle) {
-              SITE_TITLE = data.siteTitle;
-              document.getElementById('pageTitleText').innerText = SITE_TITLE;
-              document.getElementById('headerTitleDisplay').innerText = SITE_TITLE;
-            }
+          } else {
+            products = defaultProducts;
+            manualSaveData();
+          }
+          if (data && data.siteTitle) {
+            SITE_TITLE = data.siteTitle;
+            document.getElementById('pageTitleText').innerText = SITE_TITLE;
+            document.getElementById('headerTitleDisplay').innerText = SITE_TITLE;
           }
         } else {
-          manualSaveData(); // 第一次初始化
+          products = defaultProducts;
+          manualSaveData(); // 第一次初始化寫入 48 項商品
         }
         statusTag.innerText = '🟢 雲端已同步 (點擊重新整理)';
         renderList();
@@ -350,7 +392,8 @@
         }
       }).catch(err => {
         console.error("Load error:", err);
-        statusTag.innerText = '🔴 載入失敗 (使用本地資料)';
+        statusTag.innerText = '🔴 載入失敗 (使用預設資料)';
+        products = defaultProducts;
         renderList();
       });
     }
