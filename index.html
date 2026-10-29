@@ -71,7 +71,7 @@
     .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
 
     .admin-nav { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
-    .admin-tab-btn { flex: 1; min-width: 20%; padding: 8px 2px; border: none; background: #EFECE6; color: var(--text-sub); font-weight: 600; border-radius: 10px; cursor: pointer; font-size: 11px; text-align: center; }
+    .admin-tab-btn { flex: 1; min-width: 18%; padding: 8px 2px; border: none; background: #EFECE6; color: var(--text-sub); font-weight: 600; border-radius: 10px; cursor: pointer; font-size: 11px; text-align: center; }
     .admin-tab-btn.active { background: var(--accent); color: white; }
     .admin-section { display: none; }
     .admin-section.active { display: block; }
@@ -91,7 +91,7 @@
     .status-done { background: #D4EDDA; color: #155724; }
 
     .customer-card { background: #FAFAFA; border: 1px solid var(--border-color); padding: 14px; border-radius: 12px; margin-bottom: 12px; }
-    .customer-name { font-size: 15px; font-weight: bold; color: var(--accent); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
+    .customer-name { font-size: 15px; font-weight: bold; color: var(--accent); margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
 
     .wish-card { background: #FFF; border: 1px solid var(--border-color); border-radius: 14px; padding: 14px; margin-bottom: 12px; box-shadow: var(--shadow); }
     .wish-title { font-size: 15px; font-weight: bold; color: var(--text-main); margin-bottom: 4px; display: flex; justify-content: space-between; align-items: center; }
@@ -101,6 +101,7 @@
     .admin-action-btns { display: flex; gap: 6px; margin-top: 8px; }
     .btn-edit-prod { background: var(--accent); color: white; border: none; padding: 4px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
     .btn-del-prod { background: #D9534F; color: white; border: none; padding: 4px 10px; border-radius: 8px; font-size: 12px; cursor: pointer; }
+    .btn-complete-order { background: #28A745; color: white; border: none; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: bold; cursor: pointer; }
     .btn-edit-order { background: var(--accent); color: white; border: none; padding: 2px 8px; font-size: 11px; border-radius: 6px; cursor: pointer; }
     .btn-submit { width: 100%; background-color: var(--accent); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
     .btn-save-manual { width: 100%; background-color: #28A745; color: white; border: none; padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 12px; margin-bottom: 8px; }
@@ -191,7 +192,7 @@
     </button>
   </nav>
 
-  <!-- 修改訂單數量 Modal (支援首頁點擊名字及後台修改) -->
+  <!-- 修改訂單數量 Modal -->
   <div class="modal-overlay" id="editOrderModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end; z-index: 1200;">
     <div class="modal-content" style="background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px;">
       <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -256,7 +257,8 @@
       
       <div class="admin-nav">
         <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 商品及統計</button>
-        <button class="admin-tab-btn" id="tabBtn2" onclick="switchTab(2)">👥 個案與訂單</button>
+        <button class="admin-tab-btn" id="tabBtn2" onclick="switchTab(2)">👥 未完成訂單</button>
+        <button class="admin-tab-btn" id="tabBtn6" onclick="switchTab(6)">🎉 已完成訂單</button>
         <button class="admin-tab-btn" id="tabBtn5" onclick="switchTab(5)">🌟 許願池管理</button>
         <button class="admin-tab-btn" id="tabBtn3" onclick="switchTab(3)">➕ 新增商品</button>
         <button class="admin-tab-btn" id="tabBtn4" onclick="switchTab(4)">⚙️ 設定</button>
@@ -269,6 +271,12 @@
 
       <div class="admin-section" id="adminSec2">
         <div id="customerContentList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
+        <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
+      </div>
+
+      <!-- 新增：已完成訂單分頁 -->
+      <div class="admin-section" id="adminSec6">
+        <div id="completedOrdersContentList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
         <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
       </div>
 
@@ -327,7 +335,7 @@
     const db = firebase.firestore();
 
     // -----------------------------------------------------------------
-    // 2. 完整 48 項預設商品資料
+    // 2. 預設商品資料
     // -----------------------------------------------------------------
     var defaultProducts = [
       { "id": 1, "name": "咖啡糖espresso", "price": "", "buyers": [{"name": "敏敏", "count": 4, "unit": "盒", "bought": 0}, {"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nvxLcgf", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
@@ -381,6 +389,7 @@
     ];
 
     var products = defaultProducts;
+    var completedOrders = []; // 存放已完成的訂單紀錄
     var wishList = [];
     var editingProdIndex = null;
     var editingOrderInfo = null;
@@ -434,6 +443,12 @@
             manualSaveData(false);
           }
 
+          if (data && Array.isArray(data.completedOrders)) {
+            completedOrders = data.completedOrders;
+          } else {
+            completedOrders = [];
+          }
+
           if (data && Array.isArray(data.wishList)) {
             wishList = data.wishList;
           } else {
@@ -447,6 +462,7 @@
           }
         } else {
           products = defaultProducts;
+          completedOrders = [];
           wishList = [];
           manualSaveData(false);
         }
@@ -458,6 +474,7 @@
         if (document.getElementById('adminModal').style.display === 'flex') {
           updateAdminStats();
           updateCustomerStats();
+          updateCompletedOrdersStats();
           updateAdminWishStats();
         }
       }, err => {
@@ -472,6 +489,9 @@
           const data = doc.data();
           if (data && Array.isArray(data.items)) {
             products = data.items;
+          }
+          if (data && Array.isArray(data.completedOrders)) {
+            completedOrders = data.completedOrders;
           }
           if (data && Array.isArray(data.wishList)) {
             wishList = data.wishList;
@@ -489,6 +509,7 @@
       if (showAlert === undefined) showAlert = true;
       db.collection('storeData').doc('productsDoc').set({
         items: products,
+        completedOrders: completedOrders,
         wishList: wishList,
         siteTitle: SITE_TITLE,
         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
@@ -743,7 +764,7 @@
           var b = product.buyers[j];
           var name = b.name.trim();
           var unit = b.unit || '個';
-          // 點擊卡片上的買家標籤即可直接修改該筆數量
+          // 點擊買家標籤可修改數量
           buyerTagsHTML += '<span class="tag tag-buyer" onclick="openAdminEditOrderModal(' + i + ', \'' + name + '\', \'' + unit + '\', ' + b.count + ')" title="點擊修改數量">👤 ' + name + ' +' + b.count + unit + '</span>';
         }
 
@@ -862,6 +883,7 @@
       if (isAuthed) {
         updateAdminStats();
         updateCustomerStats();
+        updateCompletedOrdersStats();
         updateAdminWishStats();
         document.getElementById('adminModal').style.display = 'flex';
       } else {
@@ -881,6 +903,7 @@
         closeModal('loginModal');
         updateAdminStats();
         updateCustomerStats();
+        updateCompletedOrdersStats();
         updateAdminWishStats();
         document.getElementById('adminModal').style.display = 'flex';
       } else {
@@ -940,7 +963,6 @@
       if (!p || !p.buyers) return;
 
       if (newCount === 0) {
-        // 若數量改為 0，直接移除該筆登記
         p.buyers = p.buyers.filter(b => !(b.name.trim() === editingOrderInfo.buyerName.trim() && (b.unit || '個') === editingOrderInfo.oldUnit));
       } else {
         var found = false;
@@ -964,6 +986,77 @@
       manualSaveData(false);
       closeModal('editOrderModal');
       alert('✅ 訂單數量與單位已修改並同步至雲端！');
+    }
+
+    // 完成某個買家的所有訂單
+    function completeCustomerOrders(buyerName) {
+      if (confirm('🎉 確定要把 「' + buyerName + '」 的所有訂單標記為「已完成」嗎？\n完成後，該買家的訂單將從首頁消失並移至「已完成訂單」頁面。')) {
+        var itemsToComplete = [];
+
+        products.forEach(p => {
+          if (p.buyers) {
+            var matchingBuyers = p.buyers.filter(b => b.name.trim() === buyerName.trim());
+            matchingBuyers.forEach(b => {
+              itemsToComplete.push({
+                itemName: p.name,
+                count: b.count,
+                unit: b.unit || '個'
+              });
+            });
+            // 從未完成清單移除
+            p.buyers = p.buyers.filter(b => b.name.trim() !== buyerName.trim());
+          }
+        });
+
+        if (itemsToComplete.length > 0) {
+          completedOrders.unshift({
+            id: Date.now(),
+            buyerName: buyerName,
+            items: itemsToComplete,
+            completedAt: new Date().toLocaleString()
+          });
+        }
+
+        renderList();
+        updateCustomerStats();
+        updateCompletedOrdersStats();
+        updateAdminStats();
+        manualSaveData(false);
+        alert('✅ 「' + buyerName + '」 的訂單已成功完成並移至已完成分頁！');
+      }
+    }
+
+    // 復原/取消已完成訂單
+    function restoreCompletedOrder(index) {
+      if (confirm('確定要將這筆訂單恢復為「未完成」嗎？（將重新放回主頁與未完成頁面）')) {
+        var comp = completedOrders[index];
+        if (comp && comp.items) {
+          comp.items.forEach(it => {
+            // 找尋對應商品
+            var prod = products.find(p => p.name.trim() === it.itemName.trim());
+            if (prod) {
+              if (!prod.buyers) prod.buyers = [];
+              prod.buyers.push({ name: comp.buyerName, count: it.count, unit: it.unit, bought: 0 });
+            }
+          });
+        }
+        completedOrders.splice(index, 1);
+        renderList();
+        updateCustomerStats();
+        updateCompletedOrdersStats();
+        updateAdminStats();
+        manualSaveData(false);
+        alert('已將 「' + comp.buyerName + '」 的訂單恢復為未完成狀態！');
+      }
+    }
+
+    // 徹底刪除已完成紀錄
+    function deleteCompletedOrder(index) {
+      if (confirm('確定要永久刪除這筆已完成的歷史紀錄嗎？')) {
+        completedOrders.splice(index, 1);
+        updateCompletedOrdersStats();
+        manualSaveData(false);
+      }
     }
 
     function adminDeleteCustomerItem(itemIdx, buyerName, unitName, countVal) {
@@ -1012,6 +1105,7 @@
       manualSaveData(false);
     }
 
+    // 渲染未完成訂單分頁
     function updateCustomerStats() {
       var customerList = document.getElementById('customerContentList');
       if (!customerList) return;
@@ -1031,13 +1125,13 @@
 
       var customerNames = Object.keys(customerMap);
       if (customerNames.length === 0) {
-        customerList.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">目前尚無任何購買人登記資料</div>';
+        customerList.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">🎉 目前沒有未完成的訂單！</div>';
         return;
       }
 
       var header = document.createElement('div');
       header.style.cssText = "font-size:16px; font-weight:bold; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--border-color); color:var(--text-main);";
-      header.innerText = '👥 總計購買人數：' + customerNames.length + ' 位';
+      header.innerText = '👥 未完成訂單人數：' + customerNames.length + ' 位';
       customerList.appendChild(header);
 
       for (var k = 0; k < customerNames.length; k++) {
@@ -1058,10 +1152,56 @@
           '</div>';
         }
 
-        card.innerHTML = '<div class="customer-name"><span>👤 ' + name + '</span>' +
-          '<button class="btn-del-prod" style="padding:3px 10px; font-size:11px;" onclick="adminDeleteAllCustomerOrders(\'' + name + '\')">🗑️ 刪除此人所有訂單</button>' +
+        card.innerHTML = '<div class="customer-name">' +
+            '<span>👤 ' + name + '</span>' +
+            '<div style="display:flex; gap:6px;">' +
+              '<button class="btn-complete-order" onclick="completeCustomerOrders(\'' + name + '\')">✅ 完成訂單</button>' +
+              '<button class="btn-del-prod" style="padding:3px 8px; font-size:11px;" onclick="adminDeleteAllCustomerOrders(\'' + name + '\')">🗑️ 刪除</button>' +
+            '</div>' +
           '</div>' + itemsHtml;
         customerList.appendChild(card);
+      }
+    }
+
+    // 渲染已完成訂單分頁
+    function updateCompletedOrdersStats() {
+      var compList = document.getElementById('completedOrdersContentList');
+      if (!compList) return;
+      compList.innerHTML = '';
+
+      if (completedOrders.length === 0) {
+        compList.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">尚無已完成的訂單紀錄</div>';
+        return;
+      }
+
+      var header = document.createElement('div');
+      header.style.cssText = "font-size:16px; font-weight:bold; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--border-color); color:var(--text-main);";
+      header.innerText = '🎉 已完成訂單紀錄：' + completedOrders.length + ' 筆';
+      compList.appendChild(header);
+
+      for (var i = 0; i < completedOrders.length; i++) {
+        var comp = completedOrders[i];
+        var card = document.createElement('div');
+        card.className = 'customer-card';
+        card.style.background = '#F4F9F4';
+        card.style.borderColor = '#C3E6CB';
+
+        var itemsHtml = '';
+        if (comp.items) {
+          for (var j = 0; j < comp.items.length; j++) {
+            var it = comp.items[j];
+            itemsHtml += '<div style="font-size:13px; margin-bottom:4px; color:#155724;">• ' + it.itemName + ': <b>' + it.count + ' ' + it.unit + '</b></div>';
+          }
+        }
+
+        card.innerHTML = '<div class="customer-name"><span style="color:#155724;">✅ ' + comp.buyerName + ' <small style="font-weight:normal; font-size:11px; color:#666;">(' + (comp.completedAt || '') + ')</small></span>' +
+          '<div style="display:flex; gap:4px;">' +
+            '<button class="btn-edit-order" style="background:#6c757d;" onclick="restoreCompletedOrder(' + i + ')">↩️ 移回未完成</button>' +
+            '<button class="btn-del-prod" style="padding:2px 8px; font-size:11px;" onclick="deleteCompletedOrder(' + i + ')">刪除</button>' +
+          '</div>' +
+          '</div>' + itemsHtml;
+
+        compList.appendChild(card);
       }
     }
 
@@ -1234,18 +1374,21 @@
     function switchTab(tabNum) {
       document.getElementById('tabBtn1').className = 'admin-tab-btn' + (tabNum === 1 ? ' active' : '');
       document.getElementById('tabBtn2').className = 'admin-tab-btn' + (tabNum === 2 ? ' active' : '');
+      document.getElementById('tabBtn6').className = 'admin-tab-btn' + (tabNum === 6 ? ' active' : '');
       document.getElementById('tabBtn3').className = 'admin-tab-btn' + (tabNum === 3 ? ' active' : '');
       document.getElementById('tabBtn4').className = 'admin-tab-btn' + (tabNum === 4 ? ' active' : '');
       document.getElementById('tabBtn5').className = 'admin-tab-btn' + (tabNum === 5 ? ' active' : '');
 
       document.getElementById('adminSec1').className = 'admin-section' + (tabNum === 1 ? ' active' : '');
       document.getElementById('adminSec2').className = 'admin-section' + (tabNum === 2 ? ' active' : '');
+      document.getElementById('adminSec6').className = 'admin-section' + (tabNum === 6 ? ' active' : '');
       document.getElementById('adminSec3').className = 'admin-section' + (tabNum === 3 ? ' active' : '');
       document.getElementById('adminSec4').className = 'admin-section' + (tabNum === 4 ? ' active' : '');
       document.getElementById('adminSec5').className = 'admin-section' + (tabNum === 5 ? ' active' : '');
 
       if (tabNum === 1) updateAdminStats();
       else if (tabNum === 2) updateCustomerStats();
+      else if (tabNum === 6) updateCompletedOrdersStats();
       else if (tabNum === 5) updateAdminWishStats();
     }
   </script>
