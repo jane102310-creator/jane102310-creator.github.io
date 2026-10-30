@@ -284,6 +284,7 @@
       <div class="admin-nav">
         <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 商品管理</button>
         <button class="admin-tab-btn" id="tabBtn7" onclick="switchTab(7)">📊 採購統計</button>
+        <button class="admin-tab-btn" id="tabBtn8" onclick="switchTab(8)">💰 每日營收</button>
         <button class="admin-tab-btn" id="tabBtn2" onclick="switchTab(2)">👥 未完成訂單</button>
         <button class="admin-tab-btn" id="tabBtn6" onclick="switchTab(6)">🎉 已完成訂單</button>
         <button class="admin-tab-btn" id="tabBtn5" onclick="switchTab(5)">🌟 許願池</button>
@@ -300,6 +301,12 @@
       <!-- 分頁 7: 採購統計 -->
       <div class="admin-section" id="adminSec7">
         <div id="adminStatsContentList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
+        <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
+      </div>
+
+      <!-- 分頁 8: 每日營收統計 -->
+      <div class="admin-section" id="adminSec8">
+        <div id="dailyRevenueContentList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
         <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
       </div>
 
@@ -491,6 +498,7 @@
           } else {
             updateAdminProductList();
             updateAdminStats();
+            updateDailyRevenueStats();
             updateCustomerStats();
             updateCompletedOrdersStats();
             updateAdminWishStats();
@@ -965,6 +973,7 @@
       if (isAuthed) {
         updateAdminProductList();
         updateAdminStats();
+        updateDailyRevenueStats();
         updateCustomerStats();
         updateCompletedOrdersStats();
         updateAdminWishStats();
@@ -986,6 +995,7 @@
         closeModal('loginModal');
         updateAdminProductList();
         updateAdminStats();
+        updateDailyRevenueStats();
         updateCustomerStats();
         updateCompletedOrdersStats();
         updateAdminWishStats();
@@ -1073,7 +1083,6 @@
       alert('✅ 訂單數量與單位已修改並同步至雲端！');
     }
 
-    // [修改核心邏輯]：完成該買家的訂單時，只將其名字從商品buyers中移除，商品保留在首頁，且採購統計重置採購進度與該買家登記，同時移至已完成訂單
     function completeCustomerOrders(buyerName) {
       if (confirm('🎉 確定要把 「' + buyerName + '」 的所有訂單標記為「已完成」嗎？\n完成後，該買家的訂單將從未完成列表移除並移至「已完成訂單」，商品會留在首頁繼續開放下單。')) {
         var itemsToComplete = [];
@@ -1088,13 +1097,12 @@
                 count: b.count,
                 unit: b.unit || '瓶',
                 ntPrice: pricing.finalNt,
-                price: pricing.krwPrice
+                krwPrice: pricing.krwPrice,
+                rate: pricing.rate
               });
             });
-            // 從商品中移除該買家的訂單，讓商品留在首頁供下一個人下單
             p.buyers = p.buyers.filter(b => b.name.trim() !== buyerName.trim());
           }
-          // 同時重置採購進度，讓下一批採購或下一個人能繼續記錄
           if (p.purchasedCounts) {
             p.purchasedCounts = {};
           }
@@ -1112,6 +1120,7 @@
         renderList();
         updateCustomerStats();
         updateCompletedOrdersStats();
+        updateDailyRevenueStats();
         updateAdminProductList();
         updateAdminStats();
         manualSaveData(false);
@@ -1135,6 +1144,7 @@
         renderList();
         updateCustomerStats();
         updateCompletedOrdersStats();
+        updateDailyRevenueStats();
         updateAdminProductList();
         updateAdminStats();
         manualSaveData(false);
@@ -1146,6 +1156,7 @@
       if (confirm('確定要永久刪除這筆已完成的歷史紀錄嗎？')) {
         completedOrders.splice(index, 1);
         updateCompletedOrdersStats();
+        updateDailyRevenueStats();
         manualSaveData(false);
       }
     }
@@ -1197,6 +1208,113 @@
       renderList();
       updateAdminStats();
       manualSaveData(false);
+    }
+
+    // -----------------------------------------------------------------
+    // 新增：每日營收與成本統計計算函式
+    // -----------------------------------------------------------------
+    function updateDailyRevenueStats() {
+      var container = document.getElementById('dailyRevenueContentList');
+      if (!container) return;
+      container.innerHTML = '';
+
+      if (completedOrders.length === 0) {
+        container.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">尚無已完成的訂單可供統計每日營收</div>';
+        return;
+      }
+
+      // 依日期（取 completedAt 的日期部分，例如 "2026/10/31"）進行分組
+      var dailyMap = {};
+      completedOrders.forEach(comp => {
+        var dateStr = (comp.completedAt || '').split(' ')[0] || '未分類日期';
+        if (!dailyMap[dateStr]) {
+          dailyMap[dateStr] = {
+            totalRevenue: 0,    // 總售價 NT$
+            totalKrwCost: 0,    // 總進購韓幣 ₩
+            totalNtCost: 0,     // 總進購台幣折算
+            orders: []
+          };
+        }
+
+        var orderRevenue = 0;
+        var orderKrwCost = 0;
+        var orderNtCost = 0;
+
+        if (comp.items) {
+          comp.items.forEach(it => {
+            var ntPrice = parseInt(it.ntPrice) || 0;
+            var rev = ntPrice * it.count;
+            orderRevenue += rev;
+
+            var krwStr = (it.krwPrice || '').replace(/,/g, '');
+            var krwVal = parseInt(krwStr) || 0;
+            var krwTotal = krwVal * it.count;
+            orderKrwCost += krwTotal;
+
+            var rate = parseFloat(it.rate) || GLOBAL_EXCHANGE_RATE;
+            var ntCostSingle = krwVal > 0 && rate > 0 ? Math.round(krwVal / rate) : 0;
+            orderNtCost += ntCostSingle * it.count;
+          });
+        }
+
+        dailyMap[dateStr].totalRevenue += orderRevenue;
+        dailyMap[dateStr].totalKrwCost += orderKrwCost;
+        dailyMap[dateStr].totalNtCost += orderNtCost;
+        dailyMap[dateStr].orders.push(comp);
+      });
+
+      var dates = Object.keys(dailyMap).sort().reverse();
+
+      var header = document.createElement('div');
+      header.style.cssText = "font-size:16px; font-weight:bold; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--border-color); color:var(--text-main);";
+      header.innerText = '💰 每日營收與成本統計 (' + dates.length + ' 天)';
+      container.appendChild(header);
+
+      dates.forEach(dateStr => {
+        var dayData = dailyMap[dateStr];
+        var profit = dayData.totalRevenue - dayData.totalNtCost;
+
+        var card = document.createElement('div');
+        card.className = 'customer-card';
+        card.style.background = '#FFFFFF';
+
+        var detailsHtml = '';
+        dayData.orders.forEach(ord => {
+          var buyerRev = 0;
+          var buyerKrw = 0;
+          var buyerItemsHtml = '';
+
+          if (ord.items) {
+            ord.items.forEach(it => {
+              var pNt = parseInt(it.ntPrice) || 0;
+              buyerRev += pNt * it.count;
+              var kVal = parseInt((it.krwPrice || '').replace(/,/g, '')) || 0;
+              buyerKrw += kVal * it.count;
+              var kStr = kVal > 0 ? ' | 進購 ₩ ' + (kVal * it.count).toLocaleString() : '';
+              buyerItemsHtml += '<div style="font-size:12px; color:#666; margin-left:10px;">• ' + it.itemName + ': <b>' + it.count + ' ' + it.unit + '</b> (售價 NT$ ' + (pNt * it.count).toLocaleString() + kStr + ')</div>';
+            });
+          }
+
+          detailsHtml += '<div style="margin-bottom:8px; padding-bottom:6px; border-bottom:1px dashed #eee;">' +
+            '<div style="font-size:13px; font-weight:600; color:var(--text-main);">👤 買家：' + ord.buyerName + ' <span style="font-size:11px; color:#888;">(' + (ord.completedAt || '') + ')</span></div>' +
+            buyerItemsHtml +
+          '</div>';
+        });
+
+        card.innerHTML = '<div style="font-size:15px; font-weight:bold; color:var(--accent); margin-bottom:8px; display:flex; justify-content:space-between;">' +
+            '<span>📅 ' + dateStr + '</span>' +
+            '<span style="color:#28A745;">營收 NT$ ' + dayData.totalRevenue.toLocaleString() + '</span>' +
+          '</div>' +
+          '<div style="font-size:13px; background:#FAFAFA; padding:10px; border-radius:8px; border:1px solid var(--border-color); margin-bottom:10px;">' +
+            '<div>🛒 總進購韓幣：<b>₩ ' + dayData.totalKrwCost.toLocaleString() + '</b></div>' +
+            '<div>💸 折合台幣成本：<b>NT$ ' + dayData.totalNtCost.toLocaleString() + '</b></div>' +
+            '<div>📈 預估毛利：<b style="color:' + (profit >= 0 ? '#28A745' : '#D9534F') + ';">NT$ ' + profit.toLocaleString() + '</b></div>' +
+          '</div>' +
+          '<div style="font-size:13px; font-weight:bold; color:var(--text-sub); margin-bottom:6px;">📋 當日完成訂單明細：</div>' +
+          detailsHtml;
+
+        container.appendChild(card);
+      });
     }
 
     function updateCustomerStats() {
@@ -1302,7 +1420,8 @@
             var it = comp.items[j];
             var ntNum = parseInt(it.ntPrice) || 0;
             totalNt += ntNum * it.count;
-            itemsHtml += '<div style="font-size:13px; margin-bottom:4px; color:#155724;">• ' + it.itemName + ': <b>' + it.count + ' ' + it.unit + '</b></div>';
+            var krwStr = it.krwPrice ? ' (進購 ₩ ' + it.krwPrice + ')' : '';
+            itemsHtml += '<div style="font-size:13px; margin-bottom:4px; color:#155724;">• ' + it.itemName + ': <b>' + it.count + ' ' + it.unit + '</b> (售價 NT$ ' + (ntNum * it.count).toLocaleString() + ')' + krwStr + '</div>';
           }
         }
         var sumStr = totalNt > 0 ? ' (總售價 NT$ ' + totalNt.toLocaleString() + ')' : '';
@@ -1530,6 +1649,7 @@
     function switchTab(tabNum) {
       document.getElementById('tabBtn1').className = 'admin-tab-btn' + (tabNum === 1 ? ' active' : '');
       document.getElementById('tabBtn7').className = 'admin-tab-btn' + (tabNum === 7 ? ' active' : '');
+      document.getElementById('tabBtn8').className = 'admin-tab-btn' + (tabNum === 8 ? ' active' : '');
       document.getElementById('tabBtn2').className = 'admin-tab-btn' + (tabNum === 2 ? ' active' : '');
       document.getElementById('tabBtn6').className = 'admin-tab-btn' + (tabNum === 6 ? ' active' : '');
       document.getElementById('tabBtn3').className = 'admin-tab-btn' + (tabNum === 3 ? ' active' : '');
@@ -1538,6 +1658,7 @@
 
       document.getElementById('adminSec1').className = 'admin-section' + (tabNum === 1 ? ' active' : '');
       document.getElementById('adminSec7').className = 'admin-section' + (tabNum === 7 ? ' active' : '');
+      document.getElementById('adminSec8').className = 'admin-section' + (tabNum === 8 ? ' active' : '');
       document.getElementById('adminSec2').className = 'admin-section' + (tabNum === 2 ? ' active' : '');
       document.getElementById('adminSec6').className = 'admin-section' + (tabNum === 6 ? ' active' : '');
       document.getElementById('adminSec3').className = 'admin-section' + (tabNum === 3 ? ' active' : '');
@@ -1546,6 +1667,7 @@
 
       if (tabNum === 1) updateAdminProductList();
       else if (tabNum === 7) updateAdminStats();
+      else if (tabNum === 8) updateDailyRevenueStats();
       else if (tabNum === 2) updateCustomerStats();
       else if (tabNum === 6) updateCompletedOrdersStats();
       else if (tabNum === 5) updateAdminWishStats();
