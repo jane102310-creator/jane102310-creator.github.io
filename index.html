@@ -228,7 +228,14 @@
       </div>
       <div class="form-group"><label class="form-label">韓幣金額 (₩)</label><input type="text" id="editProdPrice" class="form-input" placeholder="例如：15000 或 15,000" /></div>
       <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開）</label><input type="text" id="editProdUnits" class="form-input" placeholder="盒,片" /></div>
-      <div class="form-group"><label class="form-label">商品圖片網址 (URL)</label><input type="text" id="editProdImage" class="form-input" placeholder="請貼上圖片網址..." /></div>
+      
+      <!-- 圖片上傳按鈕與網址輸入框 -->
+      <div class="form-group">
+        <label class="form-label">商品圖片 (可直接上傳或貼網址)</label>
+        <input type="file" id="editProdImageFile" class="form-input" accept="image/*" onchange="handleImageUpload(this, 'editProdImage')" style="margin-bottom: 6px;" />
+        <input type="text" id="editProdImage" class="form-input" placeholder="上傳後自動產生圖片，或在此直接貼上網址..." />
+      </div>
+
       <div class="form-group"><label class="form-label">備註說明</label><input type="text" id="editProdNote" class="form-input" /></div>
       <div class="form-group" style="display: flex; align-items: center; gap: 10px; background: #FAFAFA; padding: 10px; border-radius: 12px; border: 1px solid var(--border-color);">
         <input type="checkbox" id="editProdHidden" style="width: 20px; height: 20px; cursor: pointer;" />
@@ -274,7 +281,6 @@
         <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
       </div>
 
-      <!-- 新增：已完成訂單分頁 -->
       <div class="admin-section" id="adminSec6">
         <div id="completedOrdersContentList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
         <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
@@ -297,7 +303,14 @@
         </div>
         <div class="form-group"><label class="form-label">韓幣金額 (₩)</label><input type="text" id="itemPrice" class="form-input" placeholder="例如：15000 或 15,000" /></div>
         <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開）</label><input type="text" id="itemUnits" class="form-input" value="盒,片" placeholder="盒,片" /></div>
-        <div class="form-group"><label class="form-label">商品圖片網址 (URL)</label><input type="text" id="itemImage" class="form-input" placeholder="請貼上圖片網址..." /></div>
+        
+        <!-- 圖片上傳按鈕與網址輸入框 -->
+        <div class="form-group">
+          <label class="form-label">商品圖片 (可直接上傳或貼網址)</label>
+          <input type="file" id="itemImageFile" class="form-input" accept="image/*" onchange="handleImageUpload(this, 'itemImage')" style="margin-bottom: 6px;" />
+          <input type="text" id="itemImage" class="form-input" placeholder="上傳後自動產生圖片，或在此直接貼上網址..." />
+        </div>
+
         <div class="form-group"><label class="form-label">備註說明</label><input type="text" id="itemNote" class="form-input" placeholder="規格或口味..." /></div>
         <button class="btn-submit" onclick="saveNewProd()">確認新增商品</button>
       </div>
@@ -333,6 +346,26 @@
 
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
+
+    // -----------------------------------------------------------------
+    // 圖片上傳處理邏輯 (轉 Base64 數據，可直接儲存並同步至 Firebase)
+    // -----------------------------------------------------------------
+    function handleImageUpload(inputElement, targetInputId) {
+      var file = inputElement.files[0];
+      if (!file) return;
+
+      if (file.size > 2 * 1024 * 1024) {
+        alert("⚠️ 圖片大小不能超過 2MB，請選擇較小的圖片！");
+        inputElement.value = "";
+        return;
+      }
+
+      var reader = new FileReader();
+      reader.onload = function(e) {
+        document.getElementById(targetInputId).value = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
 
     // -----------------------------------------------------------------
     // 2. 預設商品資料
@@ -1303,6 +1336,7 @@
       document.getElementById('editProdUnits').value = (p.units && p.units.length > 0) ? p.units.join(',') : '個';
       document.getElementById('editProdNote').value = p.note || '';
       document.getElementById('editProdImage').value = p.image || '';
+      document.getElementById('editProdImageFile').value = '';
       document.getElementById('editProdHidden').checked = !!p.isHidden;
       document.getElementById('editProdModal').style.display = 'flex';
     }
@@ -1365,6 +1399,7 @@
       document.getElementById('itemPrice').value = '';
       document.getElementById('itemNote').value = '';
       document.getElementById('itemImage').value = '';
+      document.getElementById('itemImageFile').value = '';
       document.getElementById('itemUnits').value = '盒,片';
       
       closeModal('adminModal');
