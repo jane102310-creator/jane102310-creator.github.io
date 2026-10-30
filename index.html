@@ -43,7 +43,8 @@
 
     .item-card { background: var(--card-bg); border-radius: 16px; padding: 14px; display: flex; align-items: center; gap: 12px; margin-bottom: 12px; box-shadow: var(--shadow); border: 1px solid var(--border-color); position: relative; }
     .item-card.completed { opacity: 0.65; background: #F9F8F6; }
-    .item-img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; background: #F4EBE1; flex-shrink: 0; }
+    .item-img { width: 64px; height: 64px; border-radius: 12px; object-fit: cover; background: #F4EBE1; flex-shrink: 0; cursor: pointer; transition: transform 0.2s; }
+    .item-img:hover { transform: scale(1.05); }
     .item-info { flex: 1; min-width: 0; }
     .item-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
     .tag { font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: 500; }
@@ -192,6 +193,27 @@
     </button>
   </nav>
 
+  <!-- 點擊圖片查看商品詳情 Modal -->
+  <div class="modal-overlay" id="productDetailModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end; z-index: 1300;">
+    <div class="modal-content" style="background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px; max-height: 90vh; overflow-y: auto;">
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+        <h2 style="font-size: 18px; font-weight: 700;">📦 商品詳細內容</h2>
+        <button class="btn-close" onclick="closeModal('productDetailModal')" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub);">✕</button>
+      </div>
+      <div style="text-align: center; margin-bottom: 16px;">
+        <img id="detailModalImg" src="" alt="商品大圖" style="width: 100%; max-height: 240px; object-fit: contain; border-radius: 12px; background: #F4EBE1;" />
+      </div>
+      <div style="margin-bottom: 12px;">
+        <span id="detailModalCategory" class="tag tag-category" style="font-size: 12px; padding: 4px 10px;"></span>
+      </div>
+      <div id="detailModalName" style="font-size: 18px; font-weight: bold; color: var(--text-main); margin-bottom: 8px;"></div>
+      <div id="detailModalNote" style="font-size: 14px; color: #666; margin-bottom: 16px; background: #FAFAFA; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color);"></div>
+      <div style="font-size: 14px; font-weight: bold; color: var(--accent); margin-bottom: 8px;">📋 目前登記明細：</div>
+      <div id="detailModalBuyers" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px;"></div>
+      <button class="btn-submit" onclick="closeModal('productDetailModal')">關閉視窗</button>
+    </div>
+  </div>
+
   <!-- 修改訂單數量 Modal -->
   <div class="modal-overlay" id="editOrderModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end; z-index: 1200;">
     <div class="modal-content" style="background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px;">
@@ -213,7 +235,7 @@
     </div>
   </div>
 
-  <!-- 修改商品資料 Modal (已移除商品本身的金額欄位) -->
+  <!-- 修改商品資料 Modal -->
   <div class="modal-overlay" id="editProdModal" style="z-index: 1100; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end;">
     <div class="modal-content" style="background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px; max-height: 90vh; overflow-y: auto;">
       <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><h2 style="font-size: 18px; font-weight: 700;">✏️ 修改商品資料</h2><button class="btn-close" onclick="closeEditProdModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub);">✕</button></div>
@@ -276,7 +298,7 @@
         <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
       </div>
 
-      <!-- 分頁 7: 採購統計 (包含每批次的買入金額、匯率、換算及最後售價設定) -->
+      <!-- 分頁 7: 採購統計 -->
       <div class="admin-section" id="adminSec7">
         <div id="adminStatsContentList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
         <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
@@ -300,7 +322,7 @@
         <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
       </div>
 
-      <!-- 分頁 3: 新增商品 (已移除金額欄位) -->
+      <!-- 分頁 3: 新增商品 -->
       <div class="admin-section" id="adminSec3">
         <div class="form-group"><label class="form-label">商品名稱 *</label><input type="text" id="itemName" class="form-input" placeholder="例如：積雪草面膜..." /></div>
         <div class="form-group"><label class="form-label">分類</label>
@@ -328,7 +350,6 @@
         <div class="form-group"><label class="form-label">修改網頁標題名稱</label><input type="text" id="siteTitleInput" class="form-input" placeholder="韓國代購清單" /></div>
         <button class="btn-submit" onclick="saveSiteTitle()" style="margin-bottom: 20px;">更新網頁標題</button>
         
-        <!-- 預設匯率設定 -->
         <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-bottom: 20px;">
           <div class="form-group">
             <label class="form-label">預設代購匯率 (輸入 1 台幣可換多少韓幣，例如 41.5)</label>
@@ -415,7 +436,6 @@
       initRealtimeListener();
     };
 
-    // 取得特定單位的價格設定 (存放在 product.prices[unitKey] 中，若無則回傳預設)
     function getUnitPricing(p, unitKey) {
       if (!p.prices) p.prices = {};
       if (!p.prices[unitKey]) {
@@ -524,7 +544,6 @@
       alert('✅ 預設匯率已成功更新並同步！');
     }
 
-    // 儲存統計區塊中的單位價格異動
     function updateUnitPricingInput(itemIdx, unitKey, field, val) {
       var p = products[itemIdx];
       if (!p.prices) p.prices = {};
@@ -745,6 +764,42 @@
       return url;
     }
 
+    // 點擊商品圖片開啟詳細內容 Modal
+    function openProductDetailModal(itemIdx) {
+      var p = products[itemIdx];
+      var defaultSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+      var imgSrc = p.image ? fixImageUrl(p.image) : defaultSvg;
+
+      document.getElementById('detailModalImg').src = imgSrc;
+      document.getElementById('detailModalCategory').innerText = p.category || '未分類';
+      document.getElementById('detailModalName').innerText = p.name;
+      
+      var noteEl = document.getElementById('detailModalNote');
+      if (p.note) {
+        noteEl.innerText = p.note;
+        noteEl.style.display = 'block';
+      } else {
+        noteEl.innerText = '';
+        noteEl.style.display = 'none';
+      }
+
+      var buyersEl = document.getElementById('detailModalBuyers');
+      buyersEl.innerHTML = '';
+      if (!p.buyers || p.buyers.length === 0) {
+        buyersEl.innerHTML = '<div style="color:#999; font-size:13px; text-align:center; padding:10px;">目前尚無人登記</div>';
+      } else {
+        for (var j = 0; j < p.buyers.length; j++) {
+          var b = p.buyers[j];
+          var row = document.createElement('div');
+          row.style.cssText = "display:flex; justify-content:space-between; font-size:13px; padding:6px 10px; background:#FAFAFA; border-radius:8px; border:1px solid var(--border-color);";
+          row.innerHTML = '<span>👤 ' + b.name + '</span><b>+' + b.count + (b.unit || '瓶') + '</b>';
+          buyersEl.appendChild(row);
+        }
+      }
+
+      document.getElementById('productDetailModal').style.display = 'flex';
+    }
+
     function renderList() {
       var itemList = document.getElementById('itemListHome');
       if (!itemList) return;
@@ -797,7 +852,7 @@
           '</div>';
         }
 
-        card.innerHTML = '<img src="' + imgSrc + '" class="item-img" alt="商品圖片" />' +
+        card.innerHTML = '<img src="' + imgSrc + '" class="item-img" alt="商品圖片" onclick="openProductDetailModal(' + i + ')" title="點擊查看詳細內容" />' +
           '<div class="item-info">' +
             '<div class="item-tags"><span class="tag tag-category">' + product.category + '</span></div>' +
             '<div class="item-name">' + product.name + '</div>' +
@@ -1236,7 +1291,6 @@
       }
     }
 
-    // 📦 商品管理分頁渲染 (已無價格顯示)
     function updateAdminProductList() {
       var prodListEl = document.getElementById('adminProductList');
       if (!prodListEl) return;
@@ -1270,7 +1324,6 @@
       }
     }
 
-    // 📊 採購統計分頁渲染 (在此處新增每批次之韓幣買入價、匯率、換算及最後售價設定)
     function updateAdminStats() {
       var contentList = document.getElementById('adminStatsContentList');
       if (!contentList) return;
