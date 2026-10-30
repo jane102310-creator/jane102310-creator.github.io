@@ -213,7 +213,7 @@
     </div>
   </div>
 
-  <!-- 修改商品資料 Modal -->
+  <!-- 修改商品資料 Modal (已移除商品本身的金額欄位) -->
   <div class="modal-overlay" id="editProdModal" style="z-index: 1100; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end;">
     <div class="modal-content" style="background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px; max-height: 90vh; overflow-y: auto;">
       <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><h2 style="font-size: 18px; font-weight: 700;">✏️ 修改商品資料</h2><button class="btn-close" onclick="closeEditProdModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub);">✕</button></div>
@@ -226,8 +226,6 @@
           <option value="文具雜貨">文具雜貨</option>
         </select>
       </div>
-      <div class="form-group"><label class="form-label">韓幣金額 (₩) —— 買入金額</label><input type="text" id="editProdPrice" class="form-input" placeholder="例如：15000 或 15,000" /></div>
-      <div class="form-group"><label class="form-label">台幣金額 (NT$) —— 賣出最後售價金額 (選填)</label><input type="text" id="editProdNtPrice" class="form-input" placeholder="若不填則依匯率自動換算" /></div>
       <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開）</label><input type="text" id="editProdUnits" class="form-input" placeholder="盒,片" /></div>
       
       <div class="form-group">
@@ -262,7 +260,6 @@
     <div class="modal-content" style="background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px; max-height: 90vh; overflow-y: auto;">
       <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><h2 style="font-size: 18px; font-weight: 700;">🔐 管理者後台</h2><button class="btn-close" onclick="closeModal('adminModal')" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub);">✕</button></div>
       
-      <!-- 後台導覽列：商品管理與採購統計已分開 -->
       <div class="admin-nav">
         <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 商品管理</button>
         <button class="admin-tab-btn" id="tabBtn7" onclick="switchTab(7)">📊 採購統計</button>
@@ -279,7 +276,7 @@
         <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
       </div>
 
-      <!-- 分頁 7: 採購統計 -->
+      <!-- 分頁 7: 採購統計 (包含每批次的買入金額、匯率、換算及最後售價設定) -->
       <div class="admin-section" id="adminSec7">
         <div id="adminStatsContentList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
         <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
@@ -303,7 +300,7 @@
         <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
       </div>
 
-      <!-- 分頁 3: 新增商品 -->
+      <!-- 分頁 3: 新增商品 (已移除金額欄位) -->
       <div class="admin-section" id="adminSec3">
         <div class="form-group"><label class="form-label">商品名稱 *</label><input type="text" id="itemName" class="form-input" placeholder="例如：積雪草面膜..." /></div>
         <div class="form-group"><label class="form-label">分類</label>
@@ -314,8 +311,6 @@
             <option value="文具雜貨">文具雜貨</option>
           </select>
         </div>
-        <div class="form-group"><label class="form-label">韓幣金額 (₩) —— 買入金額</label><input type="text" id="itemPrice" class="form-input" placeholder="例如：15000 或 15,000" /></div>
-        <div class="form-group"><label class="form-label">台幣金額 (NT$) —— 賣出最後售價金額 (選填)</label><input type="text" id="itemNtPrice" class="form-input" placeholder="若不填則依匯率自動換算" /></div>
         <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開）</label><input type="text" id="itemUnits" class="form-input" value="瓶" placeholder="瓶,盒" /></div>
         
         <div class="form-group">
@@ -333,13 +328,13 @@
         <div class="form-group"><label class="form-label">修改網頁標題名稱</label><input type="text" id="siteTitleInput" class="form-input" placeholder="韓國代購清單" /></div>
         <button class="btn-submit" onclick="saveSiteTitle()" style="margin-bottom: 20px;">更新網頁標題</button>
         
-        <!-- 匯率設定 -->
+        <!-- 預設匯率設定 -->
         <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-bottom: 20px;">
           <div class="form-group">
-            <label class="form-label">代購匯率 (輸入 1 台幣可換多少韓幣，例如 41.5)</label>
+            <label class="form-label">預設代購匯率 (輸入 1 台幣可換多少韓幣，例如 41.5)</label>
             <input type="number" step="0.1" id="exchangeRateInput" class="form-input" placeholder="例如：41.5" />
           </div>
-          <button class="btn-submit" onclick="saveExchangeRate()">更新代購匯率</button>
+          <button class="btn-submit" onclick="saveExchangeRate()">更新預設匯率</button>
         </div>
 
         <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-bottom: 20px;">
@@ -392,10 +387,10 @@
     // 2. 預設商品資料
     // -----------------------------------------------------------------
     var defaultProducts = [
-      { "id": 1, "name": "咖啡糖espresso", "price": "15000", "ntPrice": "", "buyers": [{"name": "敏敏", "count": 4, "unit": "盒", "bought": 0}, {"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nvxLcgf", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 2, "name": "咖啡糖Americano", "price": "15000", "ntPrice": "", "buyers": [{"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nv310Fa", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 3, "name": "咖啡糖Mint", "price": "15000", "ntPrice": "", "buyers": [{"name": "筱瑄", "count": 3, "unit": "盒", "bought": 0}, {"name": "潔琪", "count": 1, "unit": "盒", "bought": 0}, {"name": "邇寧", "count": 2, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nvxL6qg", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 4, "name": "積雪草面膜 ", "price": "12000", "ntPrice": "", "buyers": [{"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}, {"name": "Lemon", "count": 1, "unit": "盒", "bought": 0}, {"name": "彩", "count": 1, "unit": "盒", "bought": 0}, {"name": "Jane", "count": 1, "unit": "盒", "bought": 0}, {"name": "邇寧", "count": 1, "unit": "盒", "bought": 0}, {"name": "安", "count": 1, "unit": "盒", "bought": 0}, {"name": "七", "count": 1, "unit": "盒", "bought": 0}], "category": "美妝保養", "units": ["盒", "片"], "note": "", "image": "https://freeimage.host/i/nv3fCZP", "purchasedCounts": {}, "isCompleted": false, "isHidden": false }
+      { "id": 1, "name": "咖啡糖espresso", "prices": {}, "buyers": [{"name": "敏敏", "count": 4, "unit": "盒", "bought": 0}, {"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nvxLcgf", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 2, "name": "咖啡糖Americano", "prices": {}, "buyers": [{"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nv310Fa", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 3, "name": "咖啡糖Mint", "prices": {}, "buyers": [{"name": "筱瑄", "count": 3, "unit": "盒", "bought": 0}, {"name": "潔琪", "count": 1, "unit": "盒", "bought": 0}, {"name": "邇寧", "count": 2, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nvxL6qg", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 4, "name": "積雪草面膜 ", "prices": {}, "buyers": [{"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}, {"name": "Lemon", "count": 1, "unit": "盒", "bought": 0}, {"name": "彩", "count": 1, "unit": "盒", "bought": 0}, {"name": "Jane", "count": 1, "unit": "盒", "bought": 0}, {"name": "邇寧", "count": 1, "unit": "盒", "bought": 0}, {"name": "安", "count": 1, "unit": "盒", "bought": 0}, {"name": "七", "count": 1, "unit": "盒", "bought": 0}], "category": "美妝保養", "units": ["盒", "片"], "note": "", "image": "https://freeimage.host/i/nv3fCZP", "purchasedCounts": {}, "isCompleted": false, "isHidden": false }
     ];
 
     var products = defaultProducts;
@@ -409,24 +404,30 @@
 
     var ADMIN_PASSWORD = localStorage.getItem('buylist_admin_pwd') || '1010520';
     var SITE_TITLE = localStorage.getItem('buylist_site_title') || '韓國代購清單';
-    var EXCHANGE_RATE = parseFloat(localStorage.getItem('buylist_exchange_rate')) || 41.5;
+    var GLOBAL_EXCHANGE_RATE = parseFloat(localStorage.getItem('buylist_exchange_rate')) || 41.5;
 
     document.getElementById('pageTitleText').innerText = SITE_TITLE;
     document.getElementById('headerTitleDisplay').innerText = SITE_TITLE;
     document.getElementById('siteTitleInput').value = SITE_TITLE;
-    document.getElementById('exchangeRateInput').value = EXCHANGE_RATE;
+    document.getElementById('exchangeRateInput').value = GLOBAL_EXCHANGE_RATE;
 
     window.onload = function() {
       initRealtimeListener();
     };
 
-    function getProductNtPrice(p) {
-      var manualNt = parseInt((p.ntPrice || '').replace(/,/g, ''));
-      if (!isNaN(manualNt) && manualNt > 0) return manualNt;
-
-      var krwPrice = parseInt((p.price || '').replace(/,/g, '')) || 0;
-      if (krwPrice <= 0 || !EXCHANGE_RATE || EXCHANGE_RATE <= 0) return 0;
-      return Math.round(krwPrice / EXCHANGE_RATE);
+    // 取得特定單位的價格設定 (存放在 product.prices[unitKey] 中，若無則回傳預設)
+    function getUnitPricing(p, unitKey) {
+      if (!p.prices) p.prices = {};
+      if (!p.prices[unitKey]) {
+        p.prices[unitKey] = { krwPrice: '', rate: GLOBAL_EXCHANGE_RATE, ntPrice: '' };
+      }
+      var info = p.prices[unitKey];
+      var krw = parseInt((info.krwPrice || '').replace(/,/g, '')) || 0;
+      var rate = parseFloat(info.rate) || GLOBAL_EXCHANGE_RATE;
+      var manualNt = parseInt((info.ntPrice || '').replace(/,/g, ''));
+      
+      var calculatedNt = (!isNaN(manualNt) && manualNt > 0) ? manualNt : (krw > 0 && rate > 0 ? Math.round(krw / rate) : 0);
+      return { krwPrice: info.krwPrice || '', rate: rate, ntPrice: info.ntPrice || '', finalNt: calculatedNt };
     }
 
     function initRealtimeListener() {
@@ -451,8 +452,8 @@
             document.getElementById('headerTitleDisplay').innerText = SITE_TITLE;
           }
           if (data && data.exchangeRate) {
-            EXCHANGE_RATE = data.exchangeRate;
-            document.getElementById('exchangeRateInput').value = EXCHANGE_RATE;
+            GLOBAL_EXCHANGE_RATE = data.exchangeRate;
+            document.getElementById('exchangeRateInput').value = GLOBAL_EXCHANGE_RATE;
           }
         } else {
           products = defaultProducts;
@@ -485,7 +486,7 @@
           if (data && Array.isArray(data.items)) products = data.items;
           if (data && Array.isArray(data.completedOrders)) completedOrders = data.completedOrders;
           if (data && Array.isArray(data.wishList)) wishList = data.wishList;
-          if (data && data.exchangeRate) EXCHANGE_RATE = data.exchangeRate;
+          if (data && data.exchangeRate) GLOBAL_EXCHANGE_RATE = data.exchangeRate;
           renderList();
           renderWishList();
           alert('🔄 已成功從雲端同步最新資料！');
@@ -502,7 +503,7 @@
         completedOrders: completedOrders,
         wishList: wishList,
         siteTitle: SITE_TITLE,
-        exchangeRate: EXCHANGE_RATE,
+        exchangeRate: GLOBAL_EXCHANGE_RATE,
         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
       }).then(() => {
         if (showAlert) alert('✅ 資料已成功同步儲存至雲端！');
@@ -517,10 +518,21 @@
         alert('請輸入有效的匯率數值！');
         return;
       }
-      EXCHANGE_RATE = rate;
+      GLOBAL_EXCHANGE_RATE = rate;
       localStorage.setItem('buylist_exchange_rate', rate);
       manualSaveData(false);
-      alert('✅ 匯率已成功更新並同步！');
+      alert('✅ 預設匯率已成功更新並同步！');
+    }
+
+    // 儲存統計區塊中的單位價格異動
+    function updateUnitPricingInput(itemIdx, unitKey, field, val) {
+      var p = products[itemIdx];
+      if (!p.prices) p.prices = {};
+      if (!p.prices[unitKey]) {
+        p.prices[unitKey] = { krwPrice: '', rate: GLOBAL_EXCHANGE_RATE, ntPrice: '' };
+      }
+      p.prices[unitKey][field] = val;
+      manualSaveData(false);
     }
 
     function submitWish() {
@@ -611,8 +623,7 @@
       products.unshift({
         id: Date.now(),
         name: w.prodName,
-        price: '',
-        ntPrice: '',
+        prices: {},
         buyers: [{ name: w.buyerName, count: 1, unit: '瓶', bought: 0 }],
         category: '美妝保養',
         units: ['瓶'],
@@ -634,7 +645,7 @@
     }
 
     function exportToExcel() {
-      var csvContent = "\uFEFF商品名稱,分類,買入韓幣(₩),售價台幣(NT$),單位,總需求數量,總買入金額(₩),總售價金額(NT$),已採購數量,購買人與數量明細\n";
+      var csvContent = "\uFEFF商品名稱,分類,單位,總需求數量,韓幣買入(₩),匯率,售價台幣(NT$),總售價金額(NT$),已採購數量,購買人與數量明細\n";
       for (var i = 0; i < products.length; i++) {
         var p = products[i];
         if (!p.buyers) p.buyers = [];
@@ -651,16 +662,14 @@
           buyerDetailsArr.push(b.name + " " + b.count + u);
         }
 
-        var priceNum = parseInt((p.price || '').replace(/,/g, '')) || 0;
-        var ntPrice = getProductNtPrice(p);
         var unitsArr = p.units && p.units.length > 0 ? p.units : ['瓶'];
 
         for (var uIdx = 0; uIdx < unitsArr.length; uIdx++) {
           var unitKey = unitsArr[uIdx];
           var totalNeeded = unitTotals[unitKey] || 0;
           var boughtCount = p.purchasedCounts[unitKey] || 0;
-          var totalKrwSum = priceNum > 0 ? totalNeeded * priceNum : 0;
-          var totalNtSum = ntPrice > 0 ? totalNeeded * ntPrice : 0;
+          var pricing = getUnitPricing(p, unitKey);
+          var totalNtSum = pricing.finalNt * totalNeeded;
 
           var filteredBuyers = buyerDetailsArr.filter(function(item) {
             return item.includes(unitKey);
@@ -669,7 +678,7 @@
           csvContent += [
             '"' + (p.name || '').replace(/"/g, '""') + '"',
             '"' + (p.category || '') + '"',
-            priceNum, ntPrice, unitKey, totalNeeded, totalKrwSum, totalNtSum, boughtCount,
+            unitKey, totalNeeded, pricing.krwPrice, pricing.rate, pricing.finalNt, totalNtSum, boughtCount,
             '"' + filteredBuyers.replace(/"/g, '""') + '"'
           ].join(",") + "\n";
         }
@@ -996,12 +1005,13 @@
           if (p.buyers) {
             var matchingBuyers = p.buyers.filter(b => b.name.trim() === buyerName.trim());
             matchingBuyers.forEach(b => {
+              var pricing = getUnitPricing(p, b.unit || '瓶');
               itemsToComplete.push({
                 itemName: p.name,
                 count: b.count,
                 unit: b.unit || '瓶',
-                ntPrice: getProductNtPrice(p),
-                price: p.price || ''
+                ntPrice: pricing.finalNt,
+                price: pricing.krwPrice
               });
             });
             p.buyers = p.buyers.filter(b => b.name.trim() !== buyerName.trim());
@@ -1120,12 +1130,13 @@
           var b = p.buyers[j];
           var cName = b.name.trim();
           if (!customerMap[cName]) customerMap[cName] = [];
+          var pricing = getUnitPricing(p, b.unit || '瓶');
           customerMap[cName].push({ 
             itemIdx: i, 
             itemName: p.name, 
             count: b.count, 
             unit: b.unit || '瓶',
-            ntPrice: getProductNtPrice(p)
+            ntPrice: pricing.finalNt
           });
         }
       }
@@ -1138,7 +1149,7 @@
 
       var header = document.createElement('div');
       header.style.cssText = "font-size:16px; font-weight:bold; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--border-color); color:var(--text-main);";
-      header.innerText = '👥 未完成訂單人數：' + customerNames.length + ' 位 (匯率：1TWD=' + EXCHANGE_RATE + 'KRW)';
+      header.innerText = '👥 未完成訂單人數：' + customerNames.length + ' 位';
       customerList.appendChild(header);
 
       for (var k = 0; k < customerNames.length; k++) {
@@ -1225,7 +1236,7 @@
       }
     }
 
-    // 📦 商品管理分頁渲染
+    // 📦 商品管理分頁渲染 (已無價格顯示)
     function updateAdminProductList() {
       var prodListEl = document.getElementById('adminProductList');
       if (!prodListEl) return;
@@ -1241,9 +1252,6 @@
         var defaultThumb = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
         var thumbSrc = p.image ? fixImageUrl(p.image) : defaultThumb;
         var unitsText = (p.units && p.units.length > 0) ? p.units.join(',') : '瓶';
-        var krwPrice = parseInt((p.price || '').replace(/,/g, '')) || 0;
-        var ntPrice = getProductNtPrice(p);
-        var priceDisplay = '售價: NT$ ' + ntPrice + (krwPrice > 0 ? ' (買入 ₩ ' + krwPrice.toLocaleString() + ')' : '');
         var hiddenBadge = p.isHidden ? ' <span style="color:#D9534F; font-size:11px;">(已隱藏)</span>' : '';
 
         var row = document.createElement('div');
@@ -1251,7 +1259,7 @@
         row.innerHTML = '<img src="' + thumbSrc + '" class="admin-thumb" alt="" />' +
           '<div class="admin-item-info">' +
             '<div class="admin-item-title"><span>📦 ' + p.name + hiddenBadge + '</span></div>' +
-            '<div style="font-size:12px; color:var(--text-sub); margin-bottom:4px;">分類：' + (p.category || '未分類') + ' | 單位：[' + unitsText + '] | ' + priceDisplay + '</div>' +
+            '<div style="font-size:12px; color:var(--text-sub); margin-bottom:4px;">分類：' + (p.category || '未分類') + ' | 單位：[' + unitsText + ']</div>' +
             (p.note ? '<div style="font-size:12px; color:#888; margin-bottom:6px;">備註：' + p.note + '</div>' : '') +
             '<div class="admin-action-btns">' +
               '<button class="btn-edit-prod" onclick="openEditProdModal(' + i + ')">✏️ 編輯商品</button>' +
@@ -1262,7 +1270,7 @@
       }
     }
 
-    // 📊 採購統計分頁渲染
+    // 📊 採購統計分頁渲染 (在此處新增每批次之韓幣買入價、匯率、換算及最後售價設定)
     function updateAdminStats() {
       var contentList = document.getElementById('adminStatsContentList');
       if (!contentList) return;
@@ -1286,23 +1294,48 @@
           buyersHtml += '<div class="admin-buyer-detail">👤 ' + b.name + ': <b>' + b.count + '</b> ' + u + '</div>';
         }
 
-        var summaryArr = [];
         var progressHtml = '';
+        var unitsArr = p.units && p.units.length > 0 ? p.units : ['瓶'];
 
-        for (var unitKey in unitTotals) {
-          var totalNeeded = unitTotals[unitKey];
+        for (var uIdx = 0; uIdx < unitsArr.length; uIdx++) {
+          var unitKey = unitsArr[uIdx];
+          var totalNeeded = unitTotals[unitKey] || 0;
           var boughtCount = p.purchasedCounts[unitKey] || 0;
-          var krwPrice = parseInt((p.price || '').replace(/,/g, '')) || 0;
-          var ntPrice = getProductNtPrice(p);
-          var totalKrwSum = totalNeeded * krwPrice;
-          var totalNtSum = totalNeeded * ntPrice;
-          var totalPriceStr = (krwPrice > 0 || ntPrice > 0) ? ' (總售價 NT$ ' + totalNtSum.toLocaleString() + (krwPrice > 0 ? ' / ₩ ' + totalKrwSum.toLocaleString() : '') + ')' : '';
+          var pricing = getUnitPricing(p, unitKey);
+          var totalKrwSum = (parseInt(pricing.krwPrice) || 0) * totalNeeded;
+          var totalNtSum = pricing.finalNt * totalNeeded;
 
-          summaryArr.push('共 ' + totalNeeded + ' ' + unitKey + totalPriceStr);
+          progressHtml += '<div class="progress-box" style="background:#FAFAFA; border:1px solid #EFECE6; padding:10px; border-radius:10px; margin-bottom:8px;">' +
+            '<div style="font-weight:bold; font-size:13px; color:var(--accent); margin-bottom:6px;">📦 單位 [' + unitKey + '] 採購與定價設定</div>' +
+            
+            '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-bottom:6px;">' +
+              '<div>' +
+                '<label style="font-size:11px; color:#666; display:block; margin-bottom:2px;">韓幣買入 (₩)</label>' +
+                '<input type="text" class="form-input" style="padding:6px 8px; font-size:13px;" value="' + pricing.krwPrice + '" placeholder="例: 15000" oninput="updateUnitPricingInput(' + i + ', \'' + unitKey + '\', \'krwPrice\', this.value)" />' +
+              '</div>' +
+              '<div>' +
+                '<label style="font-size:11px; color:#666; display:block; margin-bottom:2px;">使用匯率</label>' +
+                '<input type="number" step="0.1" class="form-input" style="padding:6px 8px; font-size:13px;" value="' + pricing.rate + '" placeholder="例: 41.5" oninput="updateUnitPricingInput(' + i + ', \'' + unitKey + '\', \'rate\', this.value)" />' +
+              '</div>' +
+            '</div>' +
 
-          progressHtml += '<div class="progress-box">' +
+            '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-bottom:8px;">' +
+              '<div>' +
+                '<label style="font-size:11px; color:#666; display:block; margin-bottom:2px;">換算台幣 (約)</label>' +
+                '<input type="text" class="form-input" style="padding:6px 8px; font-size:13px; background:#eee;" readonly value="NT$ ' + (pricing.krwPrice ? Math.round(parseInt(pricing.krwPrice.replace(/,/g,'')) / pricing.rate) : 0) + '" />' +
+              '</div>' +
+              '<div>' +
+                '<label style="font-size:11px; color:#666; display:block; margin-bottom:2px;">最後售價 (NT$)</label>' +
+                '<input type="text" class="form-input" style="padding:6px 8px; font-size:13px; font-weight:bold; color:#28A745;" value="' + pricing.ntPrice + '" placeholder="選填(最終售價)" oninput="updateUnitPricingInput(' + i + ', \'' + unitKey + '\', \'ntPrice\', this.value)" />' +
+              '</div>' +
+            '</div>' +
+
+            '<div style="font-size:12px; color:var(--text-sub); margin-bottom:6px; background:#fff; padding:6px; border-radius:6px; border:1px solid #eee;">' +
+              '📊 需求總數：<b>' + totalNeeded + ' ' + unitKey + '</b> | 總售價：<b>NT$ ' + totalNtSum.toLocaleString() + '</b>' + (totalKrwSum > 0 ? ' (總買入 ₩ ' + totalKrwSum.toLocaleString() + ')' : '') +
+            '</div>' +
+
             '<div class="progress-row">' +
-              '<span>🛒 採購進度 (' + unitKey + ')：<b>已買 ' + boughtCount + ' / 共 ' + totalNeeded + ' ' + unitKey + '</b></span>' +
+              '<span style="font-size:12px;">🛒 採購進度：<b>已買 ' + boughtCount + ' / 共 ' + totalNeeded + ' ' + unitKey + '</b></span>' +
               '<div class="progress-controls">' +
                 '<button class="btn-mini-qty" onclick="updatePurchasedQty(' + i + ', \'' + unitKey + '\', -1)">-</button>' +
                 '<button class="btn-mini-qty" onclick="updatePurchasedQty(' + i + ', \'' + unitKey + '\', 1)">+</button>' +
@@ -1311,11 +1344,8 @@
           '</div>';
         }
 
-        var summaryText = summaryArr.length > 0 ? summaryArr.join('，') : '尚無人登記';
-
         if (p.buyers.length === 0) {
           buyersHtml = '<div class="admin-buyer-detail" style="color:#aaa;">尚無人登記購買</div>';
-          progressHtml = '<div style="font-size:12px; color:#aaa; margin:4px 0;">尚無採購進度目標</div>';
         }
 
         var defaultThumb = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
@@ -1328,7 +1358,6 @@
         row.innerHTML = '<img src="' + thumbSrc + '" class="admin-thumb" alt="" />' +
           '<div class="admin-item-info">' +
             '<div class="admin-item-title"><span>📦 ' + p.name + '</span></div>' +
-            '<div class="admin-summary-total">📊 ' + summaryText + '</div>' +
             buyersHtml + progressHtml +
             '<button class="' + statusBtnClass + '" onclick="toggleCompleteStatus(' + i + ')">' + statusBtnText + '</button>' +
           '</div>';
@@ -1337,7 +1366,7 @@
 
       var summaryHeader = document.createElement('div');
       summaryHeader.style.cssText = "font-size:16px; font-weight:bold; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--border-color); color:var(--text-main);";
-      summaryHeader.innerText = '📊 總登記筆數：' + totalRegistrationCount + ' 筆 (匯率：1TWD=' + EXCHANGE_RATE + 'KRW)';
+      summaryHeader.innerText = '📊 總登記筆數：' + totalRegistrationCount + ' 筆';
       contentList.insertBefore(summaryHeader, contentList.firstChild);
     }
 
@@ -1353,8 +1382,6 @@
       var p = products[index];
       document.getElementById('editProdName').value = p.name;
       document.getElementById('editProdCategory').value = p.category || '食品/食材';
-      document.getElementById('editProdPrice').value = p.price || '';
-      document.getElementById('editProdNtPrice').value = p.ntPrice || '';
       document.getElementById('editProdUnits').value = (p.units && p.units.length > 0) ? p.units.join(',') : '瓶';
       document.getElementById('editProdNote').value = p.note || '';
       document.getElementById('editProdImage').value = p.image || '';
@@ -1371,8 +1398,6 @@
       if (editingProdIndex !== null) {
         var name = document.getElementById('editProdName').value.trim();
         var category = document.getElementById('editProdCategory').value;
-        var price = document.getElementById('editProdPrice').value.trim();
-        var ntPrice = document.getElementById('editProdNtPrice').value.trim();
         var unitsStr = document.getElementById('editProdUnits').value.trim();
         var note = document.getElementById('editProdNote').value.trim();
         var imgUrl = document.getElementById('editProdImage').value.trim();
@@ -1385,8 +1410,6 @@
         var product = products[editingProdIndex];
         product.name = name;
         product.category = category;
-        product.price = price;
-        product.ntPrice = ntPrice;
         product.units = unitsArr;
         product.note = note;
         product.image = imgUrl;
@@ -1405,8 +1428,6 @@
     function saveNewProd() {
       var name = document.getElementById('itemName').value.trim();
       var category = document.getElementById('itemCategory').value;
-      var price = document.getElementById('itemPrice').value.trim();
-      var ntPrice = document.getElementById('itemNtPrice').value.trim();
       var unitsStr = document.getElementById('itemUnits').value.trim();
       var note = document.getElementById('itemNote').value.trim();
       var imgUrl = document.getElementById('itemImage').value.trim();
@@ -1415,7 +1436,7 @@
       
       var unitsArr = unitsStr ? unitsStr.split(/[,，]/).map(s => s.trim()).filter(Boolean) : ['瓶'];
 
-      products.unshift({ id: Date.now(), name: name, price: price, ntPrice: ntPrice, buyers: [], category: category, units: unitsArr, note: note, image: imgUrl, purchasedCounts: {}, isCompleted: false, isHidden: false });
+      products.unshift({ id: Date.now(), name: name, prices: {}, buyers: [], category: category, units: unitsArr, note: note, image: imgUrl, purchasedCounts: {}, isCompleted: false, isHidden: false });
       renderList();
       updateAdminProductList();
       updateAdminStats();
@@ -1423,8 +1444,6 @@
       manualSaveData(false);
       
       document.getElementById('itemName').value = '';
-      document.getElementById('itemPrice').value = '';
-      document.getElementById('itemNtPrice').value = '';
       document.getElementById('itemNote').value = '';
       document.getElementById('itemImage').value = '';
       document.getElementById('itemImageFile').value = '';
