@@ -81,7 +81,6 @@
     .admin-item-info { flex: 1; min-width: 0; }
     .admin-item-title { font-weight: 600; font-size: 14px; margin-bottom: 2px; display: flex; justify-content: space-between; }
     .admin-buyer-detail { font-size: 12px; color: var(--text-sub); margin-left: 12px; }
-    .admin-summary-total { font-size: 13px; font-weight: bold; color: var(--accent); margin: 4px 0 6px 0; background: var(--accent-light); padding: 4px 8px; border-radius: 6px; display: inline-block; }
     
     .progress-box { background: #FFF; border: 1px solid var(--border-color); padding: 8px 10px; border-radius: 8px; margin: 6px 0; font-size: 12px; }
     .progress-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
@@ -487,11 +486,16 @@
         renderWishList();
 
         if (document.getElementById('adminModal').style.display === 'flex') {
-          updateAdminProductList();
-          updateAdminStats();
-          updateCustomerStats();
-          updateCompletedOrdersStats();
-          updateAdminWishStats();
+          // 只有當管理者後台開著時，如果使用者沒有正在編輯統計輸入框，才重新整理統計清單
+          if (document.activeElement && document.activeElement.classList.contains('stats-input')) {
+            // 正在輸入中，不刷新以防鍵盤關閉
+          } else {
+            updateAdminProductList();
+            updateAdminStats();
+            updateCustomerStats();
+            updateCompletedOrdersStats();
+            updateAdminWishStats();
+          }
         }
       }, err => {
         console.error("Listener error:", err);
@@ -544,13 +548,39 @@
       alert('✅ 預設匯率已成功更新並同步！');
     }
 
-    function updateUnitPricingInput(itemIdx, unitKey, field, val) {
+    // 改用 onchange / blur 或即時更新但不重新渲染整頁，確保連續打字不中斷
+    function updateUnitPricingInput(itemIdx, unitKey, field, val, inputElement) {
       var p = products[itemIdx];
       if (!p.prices) p.prices = {};
       if (!p.prices[unitKey]) {
         p.prices[unitKey] = { krwPrice: '', rate: GLOBAL_EXCHANGE_RATE, ntPrice: '' };
       }
       p.prices[unitKey][field] = val;
+      
+      // 計算並即時更新該欄位底下的換算金額顯示，而不重新渲染整個清單
+      var pricing = getUnitPricing(p, unitKey);
+      var totalNeeded = 0;
+      if (p.buyers) {
+        p.buyers.forEach(b => {
+          if ((b.unit || '瓶') === unitKey) totalNeeded += b.count;
+        });
+      }
+      var totalKrwSum = (parseInt(pricing.krwPrice) || 0) * totalNeeded;
+      var totalNtSum = pricing.finalNt * totalNeeded;
+
+      // 尋找對應的容器內文更新，避免刷新整頁
+      var box = inputElement.closest('.progress-box');
+      if (box) {
+        var calcInput = box.querySelector('.calc-nt-display');
+        if (calcInput) {
+          calcInput.value = 'NT$ ' + (pricing.krwPrice ? Math.round(parseInt(pricing.krwPrice.replace(/,/g,'')) / pricing.rate) : 0);
+        }
+        var summaryDiv = box.querySelector('.pricing-summary-text');
+        if (summaryDiv) {
+          summaryDiv.innerHTML = '📊 需求總數：<b>' + totalNeeded + ' ' + unitKey + '</b> | 總售價：<b>NT$ ' + totalNtSum.toLocaleString() + '</b>' + (totalKrwSum > 0 ? ' (總買入 ₩ ' + totalKrwSum.toLocaleString() + ')' : '');
+        }
+      }
+
       manualSaveData(false);
     }
 
@@ -764,7 +794,6 @@
       return url;
     }
 
-    // 點擊商品圖片開啟詳細內容 Modal
     function openProductDetailModal(itemIdx) {
       var p = products[itemIdx];
       var defaultSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
@@ -1325,6 +1354,11 @@
     }
 
     function updateAdminStats() {
+      // 若使用者目前正在某個輸入框內打字，不進行重建以防焦點跑掉
+      if (document.activeElement && document.activeElement.classList.contains('stats-input')) {
+        return;
+      }
+
       var contentList = document.getElementById('adminStatsContentList');
       if (!contentList) return;
       contentList.innerHTML = '';
@@ -1364,26 +1398,26 @@
             '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-bottom:6px;">' +
               '<div>' +
                 '<label style="font-size:11px; color:#666; display:block; margin-bottom:2px;">韓幣買入 (₩)</label>' +
-                '<input type="text" class="form-input" style="padding:6px 8px; font-size:13px;" value="' + pricing.krwPrice + '" placeholder="例: 15000" oninput="updateUnitPricingInput(' + i + ', \'' + unitKey + '\', \'krwPrice\', this.value)" />' +
+                '<input type="text" class="form-input stats-input" style="padding:6px 8px; font-size:13px;" value="' + pricing.krwPrice + '" placeholder="例: 15000" oninput="updateUnitPricingInput(' + i + ', \'' + unitKey + '\', \'krwPrice\', this.value, this)" />' +
               '</div>' +
               '<div>' +
                 '<label style="font-size:11px; color:#666; display:block; margin-bottom:2px;">使用匯率</label>' +
-                '<input type="number" step="0.1" class="form-input" style="padding:6px 8px; font-size:13px;" value="' + pricing.rate + '" placeholder="例: 41.5" oninput="updateUnitPricingInput(' + i + ', \'' + unitKey + '\', \'rate\', this.value)" />' +
+                '<input type="number" step="0.1" class="form-input stats-input" style="padding:6px 8px; font-size:13px;" value="' + pricing.rate + '" placeholder="例: 41.5" oninput="updateUnitPricingInput(' + i + ', \'' + unitKey + '\', \'rate\', this.value, this)" />' +
               '</div>' +
             '</div>' +
 
             '<div style="display:grid; grid-template-columns: 1fr 1fr; gap:6px; margin-bottom:8px;">' +
               '<div>' +
                 '<label style="font-size:11px; color:#666; display:block; margin-bottom:2px;">換算台幣 (約)</label>' +
-                '<input type="text" class="form-input" style="padding:6px 8px; font-size:13px; background:#eee;" readonly value="NT$ ' + (pricing.krwPrice ? Math.round(parseInt(pricing.krwPrice.replace(/,/g,'')) / pricing.rate) : 0) + '" />' +
+                '<input type="text" class="form-input calc-nt-display" style="padding:6px 8px; font-size:13px; background:#eee;" readonly value="NT$ ' + (pricing.krwPrice ? Math.round(parseInt(pricing.krwPrice.replace(/,/g,'')) / pricing.rate) : 0) + '" />' +
               '</div>' +
               '<div>' +
                 '<label style="font-size:11px; color:#666; display:block; margin-bottom:2px;">最後售價 (NT$)</label>' +
-                '<input type="text" class="form-input" style="padding:6px 8px; font-size:13px; font-weight:bold; color:#28A745;" value="' + pricing.ntPrice + '" placeholder="選填(最終售價)" oninput="updateUnitPricingInput(' + i + ', \'' + unitKey + '\', \'ntPrice\', this.value)" />' +
+                '<input type="text" class="form-input stats-input" style="padding:6px 8px; font-size:13px; font-weight:bold; color:#28A745;" value="' + pricing.ntPrice + '" placeholder="選填(最終售價)" oninput="updateUnitPricingInput(' + i + ', \'' + unitKey + '\', \'ntPrice\', this.value, this)" />' +
               '</div>' +
             '</div>' +
 
-            '<div style="font-size:12px; color:var(--text-sub); margin-bottom:6px; background:#fff; padding:6px; border-radius:6px; border:1px solid #eee;">' +
+            '<div class="pricing-summary-text" style="font-size:12px; color:var(--text-sub); margin-bottom:6px; background:#fff; padding:6px; border-radius:6px; border:1px solid #eee;">' +
               '📊 需求總數：<b>' + totalNeeded + ' ' + unitKey + '</b> | 總售價：<b>NT$ ' + totalNtSum.toLocaleString() + '</b>' + (totalKrwSum > 0 ? ' (總買入 ₩ ' + totalKrwSum.toLocaleString() + ')' : '') +
             '</div>' +
 
