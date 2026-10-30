@@ -53,6 +53,7 @@
     .tag-status-done { background-color: #D4EDDA; color: #155724; font-weight: bold; }
     .item-name { font-size: 15px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .item-note { font-size: 12px; color: #999; margin-top: 2px; }
+    .item-price { font-size: 12px; color: var(--text-sub); margin-top: 2px; font-weight: 600; }
     
     .item-action-box { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
     .qty-inline-controls { display: flex; align-items: center; gap: 6px; background: #FAFAFA; padding: 4px 8px; border-radius: 10px; border: 1px solid var(--border-color); }
@@ -229,7 +230,6 @@
       <div class="form-group"><label class="form-label">韓幣金額 (₩)</label><input type="text" id="editProdPrice" class="form-input" placeholder="例如：15000 或 15,000" /></div>
       <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開）</label><input type="text" id="editProdUnits" class="form-input" placeholder="盒,片" /></div>
       
-      <!-- 圖片上傳按鈕與網址輸入框 -->
       <div class="form-group">
         <label class="form-label">商品圖片 (可直接上傳或貼網址)</label>
         <input type="file" id="editProdImageFile" class="form-input" accept="image/*" onchange="handleImageUpload(this, 'editProdImage')" style="margin-bottom: 6px;" />
@@ -304,7 +304,6 @@
         <div class="form-group"><label class="form-label">韓幣金額 (₩)</label><input type="text" id="itemPrice" class="form-input" placeholder="例如：15000 或 15,000" /></div>
         <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開）</label><input type="text" id="itemUnits" class="form-input" value="瓶" placeholder="瓶,盒" /></div>
         
-        <!-- 圖片上傳按鈕與網址輸入框 -->
         <div class="form-group">
           <label class="form-label">商品圖片 (可直接上傳或貼網址)</label>
           <input type="file" id="itemImageFile" class="form-input" accept="image/*" onchange="handleImageUpload(this, 'itemImage')" style="margin-bottom: 6px;" />
@@ -318,6 +317,16 @@
       <div class="admin-section" id="adminSec4">
         <div class="form-group"><label class="form-label">修改網頁標題名稱</label><input type="text" id="siteTitleInput" class="form-input" placeholder="韓國代購清單" /></div>
         <button class="btn-submit" onclick="saveSiteTitle()" style="margin-bottom: 20px;">更新網頁標題</button>
+        
+        <!-- 匯率設定 (改為 1 台幣 = 多少韓幣) -->
+        <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-bottom: 20px;">
+          <div class="form-group">
+            <label class="form-label">代購匯率 (輸入 1 台幣可換多少韓幣，例如 41.5)</label>
+            <input type="number" step="0.1" id="exchangeRateInput" class="form-input" placeholder="例如：41.5" />
+          </div>
+          <button class="btn-submit" onclick="saveExchangeRate()">更新代購匯率</button>
+        </div>
+
         <div style="border-top: 1px solid var(--border-color); padding-top: 16px; margin-bottom: 20px;">
           <div class="form-group"><label class="form-label">目前密碼</label><input type="password" id="oldPwd" class="form-input" placeholder="請輸入目前密碼..." /></div>
           <div class="form-group"><label class="form-label">新密碼</label><input type="password" id="newPwd" class="form-input" placeholder="請輸入新密碼..." /></div>
@@ -347,9 +356,6 @@
     firebase.initializeApp(firebaseConfig);
     const db = firebase.firestore();
 
-    // -----------------------------------------------------------------
-    // 圖片上傳處理邏輯 (轉 Base64 數據)
-    // -----------------------------------------------------------------
     function handleImageUpload(inputElement, targetInputId) {
       var file = inputElement.files[0];
       if (!file) return;
@@ -371,54 +377,10 @@
     // 2. 預設商品資料
     // -----------------------------------------------------------------
     var defaultProducts = [
-      { "id": 1, "name": "咖啡糖espresso", "price": "", "buyers": [{"name": "敏敏", "count": 4, "unit": "盒", "bought": 0}, {"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nvxLcgf", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 2, "name": "咖啡糖Americano", "price": "", "buyers": [{"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nv310Fa", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 3, "name": "咖啡糖Mint", "price": "", "buyers": [{"name": "筱瑄", "count": 3, "unit": "盒", "bought": 0}, {"name": "潔琪", "count": 1, "unit": "盒", "bought": 0}, {"name": "邇寧", "count": 2, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nvxL6qg", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 4, "name": "積雪草面膜 ", "price": "", "buyers": [{"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}, {"name": "Lemon", "count": 1, "unit": "盒", "bought": 0}, {"name": "彩", "count": 1, "unit": "盒", "bought": 0}, {"name": "Jane", "count": 1, "unit": "盒", "bought": 0}, {"name": "邇寧", "count": 1, "unit": "盒", "bought": 0}, {"name": "安", "count": 1, "unit": "盒", "bought": 0}, {"name": "七", "count": 1, "unit": "盒", "bought": 0}], "category": "美妝保養", "units": ["盒", "片"], "note": "", "image": "https://freeimage.host/i/nv3fCZP", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 5, "name": "玫瑰提亮面膜", "price": "", "buyers": [{"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}, {"name": "彩", "count": 1, "unit": "盒", "bought": 0}, {"name": "Jane", "count": 1, "unit": "盒", "bought": 0}, {"name": "安", "count": 1, "unit": "盒", "bought": 0}, {"name": "七", "count": 1, "unit": "盒", "bought": 0}], "category": "美妝保養", "units": ["盒", "片"], "note": "", "image": "https://freeimage.host/i/nvxQ0Eg", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 6, "name": "穀胱胜肽面膜", "price": "", "buyers": [{"name": "彩", "count": 1, "unit": "盒", "bought": 0}, {"name": "Jane", "count": 1, "unit": "盒", "bought": 0}, {"name": "Dora", "count": 1, "unit": "盒", "bought": 0}], "category": "美妝保養", "units": ["盒", "片"], "note": "", "image": "https://freeimage.host/i/nvxQ4u2", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 7, "name": "魚腥草棉片", "price": "", "buyers": [{"name": "Dora", "count": 1, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvxZxtI", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 8, "name": "BIODANCE 水凝膠眼膜膠原蛋白", "price": "", "buyers": [{"name": "Jane", "count": 2, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvxD9B1", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 9, "name": "BIODANCE 水凝膠眼膜魚子醬 PDRN", "price": "", "buyers": [{"name": "Jane", "count": 1, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvxDWyx", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 10, "name": "明太子海苔", "price": "", "buyers": [{"name": "Dora", "count": 2, "unit": "包", "bought": 0}], "category": "食品/食材", "units": ["包"], "note": "", "image": "https://freeimage.host/i/nvxb5cg", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 11, "name": "巧克力貝果", "price": "", "buyers": [{"name": "Dora", "count": 2, "unit": "包", "bought": 0}], "category": "食品/食材", "units": ["包"], "note": "", "image": "https://freeimage.host/i/nvxbRKF", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 12, "name": "蒜香奶油", "price": "", "buyers": [{"name": "筱瑄", "count": 2, "unit": "大包", "bought": 0}], "category": "食品/食材", "units": ["大包", "小包"], "note": "", "image": "https://freeimage.host/i/nvxmQ7s", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 13, "name": "蜂蜜奶油", "price": "", "buyers": [{"name": "筱瑄", "count": 2, "unit": "大包", "bought": 0}], "category": "食品/食材", "units": ["大包", "小包"], "note": "", "image": "https://freeimage.host/i/nvxyC9s", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 14, "name": "玉米濃湯", "price": "", "buyers": [{"name": "筱瑄", "count": 2, "unit": "大包", "bought": 0}], "category": "食品/食材", "units": ["大包", "小包"], "note": "", "image": "https://freeimage.host/i/nvz9Azv", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 15, "name": "魷魚原味", "price": "", "buyers": [{"name": "筱瑄", "count": 4, "unit": "大包", "bought": 0}, {"name": "安", "count": 1, "unit": "小包", "bought": 0}], "category": "食品/食材", "units": ["大包", "小包"], "note": "", "image": "https://freeimage.host/i/nvzHFvn", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 16, "name": "魷魚青陽辣椒", "price": "", "buyers": [{"name": "敏敏", "count": 1, "unit": "大包", "bought": 0}, {"name": "邇寧", "count": 1, "unit": "小包", "bought": 0}, {"name": "筱瑄", "count": 1, "unit": "小包", "bought": 0}], "category": "食品/食材", "units": ["大包", "小包"], "note": "", "image": "https://freeimage.host/i/nvzHeGp", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 17, "name": "魷魚辣美乃滋", "price": "", "buyers": [{"name": "筱瑄", "count": 1, "unit": "小包", "bought": 0}, {"name": "安", "count": 1, "unit": "大包", "bought": 0}], "category": "食品/食材", "units": ["大包", "小包"], "note": "", "image": "https://freeimage.host/i/nvzJCHF", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 18, "name": "開心果奶昔", "price": "", "buyers": [{"name": "Jane", "count": 10, "unit": "包", "bought": 0}, {"name": "邇寧", "count": 5, "unit": "包", "bought": 0}], "category": "食品/食材", "units": ["包"], "note": "", "image": "https://freeimage.host/i/nvzJygI", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 19, "name": "草莓奶昔", "price": "", "buyers": [{"name": "Jane", "count": 10, "unit": "包", "bought": 0}], "category": "食品/食材", "units": ["包"], "note": "", "image": "https://freeimage.host/i/nvzdjBR", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 20, "name": "巧克力奶昔", "price": "", "buyers": [{"name": "Jane", "count": 10, "unit": "包", "bought": 0}], "category": "食品/食材", "units": ["包"], "note": "", "image": "https://freeimage.host/i/nvzdQY7", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 21, "name": "Ediya巧克力薄餅", "price": "", "buyers": [{"name": "Dora", "count": 1, "unit": "大盒", "bought": 0}, {"name": "彩", "count": 1, "unit": "大盒", "bought": 0}], "category": "食品/食材", "units": ["大盒", "小盒"], "note": "", "image": "https://freeimage.host/i/nvz2oCv", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 22, "name": "嘴破藥膏", "price": "", "buyers": [{"name": "筱瑄", "count": 1, "unit": "條", "bought": 0}, {"name": "Jane", "count": 1, "unit": "條", "bought": 0}], "category": "美妝保養", "units": ["條"], "note": "", "image": "https://freeimage.host/i/nvz39Nn", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 23, "name": "護足霜", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "條", "bought": 0}, {"name": "敏敏", "count": 1, "unit": "條", "bought": 0}, {"name": "潔琪", "count": 1, "unit": "條", "bought": 0}], "category": "美妝保養", "units": ["條"], "note": "", "image": "https://freeimage.host/i/nvzFAIn", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 24, "name": "眼藥水mild", "price": "", "buyers": [{"name": "七", "count": 1, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvzqC1j", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 25, "name": "眼藥水cool", "price": "", "buyers": [], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvzqbTP", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 26, "name": "眼藥水cool high", "price": "", "buyers": [], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvzB0Mu", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 27, "name": "眼藥水ice", "price": "", "buyers": [], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvzBPtt", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 28, "name": "Fwee唇膏sweet rose GN02", "price": "", "buyers": [{"name": "筱瑄", "count": 1, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvzCaJR", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 29, "name": "Fixx 妝前乳", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "個", "bought": 0}, {"name": "Jane", "count": 1, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvznYBe", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 30, "name": "Fixx 眼眉定妝", "price": "", "buyers": [{"name": "彩", "count": 1, "unit": "個", "bought": 0}, {"name": "Jane", "count": 1, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvzui67", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 31, "name": "美容儀AGE-R PROx2", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "支", "bought": 0}, {"name": "Jane", "count": 2, "unit": "支", "bought": 0}], "category": "美妝保養", "units": ["支"], "note": "", "image": "https://freeimage.host/i/nvz5Khv", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 32, "name": "AnuaPDRN保濕噴霧", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvz73c7", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 33, "name": "AnuaPDRN精華液", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶", "組"], "note": "", "image": "https://freeimage.host/i/nvzYus4", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 34, "name": "Medicube PDRN胜肽", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvzYZIs", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 35, "name": "祛疤藥膏", "price": "", "buyers": [{"name": "敏敏", "count": 1, "unit": "條", "bought": 0}], "category": "美妝保養", "units": ["條"], "note": "", "image": "https://freeimage.host/i/nvzaWjs", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 36, "name": "epais頭皮精華", "price": "", "buyers": [{"name": "彩", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvzcsxs", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 37, "name": "頭皮噴霧迷迭香", "price": "", "buyers": [{"name": "Jane", "count": 1, "unit": "組", "bought": 0}, {"name": "邇寧", "count": 2, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶", "組"], "note": "", "image": "https://freeimage.host/i/nvzliYB", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 38, "name": "頭皮噴霧茶樹", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶", "組"], "note": "", "image": "https://freeimage.host/i/nvz0E8B", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 39, "name": "Anua魚腥草化妝水", "price": "", "buyers": [{"name": "Jane", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvz1ASp", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 40, "name": "Torriden 化妝水", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "瓶", "bought": 0}, {"name": "Jane", "count": 1, "unit": "瓶", "bought": 0}, {"name": "小白", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvzE51j", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 41, "name": "水光噴霧", "price": "", "buyers": [{"name": "Jane", "count": 1, "unit": "瓶", "bought": 0}, {"name": "邇寧", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvzGCGa", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 42, "name": "ongredients 化妝水", "price": "", "buyers": [{"name": "Jane", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvzGkcx", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 43, "name": "MEDITHERAPY 保濕噴霧", "price": "", "buyers": [], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvzMaDP", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 44, "name": "定妝噴霧奶油水光感", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶", "組"], "note": "", "image": "https://freeimage.host/i/nvzM8fs", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 45, "name": "定妝噴霧毛孔柔焦款", "price": "", "buyers": [{"name": "Jane", "count": 1, "unit": "組", "bought": 0}, {"name": "彩", "count": 1, "unit": "組", "bought": 0}], "category": "美妝保養", "units": ["瓶", "組"], "note": "", "image": "https://freeimage.host/i/nvzVy4s", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 46, "name": "定妝噴霧霧面柔光感", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "瓶", "bought": 0}], "category": "美妝保養", "units": ["瓶"], "note": "", "image": "https://freeimage.host/i/nvzVc74", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 47, "name": "About tone #21.5", "price": "", "buyers": [{"name": "Lemon", "count": 1, "unit": "個", "bought": 0}], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvzXks1", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
-      { "id": 48, "name": "About tone #21", "price": "", "buyers": [], "category": "美妝保養", "units": ["個"], "note": "", "image": "https://freeimage.host/i/nvzhw2s", "purchasedCounts": {}, "isCompleted": false, "isHidden": false }
+      { "id": 1, "name": "咖啡糖espresso", "price": "15000", "buyers": [{"name": "敏敏", "count": 4, "unit": "盒", "bought": 0}, {"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nvxLcgf", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 2, "name": "咖啡糖Americano", "price": "15000", "buyers": [{"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nv310Fa", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 3, "name": "咖啡糖Mint", "price": "15000", "buyers": [{"name": "筱瑄", "count": 3, "unit": "盒", "bought": 0}, {"name": "潔琪", "count": 1, "unit": "盒", "bought": 0}, {"name": "邇寧", "count": 2, "unit": "盒", "bought": 0}], "category": "食品/食材", "units": ["盒"], "note": "", "image": "https://freeimage.host/i/nvxL6qg", "purchasedCounts": {}, "isCompleted": false, "isHidden": false },
+      { "id": 4, "name": "積雪草面膜 ", "price": "12000", "buyers": [{"name": "筱瑄", "count": 1, "unit": "盒", "bought": 0}, {"name": "Lemon", "count": 1, "unit": "盒", "bought": 0}, {"name": "彩", "count": 1, "unit": "盒", "bought": 0}, {"name": "Jane", "count": 1, "unit": "盒", "bought": 0}, {"name": "邇寧", "count": 1, "unit": "盒", "bought": 0}, {"name": "安", "count": 1, "unit": "盒", "bought": 0}, {"name": "七", "count": 1, "unit": "盒", "bought": 0}], "category": "美妝保養", "units": ["盒", "片"], "note": "", "image": "https://freeimage.host/i/nv3fCZP", "purchasedCounts": {}, "isCompleted": false, "isHidden": false }
     ];
 
     var products = defaultProducts;
@@ -432,14 +394,22 @@
 
     var ADMIN_PASSWORD = localStorage.getItem('buylist_admin_pwd') || '1010520';
     var SITE_TITLE = localStorage.getItem('buylist_site_title') || '韓國代購清單';
+    var EXCHANGE_RATE = parseFloat(localStorage.getItem('buylist_exchange_rate')) || 41.5; // 預設 1台幣 = 41.5韓幣
 
     document.getElementById('pageTitleText').innerText = SITE_TITLE;
     document.getElementById('headerTitleDisplay').innerText = SITE_TITLE;
     document.getElementById('siteTitleInput').value = SITE_TITLE;
+    document.getElementById('exchangeRateInput').value = EXCHANGE_RATE;
 
     window.onload = function() {
       initRealtimeListener();
     };
+
+    // 核心計算台幣函式：韓幣金額 / 匯率 = 台幣金額
+    function calculateNTD(krwPrice) {
+      if (!krwPrice || krwPrice <= 0 || !EXCHANGE_RATE || EXCHANGE_RATE <= 0) return 0;
+      return Math.round(krwPrice / EXCHANGE_RATE);
+    }
 
     function initRealtimeListener() {
       const statusTag = document.getElementById('syncStatusTag');
@@ -461,6 +431,10 @@
             SITE_TITLE = data.siteTitle;
             document.getElementById('pageTitleText').innerText = SITE_TITLE;
             document.getElementById('headerTitleDisplay').innerText = SITE_TITLE;
+          }
+          if (data && data.exchangeRate) {
+            EXCHANGE_RATE = data.exchangeRate;
+            document.getElementById('exchangeRateInput').value = EXCHANGE_RATE;
           }
         } else {
           products = defaultProducts;
@@ -492,6 +466,7 @@
           if (data && Array.isArray(data.items)) products = data.items;
           if (data && Array.isArray(data.completedOrders)) completedOrders = data.completedOrders;
           if (data && Array.isArray(data.wishList)) wishList = data.wishList;
+          if (data && data.exchangeRate) EXCHANGE_RATE = data.exchangeRate;
           renderList();
           renderWishList();
           alert('🔄 已成功從雲端同步最新資料！');
@@ -508,12 +483,25 @@
         completedOrders: completedOrders,
         wishList: wishList,
         siteTitle: SITE_TITLE,
+        exchangeRate: EXCHANGE_RATE,
         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
       }).then(() => {
         if (showAlert) alert('✅ 資料已成功同步儲存至雲端！');
       }).catch(err => {
         alert('儲存至雲端失敗：' + err.message);
       });
+    }
+
+    function saveExchangeRate() {
+      var rate = parseFloat(document.getElementById('exchangeRateInput').value);
+      if (isNaN(rate) || rate <= 0) {
+        alert('請輸入有效的匯率數值！');
+        return;
+      }
+      EXCHANGE_RATE = rate;
+      localStorage.setItem('buylist_exchange_rate', rate);
+      manualSaveData(false);
+      alert('✅ 匯率 (1台幣換多少韓幣) 已成功更新並同步！');
     }
 
     function submitWish() {
@@ -625,7 +613,7 @@
     }
 
     function exportToExcel() {
-      var csvContent = "\uFEFF商品名稱,分類,單價(₩),單位,總需求數量,總金額(₩),已採購數量,購買人與數量明細\n";
+      var csvContent = "\uFEFF商品名稱,分類,單價(₩),折合單價(NT$),單位,總需求數量,總金額(₩),總金額(NT$),已採購數量,購買人與數量明細\n";
       for (var i = 0; i < products.length; i++) {
         var p = products[i];
         if (!p.buyers) p.buyers = [];
@@ -643,6 +631,7 @@
         }
 
         var priceNum = parseInt((p.price || '').replace(/,/g, '')) || 0;
+        var ntPrice = calculateNTD(priceNum);
         var unitsArr = p.units && p.units.length > 0 ? p.units : ['瓶'];
 
         for (var uIdx = 0; uIdx < unitsArr.length; uIdx++) {
@@ -650,6 +639,7 @@
           var totalNeeded = unitTotals[unitKey] || 0;
           var boughtCount = p.purchasedCounts[unitKey] || 0;
           var totalSum = priceNum > 0 ? totalNeeded * priceNum : 0;
+          var totalNtSum = calculateNTD(totalSum);
 
           var filteredBuyers = buyerDetailsArr.filter(function(item) {
             return item.includes(unitKey);
@@ -658,7 +648,7 @@
           csvContent += [
             '"' + (p.name || '').replace(/"/g, '""') + '"',
             '"' + (p.category || '') + '"',
-            priceNum, unitKey, totalNeeded, totalSum, boughtCount,
+            priceNum, ntPrice, unitKey, totalNeeded, totalSum, totalNtSum, boughtCount,
             '"' + filteredBuyers.replace(/"/g, '""') + '"'
           ].join(",") + "\n";
         }
@@ -760,6 +750,10 @@
         var defaultSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
         var imgSrc = product.image ? fixImageUrl(product.image) : defaultSvg;
 
+        var priceNum = parseInt((product.price || '').replace(/,/g, '')) || 0;
+        var ntPrice = calculateNTD(priceNum);
+        var priceDisplay = priceNum > 0 ? '₩ ' + priceNum.toLocaleString() + ' (約 NT$ ' + ntPrice + ')' : '價格未定';
+
         var currentCartUnits = pendingCart[i] || {};
         var units = product.units;
         var controlsHtml = '';
@@ -777,11 +771,11 @@
           '</div>';
         }
 
-        // 將購買人標籤 (buyerTagsHTML) 移到商品名稱與備註的下方
         card.innerHTML = '<img src="' + imgSrc + '" class="item-img" alt="商品圖片" />' +
           '<div class="item-info">' +
             '<div class="item-tags"><span class="tag tag-category">' + product.category + '</span></div>' +
             '<div class="item-name">' + product.name + '</div>' +
+            '<div class="item-price">💰 ' + priceDisplay + '</div>' +
             (product.note ? '<div class="item-note">' + product.note + '</div>' : '') +
             '<div class="item-tags">' + buyerTagsHTML + '</div>' +
           '</div>' +
@@ -986,7 +980,8 @@
               itemsToComplete.push({
                 itemName: p.name,
                 count: b.count,
-                unit: b.unit || '瓶'
+                unit: b.unit || '瓶',
+                price: p.price || ''
               });
             });
             p.buyers = p.buyers.filter(b => b.name.trim() !== buyerName.trim());
@@ -1100,7 +1095,13 @@
           var b = p.buyers[j];
           var cName = b.name.trim();
           if (!customerMap[cName]) customerMap[cName] = [];
-          customerMap[cName].push({ itemIdx: i, itemName: p.name, count: b.count, unit: b.unit || '瓶' });
+          customerMap[cName].push({ 
+            itemIdx: i, 
+            itemName: p.name, 
+            count: b.count, 
+            unit: b.unit || '瓶',
+            price: parseInt((p.price || '').replace(/,/g, '')) || 0
+          });
         }
       }
 
@@ -1112,7 +1113,7 @@
 
       var header = document.createElement('div');
       header.style.cssText = "font-size:16px; font-weight:bold; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--border-color); color:var(--text-main);";
-      header.innerText = '👥 未完成訂單人數：' + customerNames.length + ' 位';
+      header.innerText = '👥 未完成訂單人數：' + customerNames.length + ' 位 (匯率：1TWD=' + EXCHANGE_RATE + 'KRW)';
       customerList.appendChild(header);
 
       for (var k = 0; k < customerNames.length; k++) {
@@ -1122,10 +1123,16 @@
         card.className = 'customer-card';
 
         var itemsHtml = '';
+        var totalKrwBuyer = 0;
+
         for (var m = 0; m < items.length; m++) {
           var it = items[m];
+          var itemTotalKrw = it.price * it.count;
+          totalKrwBuyer += itemTotalKrw;
+
+          var itemPriceStr = it.price > 0 ? ' (₩' + it.price.toLocaleString() + '/個)' : ' (價格未定)';
           itemsHtml += '<div style="font-size:13px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">' +
-            '<span>• ' + it.itemName + ': <b>' + it.count + ' ' + it.unit + '</b></span>' +
+            '<span>• ' + it.itemName + itemPriceStr + ': <b>' + it.count + ' ' + it.unit + '</b></span>' +
             '<div style="display:flex; gap:4px;">' +
               '<button class="btn-edit-order" onclick="openAdminEditOrderModal(' + it.itemIdx + ', \'' + name + '\', \'' + it.unit + '\', ' + it.count + ')">修改</button>' +
               '<button class="btn-del-prod" style="padding:2px 8px; font-size:11px;" onclick="adminDeleteCustomerItem(' + it.itemIdx + ', \'' + name + '\', \'' + it.unit + '\', ' + it.count + ')">刪除</button>' +
@@ -1133,13 +1140,18 @@
           '</div>';
         }
 
+        var totalNtBuyer = calculateNTD(totalKrwBuyer);
+        var totalSummaryStr = totalKrwBuyer > 0 ? '💰 總計：₩ ' + totalKrwBuyer.toLocaleString() + ' ＝ <b>NT$ ' + totalNtBuyer.toLocaleString() + '</b>' : '💰 總計：價格未定';
+
         card.innerHTML = '<div class="customer-name">' +
             '<span>👤 ' + name + '</span>' +
             '<div style="display:flex; gap:6px;">' +
               '<button class="btn-complete-order" onclick="completeCustomerOrders(\'' + name + '\')">✅ 完成訂單</button>' +
               '<button class="btn-del-prod" style="padding:3px 8px; font-size:11px;" onclick="adminDeleteAllCustomerOrders(\'' + name + '\')">🗑️ 刪除</button>' +
             '</div>' +
-          '</div>' + itemsHtml;
+          '</div>' + 
+          itemsHtml +
+          '<div style="margin-top:8px; padding-top:6px; border-top:1px dashed var(--border-color); font-size:13px; color:var(--accent);">' + totalSummaryStr + '</div>';
         customerList.appendChild(card);
       }
     }
@@ -1167,14 +1179,19 @@
         card.style.borderColor = '#C3E6CB';
 
         var itemsHtml = '';
+        var totalKrw = 0;
         if (comp.items) {
           for (var j = 0; j < comp.items.length; j++) {
             var it = comp.items[j];
+            var pNum = parseInt((it.price || '').replace(/,/g, '')) || 0;
+            totalKrw += pNum * it.count;
             itemsHtml += '<div style="font-size:13px; margin-bottom:4px; color:#155724;">• ' + it.itemName + ': <b>' + it.count + ' ' + it.unit + '</b></div>';
           }
         }
+        var totalNt = calculateNTD(totalKrw);
+        var sumStr = totalKrw > 0 ? ' (₩ ' + totalKrw.toLocaleString() + ' / NT$ ' + totalNt.toLocaleString() + ')' : '';
 
-        card.innerHTML = '<div class="customer-name"><span style="color:#155724;">✅ ' + comp.buyerName + ' <small style="font-weight:normal; font-size:11px; color:#666;">(' + (comp.completedAt || '') + ')</small></span>' +
+        card.innerHTML = '<div class="customer-name"><span style="color:#155724;">✅ ' + comp.buyerName + sumStr + ' <small style="font-weight:normal; font-size:11px; color:#666;">(' + (comp.completedAt || '') + ')</small></span>' +
           '<div style="display:flex; gap:4px;">' +
             '<button class="btn-edit-order" style="background:#6c757d;" onclick="restoreCompletedOrder(' + i + ')">↩️ 移回未完成</button>' +
             '<button class="btn-del-prod" style="padding:2px 8px; font-size:11px;" onclick="deleteCompletedOrder(' + i + ')">刪除</button>' +
@@ -1215,7 +1232,9 @@
           var totalNeeded = unitTotals[unitKey];
           var boughtCount = p.purchasedCounts[unitKey] || 0;
           var priceNum = parseInt((p.price || '').replace(/,/g, '')) || 0;
-          var totalPriceStr = priceNum > 0 ? ' (總計 ₩ ' + (totalNeeded * priceNum).toLocaleString() + ')' : '';
+          var totalKrwSum = totalNeeded * priceNum;
+          var totalNtSum = calculateNTD(totalKrwSum);
+          var totalPriceStr = priceNum > 0 ? ' (總計 ₩ ' + totalKrwSum.toLocaleString() + ' / NT$ ' + totalNtSum.toLocaleString() + ')' : '';
 
           summaryArr.push('共 ' + totalNeeded + ' ' + unitKey + totalPriceStr);
 
@@ -1240,7 +1259,9 @@
         var defaultThumb = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
         var thumbSrc = p.image ? fixImageUrl(p.image) : defaultThumb;
         var unitsText = (p.units && p.units.length > 0) ? p.units.join(',') : '瓶';
-        var priceDisplay = p.price ? ' | ₩ ' + p.price : ' | ₩ 未填';
+        var priceNum = parseInt((p.price || '').replace(/,/g, '')) || 0;
+        var ntPrice = calculateNTD(priceNum);
+        var priceDisplay = priceNum > 0 ? ' | ₩ ' + priceNum.toLocaleString() + ' (NT$ ' + ntPrice + ')' : ' | ₩ 未填';
         var statusBtnClass = p.isCompleted ? 'btn-status-toggle status-done' : 'btn-status-toggle status-ongoing';
         var statusBtnText = p.isCompleted ? '✅ 已完成採購 (點擊改為進行中)' : '⏳ 採購進行中 (點擊標記為完成)';
         var hiddenBadge = p.isHidden ? ' <span style="color:#D9534F; font-size:11px;">(已隱藏)</span>' : '';
@@ -1263,7 +1284,7 @@
 
       var summaryHeader = document.createElement('div');
       summaryHeader.style.cssText = "font-size:16px; font-weight:bold; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--border-color); color:var(--text-main);";
-      summaryHeader.innerText = '📊 總登記筆數：' + totalRegistrationCount + ' 筆';
+      summaryHeader.innerText = '📊 總登記筆數：' + totalRegistrationCount + ' 筆 (匯率：1TWD=' + EXCHANGE_RATE + 'KRW)';
       contentList.insertBefore(summaryHeader, contentList.firstChild);
     }
 
