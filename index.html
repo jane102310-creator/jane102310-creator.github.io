@@ -71,7 +71,7 @@
     .nav-item svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
 
     .admin-nav { display: flex; gap: 4px; margin-bottom: 16px; flex-wrap: wrap; }
-    .admin-tab-btn { flex: 1; min-width: 18%; padding: 8px 2px; border: none; background: #EFECE6; color: var(--text-sub); font-weight: 600; border-radius: 10px; cursor: pointer; font-size: 11px; text-align: center; }
+    .admin-tab-btn { flex: 1; min-width: 30%; padding: 8px 2px; border: none; background: #EFECE6; color: var(--text-sub); font-weight: 600; border-radius: 10px; cursor: pointer; font-size: 11px; text-align: center; }
     .admin-tab-btn.active { background: var(--accent); color: white; }
     .admin-section { display: none; }
     .admin-section.active { display: block; }
@@ -262,35 +262,48 @@
     <div class="modal-content" style="background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px; max-height: 90vh; overflow-y: auto;">
       <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;"><h2 style="font-size: 18px; font-weight: 700;">🔐 管理者後台</h2><button class="btn-close" onclick="closeModal('adminModal')" style="background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text-sub);">✕</button></div>
       
+      <!-- 後台導覽列：商品管理與採購統計已分開 -->
       <div class="admin-nav">
-        <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 商品及統計</button>
+        <button class="admin-tab-btn active" id="tabBtn1" onclick="switchTab(1)">📦 商品管理</button>
+        <button class="admin-tab-btn" id="tabBtn7" onclick="switchTab(7)">📊 採購統計</button>
         <button class="admin-tab-btn" id="tabBtn2" onclick="switchTab(2)">👥 未完成訂單</button>
         <button class="admin-tab-btn" id="tabBtn6" onclick="switchTab(6)">🎉 已完成訂單</button>
-        <button class="admin-tab-btn" id="tabBtn5" onclick="switchTab(5)">🌟 許願池管理</button>
-        <button class="admin-tab-btn" id="tabBtn3" onclick="switchTab(3)">➕ 新增商品</button>
+        <button class="admin-tab-btn" id="tabBtn5" onclick="switchTab(5)">🌟 許願池</button>
+        <button class="admin-tab-btn" id="tabBtn3" onclick="switchTab(3)">➕ 新增</button>
         <button class="admin-tab-btn" id="tabBtn4" onclick="switchTab(4)">⚙️ 設定</button>
       </div>
 
+      <!-- 分頁 1: 商品管理 -->
       <div class="admin-section active" id="adminSec1">
-        <div id="adminContentList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
+        <div id="adminProductList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
         <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
       </div>
 
+      <!-- 分頁 7: 採購統計 -->
+      <div class="admin-section" id="adminSec7">
+        <div id="adminStatsContentList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
+        <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
+      </div>
+
+      <!-- 分頁 2: 未完成訂單 -->
       <div class="admin-section" id="adminSec2">
         <div id="customerContentList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
         <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
       </div>
 
+      <!-- 分頁 6: 已完成訂單 -->
       <div class="admin-section" id="adminSec6">
         <div id="completedOrdersContentList" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
         <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
       </div>
 
+      <!-- 分頁 5: 許願池管理 -->
       <div class="admin-section" id="adminSec5">
         <div id="adminWishListDisplay" style="max-height: 32vh; overflow-y: auto; margin-bottom: 12px;"></div>
         <button class="btn-save-manual" onclick="manualSaveData(true)">💾 手動同步至雲端</button>
       </div>
 
+      <!-- 分頁 3: 新增商品 -->
       <div class="admin-section" id="adminSec3">
         <div class="form-group"><label class="form-label">商品名稱 *</label><input type="text" id="itemName" class="form-input" placeholder="例如：積雪草面膜..." /></div>
         <div class="form-group"><label class="form-label">分類</label>
@@ -315,6 +328,7 @@
         <button class="btn-submit" onclick="saveNewProd()">確認新增商品</button>
       </div>
 
+      <!-- 分頁 4: 設定 -->
       <div class="admin-section" id="adminSec4">
         <div class="form-group"><label class="form-label">修改網頁標題名稱</label><input type="text" id="siteTitleInput" class="form-input" placeholder="韓國代購清單" /></div>
         <button class="btn-submit" onclick="saveSiteTitle()" style="margin-bottom: 20px;">更新網頁標題</button>
@@ -452,6 +466,7 @@
         renderWishList();
 
         if (document.getElementById('adminModal').style.display === 'flex') {
+          updateAdminProductList();
           updateAdminStats();
           updateCustomerStats();
           updateCompletedOrdersStats();
@@ -612,6 +627,7 @@
       manualSaveData(false);
       renderList();
       renderWishList();
+      updateAdminProductList();
       updateAdminStats();
       updateAdminWishStats();
       alert('🎉 已成功將 「' + w.prodName + '」 轉為上架商品並為 ' + w.buyerName + ' 預先登記 1 瓶！');
@@ -772,7 +788,6 @@
           '</div>';
         }
 
-        // 前台商品卡片已移除價格顯示
         card.innerHTML = '<img src="' + imgSrc + '" class="item-img" alt="商品圖片" />' +
           '<div class="item-info">' +
             '<div class="item-tags"><span class="tag tag-category">' + product.category + '</span></div>' +
@@ -863,6 +878,7 @@
 
     function openAdminPortal() {
       if (isAuthed) {
+        updateAdminProductList();
         updateAdminStats();
         updateCustomerStats();
         updateCompletedOrdersStats();
@@ -883,6 +899,7 @@
       if (pwd === ADMIN_PASSWORD) {
         isAuthed = true;
         closeModal('loginModal');
+        updateAdminProductList();
         updateAdminStats();
         updateCustomerStats();
         updateCompletedOrdersStats();
@@ -964,6 +981,7 @@
 
       renderList();
       updateCustomerStats();
+      updateAdminProductList();
       updateAdminStats();
       manualSaveData(false);
       closeModal('editOrderModal');
@@ -1002,6 +1020,7 @@
         renderList();
         updateCustomerStats();
         updateCompletedOrdersStats();
+        updateAdminProductList();
         updateAdminStats();
         manualSaveData(false);
         alert('✅ 「' + buyerName + '」 的訂單已成功完成並移至已完成分頁！');
@@ -1024,6 +1043,7 @@
         renderList();
         updateCustomerStats();
         updateCompletedOrdersStats();
+        updateAdminProductList();
         updateAdminStats();
         manualSaveData(false);
         alert('已將 「' + comp.buyerName + '」 的訂單恢復為未完成狀態！');
@@ -1046,6 +1066,7 @@
         product.buyers = product.buyers.filter(b => !(b.name.trim() === buyerName.trim() && (b.unit || '瓶') === unitName && b.count === countVal));
         renderList();
         updateCustomerStats();
+        updateAdminProductList();
         updateAdminStats();
         manualSaveData(false);
       }
@@ -1058,6 +1079,7 @@
         });
         renderList();
         updateCustomerStats();
+        updateAdminProductList();
         updateAdminStats();
         manualSaveData(false);
       }
@@ -1067,6 +1089,7 @@
       if (confirm('確定要徹底刪除這個商品嗎？')) {
         products.splice(i, 1);
         renderList();
+        updateAdminProductList();
         updateAdminStats();
         updateCustomerStats();
         manualSaveData(false);
@@ -1202,8 +1225,46 @@
       }
     }
 
+    // 📦 商品管理分頁渲染
+    function updateAdminProductList() {
+      var prodListEl = document.getElementById('adminProductList');
+      if (!prodListEl) return;
+      prodListEl.innerHTML = '';
+
+      var header = document.createElement('div');
+      header.style.cssText = "font-size:16px; font-weight:bold; margin-bottom:14px; padding-bottom:8px; border-bottom:2px solid var(--border-color); color:var(--text-main);";
+      header.innerText = '📦 商品總數：' + products.length + ' 項';
+      prodListEl.appendChild(header);
+
+      for (var i = 0; i < products.length; i++) {
+        var p = products[i];
+        var defaultThumb = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
+        var thumbSrc = p.image ? fixImageUrl(p.image) : defaultThumb;
+        var unitsText = (p.units && p.units.length > 0) ? p.units.join(',') : '瓶';
+        var krwPrice = parseInt((p.price || '').replace(/,/g, '')) || 0;
+        var ntPrice = getProductNtPrice(p);
+        var priceDisplay = '售價: NT$ ' + ntPrice + (krwPrice > 0 ? ' (買入 ₩ ' + krwPrice.toLocaleString() + ')' : '');
+        var hiddenBadge = p.isHidden ? ' <span style="color:#D9534F; font-size:11px;">(已隱藏)</span>' : '';
+
+        var row = document.createElement('div');
+        row.className = 'admin-item-row';
+        row.innerHTML = '<img src="' + thumbSrc + '" class="admin-thumb" alt="" />' +
+          '<div class="admin-item-info">' +
+            '<div class="admin-item-title"><span>📦 ' + p.name + hiddenBadge + '</span></div>' +
+            '<div style="font-size:12px; color:var(--text-sub); margin-bottom:4px;">分類：' + (p.category || '未分類') + ' | 單位：[' + unitsText + '] | ' + priceDisplay + '</div>' +
+            (p.note ? '<div style="font-size:12px; color:#888; margin-bottom:6px;">備註：' + p.note + '</div>' : '') +
+            '<div class="admin-action-btns">' +
+              '<button class="btn-edit-prod" onclick="openEditProdModal(' + i + ')">✏️ 編輯商品</button>' +
+              '<button class="btn-del-prod" onclick="deleteItemFromAdmin(' + i + ')">🗑️ 刪除商品</button>' +
+            '</div>' +
+          '</div>';
+        prodListEl.appendChild(row);
+      }
+    }
+
+    // 📊 採購統計分頁渲染
     function updateAdminStats() {
-      var contentList = document.getElementById('adminContentList');
+      var contentList = document.getElementById('adminStatsContentList');
       if (!contentList) return;
       contentList.innerHTML = '';
       var totalRegistrationCount = 0;
@@ -1259,26 +1320,17 @@
 
         var defaultThumb = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
         var thumbSrc = p.image ? fixImageUrl(p.image) : defaultThumb;
-        var unitsText = (p.units && p.units.length > 0) ? p.units.join(',') : '瓶';
-        var krwPrice = parseInt((p.price || '').replace(/,/g, '')) || 0;
-        var ntPrice = getProductNtPrice(p);
-        var priceDisplay = ' | 售價: NT$ ' + ntPrice + (krwPrice > 0 ? ' (買入 ₩ ' + krwPrice.toLocaleString() + ')' : '');
         var statusBtnClass = p.isCompleted ? 'btn-status-toggle status-done' : 'btn-status-toggle status-ongoing';
         var statusBtnText = p.isCompleted ? '✅ 已完成採購 (點擊改為進行中)' : '⏳ 採購進行中 (點擊標記為完成)';
-        var hiddenBadge = p.isHidden ? ' <span style="color:#D9534F; font-size:11px;">(已隱藏)</span>' : '';
 
         var row = document.createElement('div');
         row.className = 'admin-item-row';
         row.innerHTML = '<img src="' + thumbSrc + '" class="admin-thumb" alt="" />' +
           '<div class="admin-item-info">' +
-            '<div class="admin-item-title"><span>📦 ' + p.name + hiddenBadge + ' <small style="color:var(--text-sub);">(' + unitsText + priceDisplay + ')</small></span></div>' +
+            '<div class="admin-item-title"><span>📦 ' + p.name + '</span></div>' +
             '<div class="admin-summary-total">📊 ' + summaryText + '</div>' +
             buyersHtml + progressHtml +
             '<button class="' + statusBtnClass + '" onclick="toggleCompleteStatus(' + i + ')">' + statusBtnText + '</button>' +
-            '<div class="admin-action-btns">' +
-              '<button class="btn-edit-prod" onclick="openEditProdModal(' + i + ')">✏️ 編輯</button>' +
-              '<button class="btn-del-prod" onclick="deleteItemFromAdmin(' + i + ')">🗑️ 刪除</button>' +
-            '</div>' +
           '</div>';
         contentList.appendChild(row);
       }
@@ -1341,6 +1393,7 @@
         product.isHidden = isHidden;
 
         renderList();
+        updateAdminProductList();
         updateAdminStats();
         updateCustomerStats();
         manualSaveData(false);
@@ -1364,6 +1417,7 @@
 
       products.unshift({ id: Date.now(), name: name, price: price, ntPrice: ntPrice, buyers: [], category: category, units: unitsArr, note: note, image: imgUrl, purchasedCounts: {}, isCompleted: false, isHidden: false });
       renderList();
+      updateAdminProductList();
       updateAdminStats();
       updateCustomerStats();
       manualSaveData(false);
@@ -1382,6 +1436,7 @@
 
     function switchTab(tabNum) {
       document.getElementById('tabBtn1').className = 'admin-tab-btn' + (tabNum === 1 ? ' active' : '');
+      document.getElementById('tabBtn7').className = 'admin-tab-btn' + (tabNum === 7 ? ' active' : '');
       document.getElementById('tabBtn2').className = 'admin-tab-btn' + (tabNum === 2 ? ' active' : '');
       document.getElementById('tabBtn6').className = 'admin-tab-btn' + (tabNum === 6 ? ' active' : '');
       document.getElementById('tabBtn3').className = 'admin-tab-btn' + (tabNum === 3 ? ' active' : '');
@@ -1389,13 +1444,15 @@
       document.getElementById('tabBtn5').className = 'admin-tab-btn' + (tabNum === 5 ? ' active' : '');
 
       document.getElementById('adminSec1').className = 'admin-section' + (tabNum === 1 ? ' active' : '');
+      document.getElementById('adminSec7').className = 'admin-section' + (tabNum === 7 ? ' active' : '');
       document.getElementById('adminSec2').className = 'admin-section' + (tabNum === 2 ? ' active' : '');
       document.getElementById('adminSec6').className = 'admin-section' + (tabNum === 6 ? ' active' : '');
       document.getElementById('adminSec3').className = 'admin-section' + (tabNum === 3 ? ' active' : '');
       document.getElementById('adminSec4').className = 'admin-section' + (tabNum === 4 ? ' active' : '');
       document.getElementById('adminSec5').className = 'admin-section' + (tabNum === 5 ? ' active' : '');
 
-      if (tabNum === 1) updateAdminStats();
+      if (tabNum === 1) updateAdminProductList();
+      else if (tabNum === 7) updateAdminStats();
       else if (tabNum === 2) updateCustomerStats();
       else if (tabNum === 6) updateCompletedOrdersStats();
       else if (tabNum === 5) updateAdminWishStats();
