@@ -302,7 +302,7 @@
           </select>
         </div>
         <div class="form-group"><label class="form-label">韓幣金額 (₩)</label><input type="text" id="itemPrice" class="form-input" placeholder="例如：15000 或 15,000" /></div>
-        <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開）</label><input type="text" id="itemUnits" class="form-input" value="盒,片" placeholder="盒,片" /></div>
+        <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開）</label><input type="text" id="itemUnits" class="form-input" value="瓶" placeholder="瓶,盒" /></div>
         
         <!-- 圖片上傳按鈕與網址輸入框 -->
         <div class="form-group">
@@ -348,7 +348,7 @@
     const db = firebase.firestore();
 
     // -----------------------------------------------------------------
-    // 圖片上傳處理邏輯 (轉 Base64 數據，可直接儲存並同步至 Firebase)
+    // 圖片上傳處理邏輯 (轉 Base64 數據)
     // -----------------------------------------------------------------
     function handleImageUpload(inputElement, targetInputId) {
       var file = inputElement.files[0];
@@ -422,7 +422,7 @@
     ];
 
     var products = defaultProducts;
-    var completedOrders = []; // 存放已完成的訂單紀錄
+    var completedOrders = [];
     var wishList = [];
     var editingProdIndex = null;
     var editingOrderInfo = null;
@@ -437,9 +437,6 @@
     document.getElementById('headerTitleDisplay').innerText = SITE_TITLE;
     document.getElementById('siteTitleInput').value = SITE_TITLE;
 
-    // -----------------------------------------------------------------
-    // 3. 雲端即時監聽與手動強制更新模式
-    // -----------------------------------------------------------------
     window.onload = function() {
       initRealtimeListener();
     };
@@ -452,42 +449,14 @@
         if (doc.exists) {
           const data = doc.data();
           if (data && Array.isArray(data.items) && data.items.length > 0) {
-            var cloudItems = data.items;
-            if (cloudItems.length < defaultProducts.length) {
-              var cloudNames = cloudItems.map(function(item) { return item.name.trim(); });
-              var hasNewAdditions = false;
-
-              for (var i = 0; i < defaultProducts.length; i++) {
-                var defItem = defaultProducts[i];
-                if (!cloudNames.includes(defItem.name.trim())) {
-                  cloudItems.push(defItem);
-                  hasNewAdditions = true;
-                }
-              }
-              products = cloudItems;
-              if (hasNewAdditions) {
-                manualSaveData(false);
-              }
-            } else {
-              products = cloudItems;
-            }
+            products = data.items;
           } else {
             products = defaultProducts;
             manualSaveData(false);
           }
 
-          if (data && Array.isArray(data.completedOrders)) {
-            completedOrders = data.completedOrders;
-          } else {
-            completedOrders = [];
-          }
-
-          if (data && Array.isArray(data.wishList)) {
-            wishList = data.wishList;
-          } else {
-            wishList = [];
-          }
-
+          if (data && Array.isArray(data.completedOrders)) completedOrders = data.completedOrders;
+          if (data && Array.isArray(data.wishList)) wishList = data.wishList;
           if (data && data.siteTitle) {
             SITE_TITLE = data.siteTitle;
             document.getElementById('pageTitleText').innerText = SITE_TITLE;
@@ -520,15 +489,9 @@
       db.collection('storeData').doc('productsDoc').get().then(doc => {
         if (doc.exists) {
           const data = doc.data();
-          if (data && Array.isArray(data.items)) {
-            products = data.items;
-          }
-          if (data && Array.isArray(data.completedOrders)) {
-            completedOrders = data.completedOrders;
-          }
-          if (data && Array.isArray(data.wishList)) {
-            wishList = data.wishList;
-          }
+          if (data && Array.isArray(data.items)) products = data.items;
+          if (data && Array.isArray(data.completedOrders)) completedOrders = data.completedOrders;
+          if (data && Array.isArray(data.wishList)) wishList = data.wishList;
           renderList();
           renderWishList();
           alert('🔄 已成功從雲端同步最新資料！');
@@ -547,17 +510,12 @@
         siteTitle: SITE_TITLE,
         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
       }).then(() => {
-        if (showAlert) {
-          alert('✅ 資料已成功同步儲存至雲端！');
-        }
+        if (showAlert) alert('✅ 資料已成功同步儲存至雲端！');
       }).catch(err => {
         alert('儲存至雲端失敗：' + err.message);
       });
     }
 
-    // -----------------------------------------------------------------
-    // 許願池邏輯 (Wish List)
-    // -----------------------------------------------------------------
     function submitWish() {
       var buyerName = document.getElementById('globalBuyerInput').value.trim();
       var prodName = document.getElementById('wishProdName').value.trim();
@@ -568,7 +526,6 @@
         document.getElementById('globalBuyerInput').focus();
         return;
       }
-
       if (!prodName) {
         alert('請填寫您想要許願的商品名稱！');
         return;
@@ -584,7 +541,6 @@
 
       document.getElementById('wishProdName').value = '';
       document.getElementById('wishProdNote').value = '';
-
       manualSaveData(false);
       renderWishList();
       alert('🎉 許願成功！商品已加入許願池！');
@@ -649,9 +605,9 @@
         id: Date.now(),
         name: w.prodName,
         price: '',
-        buyers: [{ name: w.buyerName, count: 1, unit: '個', bought: 0 }],
-        category: '食品/食材',
-        units: ['個'],
+        buyers: [{ name: w.buyerName, count: 1, unit: '瓶', bought: 0 }],
+        category: '美妝保養',
+        units: ['瓶'],
         note: w.note || '',
         image: '',
         purchasedCounts: {},
@@ -665,12 +621,9 @@
       renderWishList();
       updateAdminStats();
       updateAdminWishStats();
-      alert('🎉 已成功將 「' + w.prodName + '」 轉為上架商品並為 ' + w.buyerName + ' 預先登記 1 個！');
+      alert('🎉 已成功將 「' + w.prodName + '」 轉為上架商品並為 ' + w.buyerName + ' 預先登記 1 瓶！');
     }
 
-    // -----------------------------------------------------------------
-    // 4. 介面與業務邏輯
-    // -----------------------------------------------------------------
     function exportToExcel() {
       var csvContent = "\uFEFF商品名稱,分類,單價(₩),單位,總需求數量,總金額(₩),已採購數量,購買人與數量明細\n";
       for (var i = 0; i < products.length; i++) {
@@ -683,14 +636,14 @@
 
         for (var j = 0; j < p.buyers.length; j++) {
           var b = p.buyers[j];
-          var u = b.unit || '個';
+          var u = b.unit || '瓶';
           if (!unitTotals[u]) unitTotals[u] = 0;
           unitTotals[u] += b.count;
           buyerDetailsArr.push(b.name + " " + b.count + u);
         }
 
         var priceNum = parseInt((p.price || '').replace(/,/g, '')) || 0;
-        var unitsArr = p.units && p.units.length > 0 ? p.units : ['個'];
+        var unitsArr = p.units && p.units.length > 0 ? p.units : ['瓶'];
 
         for (var uIdx = 0; uIdx < unitsArr.length; uIdx++) {
           var unitKey = unitsArr[uIdx];
@@ -782,7 +735,7 @@
         if (product.isHidden) continue;
 
         if (!product.buyers) product.buyers = [];
-        if (!product.units || !Array.isArray(product.units)) product.units = ['個'];
+        if (!product.units || !Array.isArray(product.units) || product.units.length === 0) product.units = ['瓶'];
         if (!product.purchasedCounts) product.purchasedCounts = {};
 
         if (currentCategoryFilter !== '全部' && currentCategoryFilter !== 'default_all' && product.category !== currentCategoryFilter) {
@@ -796,8 +749,7 @@
         for (var j = 0; j < product.buyers.length; j++) {
           var b = product.buyers[j];
           var name = b.name.trim();
-          var unit = b.unit || '個';
-          // 點擊買家標籤可修改數量
+          var unit = b.unit || '瓶';
           buyerTagsHTML += '<span class="tag tag-buyer" onclick="openAdminEditOrderModal(' + i + ', \'' + name + '\', \'' + unit + '\', ' + b.count + ')" title="點擊修改數量">👤 ' + name + ' +' + b.count + unit + '</span>';
         }
 
@@ -972,7 +924,7 @@
 
       var unitSelect = document.getElementById('modalEditUnitSelect');
       unitSelect.innerHTML = '';
-      var units = p.units && p.units.length > 0 ? p.units : ['個'];
+      var units = p.units && p.units.length > 0 ? p.units : ['瓶'];
       
       for (var i = 0; i < units.length; i++) {
         var opt = document.createElement('option');
@@ -996,12 +948,12 @@
       if (!p || !p.buyers) return;
 
       if (newCount === 0) {
-        p.buyers = p.buyers.filter(b => !(b.name.trim() === editingOrderInfo.buyerName.trim() && (b.unit || '個') === editingOrderInfo.oldUnit));
+        p.buyers = p.buyers.filter(b => !(b.name.trim() === editingOrderInfo.buyerName.trim() && (b.unit || '瓶') === editingOrderInfo.oldUnit));
       } else {
         var found = false;
         for (var j = 0; j < p.buyers.length; j++) {
           var b = p.buyers[j];
-          if (b.name.trim() === editingOrderInfo.buyerName.trim() && (b.unit || '個') === editingOrderInfo.oldUnit) {
+          if (b.name.trim() === editingOrderInfo.buyerName.trim() && (b.unit || '瓶') === editingOrderInfo.oldUnit) {
             b.count = newCount;
             b.unit = newUnit;
             found = true;
@@ -1021,7 +973,6 @@
       alert('✅ 訂單數量與單位已修改並同步至雲端！');
     }
 
-    // 完成某個買家的所有訂單
     function completeCustomerOrders(buyerName) {
       if (confirm('🎉 確定要把 「' + buyerName + '」 的所有訂單標記為「已完成」嗎？\n完成後，該買家的訂單將從首頁消失並移至「已完成訂單」頁面。')) {
         var itemsToComplete = [];
@@ -1033,10 +984,9 @@
               itemsToComplete.push({
                 itemName: p.name,
                 count: b.count,
-                unit: b.unit || '個'
+                unit: b.unit || '瓶'
               });
             });
-            // 從未完成清單移除
             p.buyers = p.buyers.filter(b => b.name.trim() !== buyerName.trim());
           }
         });
@@ -1059,13 +1009,11 @@
       }
     }
 
-    // 復原/取消已完成訂單
     function restoreCompletedOrder(index) {
-      if (confirm('確定要將這筆訂單恢復為「未完成」嗎？（將重新放回主頁與未完成頁面）')) {
+      if (confirm('確定要將這筆訂單恢復為「未完成」嗎？')) {
         var comp = completedOrders[index];
         if (comp && comp.items) {
           comp.items.forEach(it => {
-            // 找尋對應商品
             var prod = products.find(p => p.name.trim() === it.itemName.trim());
             if (prod) {
               if (!prod.buyers) prod.buyers = [];
@@ -1083,7 +1031,6 @@
       }
     }
 
-    // 徹底刪除已完成紀錄
     function deleteCompletedOrder(index) {
       if (confirm('確定要永久刪除這筆已完成的歷史紀錄嗎？')) {
         completedOrders.splice(index, 1);
@@ -1097,7 +1044,7 @@
         var product = products[itemIdx];
         if (!product || !product.buyers) return;
         
-        product.buyers = product.buyers.filter(b => !(b.name.trim() === buyerName.trim() && (b.unit || '個') === unitName && b.count === countVal));
+        product.buyers = product.buyers.filter(b => !(b.name.trim() === buyerName.trim() && (b.unit || '瓶') === unitName && b.count === countVal));
         renderList();
         updateCustomerStats();
         updateAdminStats();
@@ -1138,7 +1085,6 @@
       manualSaveData(false);
     }
 
-    // 渲染未完成訂單分頁
     function updateCustomerStats() {
       var customerList = document.getElementById('customerContentList');
       if (!customerList) return;
@@ -1152,7 +1098,7 @@
           var b = p.buyers[j];
           var cName = b.name.trim();
           if (!customerMap[cName]) customerMap[cName] = [];
-          customerMap[cName].push({ itemIdx: i, itemName: p.name, count: b.count, unit: b.unit || '個' });
+          customerMap[cName].push({ itemIdx: i, itemName: p.name, count: b.count, unit: b.unit || '瓶' });
         }
       }
 
@@ -1196,7 +1142,6 @@
       }
     }
 
-    // 渲染已完成訂單分頁
     function updateCompletedOrdersStats() {
       var compList = document.getElementById('completedOrdersContentList');
       if (!compList) return;
@@ -1255,7 +1200,7 @@
         for (var j = 0; j < p.buyers.length; j++) {
           var b = p.buyers[j];
           totalRegistrationCount++;
-          var u = b.unit ? b.unit : '個';
+          var u = b.unit ? b.unit : '瓶';
           if (!unitTotals[u]) unitTotals[u] = 0;
           unitTotals[u] += b.count;
           buyersHtml += '<div class="admin-buyer-detail">👤 ' + b.name + ': <b>' + b.count + '</b> ' + u + '</div>';
@@ -1292,7 +1237,7 @@
 
         var defaultThumb = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
         var thumbSrc = p.image ? fixImageUrl(p.image) : defaultThumb;
-        var unitsText = p.units ? p.units.join(',') : '個';
+        var unitsText = (p.units && p.units.length > 0) ? p.units.join(',') : '瓶';
         var priceDisplay = p.price ? ' | ₩ ' + p.price : ' | ₩ 未填';
         var statusBtnClass = p.isCompleted ? 'btn-status-toggle status-done' : 'btn-status-toggle status-ongoing';
         var statusBtnText = p.isCompleted ? '✅ 已完成採購 (點擊改為進行中)' : '⏳ 採購進行中 (點擊標記為完成)';
@@ -1333,7 +1278,7 @@
       document.getElementById('editProdName').value = p.name;
       document.getElementById('editProdCategory').value = p.category || '食品/食材';
       document.getElementById('editProdPrice').value = p.price || '';
-      document.getElementById('editProdUnits').value = (p.units && p.units.length > 0) ? p.units.join(',') : '個';
+      document.getElementById('editProdUnits').value = (p.units && p.units.length > 0) ? p.units.join(',') : '瓶';
       document.getElementById('editProdNote').value = p.note || '';
       document.getElementById('editProdImage').value = p.image || '';
       document.getElementById('editProdImageFile').value = '';
@@ -1357,7 +1302,7 @@
 
         if (!name) { alert('請填寫商品名稱！'); return; }
 
-        var unitsArr = unitsStr ? unitsStr.split(/[,，]/).map(s => s.trim()).filter(Boolean) : ['個'];
+        var unitsArr = unitsStr ? unitsStr.split(/[,，]/).map(s => s.trim()).filter(Boolean) : ['瓶'];
 
         var product = products[editingProdIndex];
         product.name = name;
@@ -1387,7 +1332,7 @@
       
       if (!name) { alert('請填寫商品名稱！'); return; }
       
-      var unitsArr = unitsStr ? unitsStr.split(/[,，]/).map(s => s.trim()).filter(Boolean) : ['個'];
+      var unitsArr = unitsStr ? unitsStr.split(/[,，]/).map(s => s.trim()).filter(Boolean) : ['瓶'];
 
       products.unshift({ id: Date.now(), name: name, price: price, buyers: [], category: category, units: unitsArr, note: note, image: imgUrl, purchasedCounts: {}, isCompleted: false, isHidden: false });
       renderList();
@@ -1400,7 +1345,7 @@
       document.getElementById('itemNote').value = '';
       document.getElementById('itemImage').value = '';
       document.getElementById('itemImageFile').value = '';
-      document.getElementById('itemUnits').value = '盒,片';
+      document.getElementById('itemUnits').value = '瓶';
       
       closeModal('adminModal');
       alert('🎉 新增商品成功！資料已儲存至雲端！');
