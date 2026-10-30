@@ -53,7 +53,6 @@
     .tag-status-done { background-color: #D4EDDA; color: #155724; font-weight: bold; }
     .item-name { font-size: 15px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .item-note { font-size: 12px; color: #999; margin-top: 2px; }
-    .item-price { font-size: 12px; color: var(--text-sub); margin-top: 2px; font-weight: 600; }
     
     .item-action-box { display: flex; flex-direction: column; align-items: flex-end; gap: 6px; flex-shrink: 0; }
     .qty-inline-controls { display: flex; align-items: center; gap: 6px; background: #FAFAFA; padding: 4px 8px; border-radius: 10px; border: 1px solid var(--border-color); }
@@ -407,7 +406,6 @@
       initRealtimeListener();
     };
 
-    // 取得商品售價台幣：若有手動填 ntPrice 則優先使用，否則以韓幣除以匯率計算
     function getProductNtPrice(p) {
       var manualNt = parseInt((p.ntPrice || '').replace(/,/g, ''));
       if (!isNaN(manualNt) && manualNt > 0) return manualNt;
@@ -757,10 +755,6 @@
         var defaultSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
         var imgSrc = product.image ? fixImageUrl(product.image) : defaultSvg;
 
-        var priceNum = parseInt((product.price || '').replace(/,/g, '')) || 0;
-        var ntPrice = getProductNtPrice(product);
-        var priceDisplay = ntPrice > 0 ? 'NT$ ' + ntPrice.toLocaleString() + (priceNum > 0 ? ' (₩ ' + priceNum.toLocaleString() + ')' : '') : (priceNum > 0 ? '₩ ' + priceNum.toLocaleString() : '價格未定');
-
         var currentCartUnits = pendingCart[i] || {};
         var units = product.units;
         var controlsHtml = '';
@@ -778,11 +772,11 @@
           '</div>';
         }
 
+        // 前台商品卡片已移除價格顯示
         card.innerHTML = '<img src="' + imgSrc + '" class="item-img" alt="商品圖片" />' +
           '<div class="item-info">' +
             '<div class="item-tags"><span class="tag tag-category">' + product.category + '</span></div>' +
             '<div class="item-name">' + product.name + '</div>' +
-            '<div class="item-price">💰 ' + priceDisplay + '</div>' +
             (product.note ? '<div class="item-note">' + product.note + '</div>' : '') +
             '<div class="item-tags">' + buyerTagsHTML + '</div>' +
           '</div>' +
