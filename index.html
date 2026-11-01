@@ -27,7 +27,7 @@
     .header { background: var(--card-bg); padding: 18px; border-radius: 20px; box-shadow: var(--shadow); margin-bottom: 16px; text-align: center; }
     .header-title h1 { font-size: 20px; font-weight: 700; color: var(--text-main); }
 
-    .sync-status { font-size: 11px; padding: 4px 10px; border-radius: 12px; display: inline-block; margin-top: 6px; background: #D4EDDA; color: #155724; cursor: pointer; }
+    .sync-status { font-size: 11px; padding: 4px 10px; border-radius: 12px; display: inline-block; margin-top: 6px; background: #D4EDDA; color: #155724; cursor: pointer; display: none; }
 
     .global-buyer-bar { background: var(--card-bg); padding: 12px 16px; border-radius: 16px; box-shadow: var(--shadow); margin-bottom: 16px; border: 1px solid var(--border-color); display: flex; align-items: center; gap: 10px; }
     .global-buyer-bar label { font-size: 13px; font-weight: 600; white-space: nowrap; color: var(--text-sub); }
@@ -457,9 +457,6 @@
     }
 
     function initRealtimeListener() {
-      const statusTag = document.getElementById('syncStatusTag');
-      statusTag.innerText = '🔄 正在連線雲端監聽...';
-
       db.collection('storeData').doc('productsDoc').onSnapshot(doc => {
         if (doc.exists) {
           const data = doc.data();
@@ -488,7 +485,6 @@
           manualSaveData(false);
         }
 
-        statusTag.innerText = '🟢 雲端即時監聽中 (點擊重新整理)';
         renderList();
         renderWishList();
 
@@ -506,7 +502,6 @@
         }
       }, err => {
         console.error("Listener error:", err);
-        statusTag.innerText = '🔴 監聽連線異常 (點擊重試)';
       });
     }
 
@@ -1223,15 +1218,14 @@
         return;
       }
 
-      // 依日期（取 completedAt 的日期部分，例如 "2026/10/31"）進行分組
       var dailyMap = {};
       completedOrders.forEach(comp => {
         var dateStr = (comp.completedAt || '').split(' ')[0] || '未分類日期';
         if (!dailyMap[dateStr]) {
           dailyMap[dateStr] = {
-            totalRevenue: 0,    // 總售價 NT$
-            totalKrwCost: 0,    // 總進購韓幣 ₩
-            totalNtCost: 0,     // 總進購台幣折算
+            totalRevenue: 0,
+            totalKrwCost: 0,
+            totalNtCost: 0,
             orders: []
           };
         }
