@@ -61,7 +61,6 @@
     .item-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
     .tag { font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: 500; }
     .tag-category { background-color: var(--accent-light); color: var(--text-sub); }
-    .tag-brand { background-color: #E2E8F0; color: #334155; font-weight: 600; }
     .tag-buyer { background-color: #E8E2D8; color: #5A4D41; cursor: pointer; transition: background 0.2s; }
     .tag-buyer:hover { background-color: #d6ccbd; }
     .item-name { font-size: 15px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -233,7 +232,6 @@
       </div>
       <div style="margin-bottom: 12px; display: flex; gap: 6px;">
         <span id="detailModalCategory" class="tag tag-category" style="font-size: 12px; padding: 4px 10px;"></span>
-        <span id="detailModalBrand" class="tag tag-brand" style="font-size: 12px; padding: 4px 10px;"></span>
       </div>
       <div id="detailModalName" style="font-size: 18px; font-weight: bold; color: var(--text-main); margin-bottom: 8px;"></div>
       <div id="detailModalNote" style="font-size: 14px; color: #666; margin-bottom: 16px; background: #FAFAFA; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color);"></div>
@@ -695,15 +693,6 @@
       var defaultSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
       document.getElementById('detailModalImg').src = p.image ? fixImageUrl(p.image) : defaultSvg;
       document.getElementById('detailModalCategory').innerText = p.category || '商品';
-      
-      var brandEl = document.getElementById('detailModalBrand');
-      if (p.brand) {
-        brandEl.innerText = p.brand;
-        brandEl.style.display = 'inline-block';
-      } else {
-        brandEl.style.display = 'none';
-      }
-
       document.getElementById('detailModalName').innerText = p.name;
       
       var noteEl = document.getElementById('detailModalNote');
@@ -772,11 +761,9 @@
           '</div>';
         }
 
-        var brandTagHtml = product.brand ? '<span class="tag tag-brand">🏷️ ' + product.brand + '</span>' : '';
-
         card.innerHTML = '<img src="' + imgSrc + '" class="item-img" alt="" onclick="openProductDetailModal(' + i + ')" />' +
           '<div class="item-info">' +
-            '<div class="item-tags"><span class="tag tag-category">' + product.category + '</span>' + brandTagHtml + '</div>' +
+            '<div class="item-tags"><span class="tag tag-category">' + product.category + '</span></div>' +
             '<div class="item-name">' + product.name + '</div>' +
             (product.note ? '<div class="item-note">' + product.note + '</div>' : '') +
             '<div class="item-tags">' + buyerTagsHTML + '</div>' +
