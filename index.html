@@ -56,6 +56,17 @@
     .item-name { font-size: 15px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .item-note { font-size: 12px; color: #999; margin-top: 2px; }
 
+    /* 左側側邊欄樣式 */
+    .drawer-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 2000; display: none; transition: opacity 0.3s; }
+    .drawer { position: fixed; top: 0; left: -280px; width: 280px; height: 100%; background: var(--card-bg); z-index: 2001; box-shadow: 4px 0 20px rgba(0,0,0,0.15); transition: left 0.3s ease; display: flex; flex-direction: column; }
+    .drawer.open { left: 0; }
+    .drawer-header { padding: 20px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center; }
+    .drawer-header h2 { font-size: 18px; font-weight: bold; color: var(--text-main); }
+    .drawer-body { padding: 10px 0; overflow-y: auto; flex: 1; }
+    .drawer-group-title { font-size: 12px; font-weight: bold; color: var(--text-sub); padding: 10px 20px 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .drawer-item { padding: 12px 20px; font-size: 14px; font-weight: 600; color: var(--text-main); cursor: pointer; display: flex; align-items: center; gap: 10px; border-bottom: 1px solid #F9F8F6; }
+    .drawer-item:hover { background: var(--accent-light); color: var(--accent); }
+
     .bottom-nav { position: fixed; bottom: 0; left: 0; width: 100%; background: #FFFFFF; border-top: 1px solid var(--border-color); display: flex; justify-content: space-around; padding: 8px 0; z-index: 999; box-shadow: 0 -4px 12px rgba(0,0,0,0.05); }
     .nav-item { background: none; border: none; display: flex; flex-direction: column; align-items: center; font-size: 11px; color: var(--text-sub); cursor: pointer; gap: 3px; flex: 1; }
     .nav-item.active { color: var(--accent); font-weight: bold; }
@@ -98,6 +109,31 @@
   </style>
 </head>
 <body>
+
+  <!-- 左側滑出側邊欄 (Drawer) -->
+  <div class="drawer-overlay" id="drawerOverlay" onclick="toggleDrawer()"></div>
+  <div class="drawer" id="sideDrawer">
+    <div class="drawer-header">
+      <h2>📂 分類與品牌導覽</h2>
+      <button onclick="toggleDrawer()" style="background:none; border:none; font-size:20px; cursor:pointer; color:var(--text-sub);">✕</button>
+    </div>
+    <div class="drawer-body">
+      <div class="drawer-group-title">商品分類</div>
+      <div class="drawer-item" onclick="selectFilter('全部')">🌐 全部商品</div>
+      <div class="drawer-item" onclick="selectFilter('食品/食材')">🍞 食品/食材</div>
+      <div class="drawer-item" onclick="selectFilter('日用品')">🧴 日用品</div>
+      <div class="drawer-item" onclick="selectFilter('美妝保養')">💄 美妝保養</div>
+      <div class="drawer-item" onclick="selectFilter('文具雜貨')">✏️ 文具雜貨</div>
+
+      <div class="drawer-group-title" style="margin-top: 16px;">品牌專區</div>
+      <div class="drawer-item" onclick="selectBrandFilter('O'SULLOC')">🍵 O'SULLOC 綠茶</div>
+      <div class="drawer-item" onclick="selectBrandFilter('Tamburins')">🧴 Tamburins 香氛</div>
+      <div class="drawer-item" onclick="selectBrandFilter('Mardi')">👕 Mardi Mercredi</div>
+      <div class="drawer-item" onclick="selectBrandFilter('Romand')">💄 Romand 美妝</div>
+      <div class="drawer-item" onclick="selectBrandFilter('Kakao')">🟡 Kakao Friends</div>
+    </div>
+  </div>
+
   <div class="container">
     <div class="header">
       <div class="header-title"><h1 id="headerTitleDisplay">韓國代購清單</h1></div>
@@ -355,13 +391,13 @@
 
   <!-- 底部導覽列 -->
   <nav class="bottom-nav">
+    <button class="nav-item" onclick="toggleDrawer()">
+      <svg viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+      <span>選單</span>
+    </button>
     <button class="nav-item active" onclick="switchSection('home', this)">
       <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
       <span>首頁</span>
-    </button>
-    <button class="nav-item" onclick="switchSection('category', this)">
-      <svg viewBox="0 0 24 24"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-      <span>分類</span>
     </button>
     <button class="nav-item" onclick="switchSection('wish', this)">
       <svg viewBox="0 0 24 24"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
@@ -415,6 +451,7 @@
     var modalCart = {};
     var isAuthed = false;
     var currentCategoryFilter = '全部';
+    var currentBrandFilter = '';
 
     var ADMIN_PASSWORD = localStorage.getItem('buylist_admin_pwd') || '1010520';
     var SITE_TITLE = localStorage.getItem('buylist_site_title') || '韓國代購清單';
@@ -428,6 +465,37 @@
     window.onload = function() {
       initRealtimeListener();
     };
+
+    function toggleDrawer() {
+      var drawer = document.getElementById('sideDrawer');
+      var overlay = document.getElementById('drawerOverlay');
+      if (drawer.classList.contains('open')) {
+        drawer.classList.remove('open');
+        overlay.style.display = 'none';
+      } else {
+        drawer.classList.add('open');
+        overlay.style.display = 'block';
+      }
+    }
+
+    function selectFilter(categoryName) {
+      currentCategoryFilter = categoryName;
+      currentBrandFilter = '';
+      toggleDrawer();
+      switchSection('home', document.querySelectorAll('.bottom-nav .nav-item')[1]);
+      document.querySelectorAll('.filter-pill').forEach(p => {
+        if (p.innerText.includes(categoryName) || (categoryName === '全部' && p.innerText.includes('全部'))) p.click();
+      });
+      renderList();
+    }
+
+    function selectBrandFilter(brandName) {
+      currentBrandFilter = brandName;
+      currentCategoryFilter = '全部';
+      toggleDrawer();
+      switchSection('home', document.querySelectorAll('.bottom-nav .nav-item')[1]);
+      renderList();
+    }
 
     function getUnitPricing(p, unitKey) {
       if (!p.prices) p.prices = {};
@@ -476,17 +544,6 @@
         statusTag.innerText = '🟢 雲端即時監聽中 (點擊重新整理)';
         renderList();
         renderWishList();
-
-        if (document.getElementById('adminModal').style.display === 'flex') {
-          if (!document.activeElement || !document.activeElement.classList.contains('stats-input')) {
-            updateAdminProductList();
-            updateAdminStats();
-            updateDailyRevenueStats();
-            updateCustomerStats();
-            updateCompletedOrdersStats();
-            updateAdminWishStats();
-          }
-        }
       }, err => {
         console.error("Listener error:", err);
         statusTag.innerText = '🔴 監聽連線異常';
@@ -671,7 +728,9 @@
 
     function switchSection(sectionName, btnElement) {
       document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
-      document.querySelectorAll('.bottom-nav .nav-item').forEach(n => n.classList.remove('active'));
+      document.querySelectorAll('.bottom-nav .nav-item').forEach(n => {
+        if (!n.getAttribute('onclick').includes('toggleDrawer')) n.classList.remove('active');
+      });
       if (btnElement) btnElement.classList.add('active');
 
       if (sectionName === 'home') {
@@ -687,7 +746,8 @@
 
     function goToCategory(catName) {
       currentCategoryFilter = catName;
-      switchSection('home', document.querySelectorAll('.bottom-nav .nav-item')[0]);
+      currentBrandFilter = '';
+      switchSection('home', document.querySelectorAll('.bottom-nav .nav-item')[1]);
       document.querySelectorAll('.filter-pill').forEach(p => {
         if (p.innerText.includes(catName)) p.click();
       });
@@ -705,6 +765,7 @@
 
     function setCategoryFilter(category, btnElement) {
       currentCategoryFilter = category;
+      currentBrandFilter = '';
       document.querySelectorAll('.filter-pill').forEach(p => p.classList.remove('active'));
       if (btnElement) btnElement.classList.add('active');
       renderList();
@@ -830,25 +891,21 @@
         displayIndices.push(i);
       }
 
-      // 排序邏輯：名字、最新上架、熱門程度
       displayIndices.sort(function(aIdx, bIdx) {
         var pA = products[aIdx];
         var pB = products[bIdx];
 
         if (sortType === 'name') {
-          // 依商品名稱筆畫/字母順序
           return pA.name.localeCompare(pB.name, 'zh-Hant');
         } else if (sortType === 'newest') {
-          // 最新上架 (依 id 反向，id 越大概率越新)
           return (pB.id || 0) - (pA.id || 0);
         } else if (sortType === 'popular') {
-          // 熱門程度 (總登記數量多到少)
           var countA = 0, countB = 0;
           if (pA.buyers) pA.buyers.forEach(b => countA += b.count);
           if (pB.buyers) pB.buyers.forEach(b => countB += b.count);
           return countB - countA;
         } else {
-          return 0; // 預設排序
+          return 0;
         }
       });
 
@@ -861,6 +918,10 @@
         if (!product.units || !Array.isArray(product.units) || product.units.length === 0) product.units = ['瓶'];
 
         if (currentCategoryFilter !== '全部' && product.category !== currentCategoryFilter) {
+          continue;
+        }
+
+        if (currentBrandFilter && !product.name.toLowerCase().includes(currentBrandFilter.toLowerCase()) && !(product.note && product.note.toLowerCase().includes(currentBrandFilter.toLowerCase()))) {
           continue;
         }
 
