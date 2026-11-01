@@ -135,11 +135,9 @@
     <div class="drawer-item" onclick="selectDrawerFilter('文具雜貨')">✏️ 文具雜貨</div>
 
     <div class="drawer-section-title">品牌專區</div>
-    <div class="drawer-item" onclick="selectDrawerFilter('O\'SULLOC')">🍵 O'SULLOC 綠茶</div>
-    <div class="drawer-item" onclick="selectDrawerFilter('Tamburins')">🧴 Tamburins 香氛</div>
-    <div class="drawer-item" onclick="selectDrawerFilter('Mardi Mercredi')">👕 Mardi Mercredi</div>
-    <div class="drawer-item" onclick="selectDrawerFilter('Romand')">💄 Romand 美妝</div>
-    <div class="drawer-item" onclick="selectDrawerFilter('Kakao Friends')">🟡 Kakao Friends</div>
+    <div id="drawerBrandListContainer">
+      <!-- 動態帶入您自己商品輸入的品牌 -->
+    </div>
   </div>
 
   <div class="container">
@@ -479,6 +477,37 @@
       } else {
         drawer.classList.add('open');
         overlay.style.display = 'block';
+        updateDrawerBrands(); // 打開時自動更新品牌清單
+      }
+    }
+
+    // 動態載入您自己輸入的品牌至側邊欄
+    function updateDrawerBrands() {
+      var container = document.getElementById('drawerBrandListContainer');
+      if (!container) return;
+      container.innerHTML = '';
+
+      var brandSet = new Set();
+      for (var i = 0; i < products.length; i++) {
+        var b = products[i].brand;
+        if (b && b.trim() !== '') {
+          brandSet.add(b.trim());
+        }
+      }
+
+      var brands = Array.from(brandSet);
+      if (brands.length === 0) {
+        container.innerHTML = '<div style="font-size:12px; color:#999; padding:8px 12px;">尚無品牌資料</div>';
+        return;
+      }
+
+      for (var j = 0; j < brands.length; j++) {
+        var brandName = brands[j];
+        var itemDiv = document.createElement('div');
+        itemDiv.className = 'drawer-item';
+        itemDiv.setAttribute('onclick', 'selectDrawerFilter(\'' + brandName.replace(/'/g, "\\'") + '\')');
+        itemDiv.innerHTML = '🏷️ ' + brandName;
+        container.appendChild(itemDiv);
       }
     }
 
