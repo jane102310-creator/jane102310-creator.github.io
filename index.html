@@ -61,6 +61,7 @@
     .item-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
     .tag { font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: 500; }
     .tag-category { background-color: var(--accent-light); color: var(--text-sub); }
+    .tag-brand { background-color: #E2E8F0; color: #334155; font-weight: 600; }
     .tag-buyer { background-color: #E8E2D8; color: #5A4D41; cursor: pointer; transition: background 0.2s; }
     .tag-buyer:hover { background-color: #d6ccbd; }
     .item-name { font-size: 15px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -135,7 +136,7 @@
 
     <div class="drawer-section-title">品牌專區</div>
     <div id="drawerBrandListContainer">
-      <!-- 動態帶入您自己商品輸入的品牌 -->
+      <!-- 動態帶入您輸入過的品牌 -->
     </div>
   </div>
 
@@ -232,6 +233,7 @@
       </div>
       <div style="margin-bottom: 12px; display: flex; gap: 6px;">
         <span id="detailModalCategory" class="tag tag-category" style="font-size: 12px; padding: 4px 10px;"></span>
+        <span id="detailModalBrand" class="tag tag-brand" style="font-size: 12px; padding: 4px 10px; display:none;"></span>
       </div>
       <div id="detailModalName" style="font-size: 18px; font-weight: bold; color: var(--text-main); margin-bottom: 8px;"></div>
       <div id="detailModalNote" style="font-size: 14px; color: #666; margin-bottom: 16px; background: #FAFAFA; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color);"></div>
@@ -274,10 +276,18 @@
           <option value="文具雜貨">文具雜貨</option>
         </select>
       </div>
+      
+      <!-- 品牌下拉式選單與自訂輸入 -->
       <div class="form-group">
-        <label class="form-label">品牌名稱 (例如: O'SULLOC, Tamburins)</label>
-        <input type="text" id="editProdBrand" class="form-input" placeholder="請輸入品牌名稱..." />
+        <label class="form-label">品牌名稱</label>
+        <select id="editProdBrandSelect" class="form-select" onchange="handleBrandSelectChange('editProdBrandSelect', 'editProdBrandCustomContainer', 'editProdBrand')" style="margin-bottom: 6px;">
+          <option value="">(無品牌 / 其他)</option>
+        </select>
+        <div id="editProdBrandCustomContainer" style="display:none;">
+          <input type="text" id="editProdBrand" class="form-input" placeholder="請輸入新品牌名稱..." />
+        </div>
       </div>
+
       <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開）</label><input type="text" id="editProdUnits" class="form-input" placeholder="盒,片" /></div>
       
       <div class="form-group">
@@ -370,10 +380,18 @@
             <option value="文具雜貨">文具雜貨</option>
           </select>
         </div>
+
+        <!-- 品牌下拉式選單與自訂輸入 -->
         <div class="form-group">
-          <label class="form-label">品牌名稱 (例如: O'SULLOC, Tamburins)</label>
-          <input type="text" id="itemBrand" class="form-input" placeholder="請輸入品牌名稱..." />
+          <label class="form-label">品牌名稱</label>
+          <select id="itemBrandSelect" class="form-select" onchange="handleBrandSelectChange('itemBrandSelect', 'itemBrandCustomContainer', 'itemBrand')" style="margin-bottom: 6px;">
+            <option value="">(無品牌 / 其他)</option>
+          </select>
+          <div id="itemBrandCustomContainer" style="display:none;">
+            <input type="text" id="itemBrand" class="form-input" placeholder="請輸入新品牌名稱..." />
+          </div>
         </div>
+
         <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開）</label><input type="text" id="itemUnits" class="form-input" value="瓶" placeholder="瓶,盒" /></div>
         
         <div class="form-group">
@@ -475,11 +493,11 @@
       } else {
         drawer.classList.add('open');
         overlay.style.display = 'block';
-        updateDrawerBrands(); // 打開時自動更新品牌清單
+        updateDrawerBrands();
       }
     }
 
-    // 動態帶入您自己輸入的品牌至側邊欄
+    // 動態更新側邊欄品牌列表
     function updateDrawerBrands() {
       var container = document.getElementById('drawerBrandListContainer');
       if (!container) return;
@@ -506,6 +524,60 @@
         itemDiv.setAttribute('onclick', 'selectDrawerFilter(\'' + brandName.replace(/'/g, "\\'") + '\')');
         itemDiv.innerHTML = '🏷️ ' + brandName;
         container.appendChild(itemDiv);
+      }
+    }
+
+    // 更新新增/編輯商品時的品牌下拉選項
+    function updateBrandDropdowns(selectedBrand) {
+      var brandSet = new Set();
+      for (var i = 0; i < products.length; i++) {
+        var b = products[i].brand;
+        if (b && b.trim() !== '') {
+          brandSet.add(b.trim());
+        }
+      }
+      var brands = Array.from(brandSet);
+
+      ['itemBrandSelect', 'editProdBrandSelect'].forEach(selectId => {
+        var selectEl = document.getElementById(selectId);
+        if (!selectEl) return;
+        
+        var currentVal = selectEl.value;
+        selectEl.innerHTML = '<option value="">(無品牌 / 其他)</option>';
+        
+        for (var j = 0; j < brands.length; j++) {
+          var opt = document.createElement('option');
+          opt.value = brands[j];
+          opt.innerText = brands[j];
+          selectEl.appendChild(opt);
+        }
+        var customOpt = document.createElement('option');
+        customOpt.value = 'CUSTOM_NEW';
+        customOpt.innerText = '＋ ＋ 手動輸入新品牌...';
+        selectEl.appendChild(customOpt);
+
+        if (selectedBrand && brands.includes(selectedBrand)) {
+          selectEl.value = selectedBrand;
+        }
+      });
+      
+      // 初始化輸入框狀態
+      handleBrandSelectChange('itemBrandSelect', 'itemBrandCustomContainer', 'itemBrand');
+      handleBrandSelectChange('editProdBrandSelect', 'editProdBrandCustomContainer', 'editProdBrand');
+    }
+
+    function handleBrandSelectChange(selectId, customContainerId, inputId) {
+      var selectEl = document.getElementById(selectId);
+      var containerEl = document.getElementById(customContainerId);
+      var inputEl = document.getElementById(inputId);
+      if (!selectEl || !containerEl || !inputEl) return;
+
+      if (selectEl.value === 'CUSTOM_NEW') {
+        containerEl.style.display = 'block';
+        inputEl.focus();
+      } else {
+        containerEl.style.display = 'none';
+        inputEl.value = selectEl.value;
       }
     }
 
@@ -558,6 +630,7 @@
 
         renderList();
         renderWishList();
+        updateBrandDropdowns();
         if (document.getElementById('adminModal').style.display === 'flex') {
           if (!(document.activeElement && document.activeElement.classList.contains('stats-input'))) {
             updateAdminProductList();
@@ -582,6 +655,7 @@
         lastUpdated: firebase.firestore.FieldValue.serverTimestamp()
       }).then(() => {
         if (showAlert) alert('✅ 資料已成功同步儲存至雲端！');
+        updateBrandDropdowns();
       }).catch(err => { alert('儲存失敗：' + err.message); });
     }
 
@@ -693,6 +767,15 @@
       var defaultSvg = 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="%238C705F" stroke-width="1.5"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><circle cx="8.5" cy="8.5" r="1.5"/><polyline points="21 15 16 10 5 21"/></svg>';
       document.getElementById('detailModalImg').src = p.image ? fixImageUrl(p.image) : defaultSvg;
       document.getElementById('detailModalCategory').innerText = p.category || '商品';
+      
+      var brandEl = document.getElementById('detailModalBrand');
+      if (p.brand) {
+        brandEl.innerText = p.brand;
+        brandEl.style.display = 'inline-block';
+      } else {
+        brandEl.style.display = 'none';
+      }
+
       document.getElementById('detailModalName').innerText = p.name;
       
       var noteEl = document.getElementById('detailModalNote');
@@ -761,9 +844,11 @@
           '</div>';
         }
 
+        var brandTagHtml = product.brand ? '<span class="tag tag-brand">🏷️ ' + product.brand + '</span>' : '';
+
         card.innerHTML = '<img src="' + imgSrc + '" class="item-img" alt="" onclick="openProductDetailModal(' + i + ')" />' +
           '<div class="item-info">' +
-            '<div class="item-tags"><span class="tag tag-category">' + product.category + '</span></div>' +
+            '<div class="item-tags"><span class="tag tag-category">' + product.category + '</span>' + brandTagHtml + '</div>' +
             '<div class="item-name">' + product.name + '</div>' +
             (product.note ? '<div class="item-note">' + product.note + '</div>' : '') +
             '<div class="item-tags">' + buyerTagsHTML + '</div>' +
@@ -1258,7 +1343,19 @@
       var p = products[index];
       document.getElementById('editProdName').value = p.name;
       document.getElementById('editProdCategory').value = p.category || '食品/食材';
-      document.getElementById('editProdBrand').value = p.brand || '';
+      
+      updateBrandDropdowns(p.brand || '');
+      var selectEl = document.getElementById('editProdBrandSelect');
+      if (p.brand && Array.from(selectEl.options).some(opt => opt.value === p.brand)) {
+        selectEl.value = p.brand;
+      } else if (p.brand) {
+        selectEl.value = 'CUSTOM_NEW';
+        document.getElementById('editProdBrand').value = p.brand;
+      } else {
+        selectEl.value = '';
+      }
+      handleBrandSelectChange('editProdBrandSelect', 'editProdBrandCustomContainer', 'editProdBrand');
+
       document.getElementById('editProdUnits').value = (p.units || []).join(',');
       document.getElementById('editProdNote').value = p.note || '';
       document.getElementById('editProdImage').value = p.image || '';
@@ -1293,7 +1390,11 @@
 
       products.unshift({ id: Date.now(), name: name, brand: brand, prices: {}, buyers: [], category: category, units: units.length ? units : ['瓶'], note: note, image: image, purchasedCounts: {}, isCompleted: false, isHidden: false });
       renderList(); updateAdminProductList(); updateAdminStats(); manualSaveData(false);
-      document.getElementById('itemName').value = ''; document.getElementById('itemBrand').value = ''; document.getElementById('itemNote').value = ''; document.getElementById('itemImage').value = '';
+      document.getElementById('itemName').value = ''; 
+      document.getElementById('itemBrand').value = ''; 
+      document.getElementById('itemBrandSelect').value = '';
+      document.getElementById('itemNote').value = ''; 
+      document.getElementById('itemImage').value = '';
       closeModal('adminModal'); alert('🎉 新增商品成功！');
     }
 
@@ -1313,6 +1414,7 @@
       else if (tabNum === 2) updateCustomerStats();
       else if (tabNum === 6) updateCompletedOrdersStats();
       else if (tabNum === 5) updateAdminWishStats();
+      else if (tabNum === 3) updateBrandDropdowns();
     }
   </script>
 </body>
