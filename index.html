@@ -9,6 +9,14 @@
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
+  <!-- EmailJS SDK -->
+  <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
+  <script type="text/javascript">
+    (function() {
+      emailjs.init("vpyq7hHIfMCD0jITV");
+    })();
+  </script>
+
   <style>
     :root {
       --bg-color: #FDFBF7;
@@ -61,7 +69,7 @@
     .item-tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px; }
     .tag { font-size: 10px; padding: 3px 8px; border-radius: 6px; font-weight: 500; }
     .tag-category { background-color: var(--accent-light); color: var(--text-sub); }
-    .tag-brand { background-color: #E2E8F0; color: #334155; font-weight: 600; display: none; } /* 隱藏首頁商品卡片上的品牌標籤 */
+    .tag-brand { background-color: #E2E8F0; color: #334155; font-weight: 600; display: none; }
     .tag-buyer { background-color: #E8E2D8; color: #5A4D41; cursor: pointer; transition: background 0.2s; }
     .tag-buyer:hover { background-color: #d6ccbd; }
     .item-name { font-size: 15px; font-weight: 600; color: var(--text-main); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
@@ -902,6 +910,8 @@
       var keys = Object.keys(pendingCart);
       if (keys.length === 0) { alert('尚未選擇任何數量！'); return; }
 
+      var orderSummaryText = "";
+
       for (var i = 0; i < keys.length; i++) {
         var itemIdx = parseInt(keys[i]);
         var product = products[itemIdx];
@@ -913,14 +923,26 @@
           var qty = uMap[uName];
           if (qty > 0) {
             product.buyers.push({ name: buyerName, count: qty, unit: uName, bought: 0 });
+            orderSummaryText += `• ${product.name}: ${qty} ${uName}\n`;
           }
         }
       }
 
+      // 透過 EmailJS 發送通知信到 jane102310@gmail.com
+      emailjs.send("service_zir8acm", "template_nzbm6ng", {
+        buyer_name: buyerName,
+        order_details: orderSummaryText,
+        to_email: "jane102310@gmail.com"
+      }).then(function(response) {
+        console.log('Email 發送成功!', response.status, response.text);
+      }, function(error) {
+        console.log('Email 發送失敗', error);
+      });
+
       pendingCart = {};
       renderList();
       manualSaveData(false);
-      alert('🎉 登記成功！已同步至雲端！');
+      alert('🎉 登記成功！已同步至雲端，並已發送通知信到您的信箱！');
     }
 
     function submitWish() {
