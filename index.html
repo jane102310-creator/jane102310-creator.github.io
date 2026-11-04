@@ -1157,7 +1157,7 @@
       $('editProdNote').value = p.note || '';
       $('editProdImage').value = p.image || '';
       $('editProdImageFile').value = '';
-      noteImgState.edit = (p.noteImages || []).slice(); renderNoteThumbs('edit'); $('editProdNoteImgFile').value = '';
+      noteImgState.edit = (p.noteImages || []).slice(); renderNoteThumbs('edit'); $('editNoteImgFile').value = '';
       $('editProdHidden').checked = !!p.isHidden;
       $('editProdModal').style.display = 'flex';
     }
