@@ -110,6 +110,7 @@
     .btn-edit-order { background: var(--accent); color: white; border: none; padding: 2px 8px; font-size: 11px; border-radius: 6px; cursor: pointer; }
     .btn-submit { width: 100%; background-color: var(--accent); color: white; border: none; padding: 14px; border-radius: 14px; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px; }
     .btn-save-manual { width: 100%; background-color: #28A745; color: white; border: none; padding: 12px; border-radius: 12px; font-size: 15px; font-weight: 600; cursor: pointer; margin-top: 12px; margin-bottom: 8px; }
+    .note-thumb { width: 40px; height: 40px; border-radius: 8px; object-fit: cover; cursor: pointer; background: #F4EBE1; }
     .form-group { margin-bottom: 12px; }
     .form-label { display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-sub); }
     .form-input, .form-select { width: 100%; padding: 10px 12px; border: 1px solid var(--border-color); border-radius: 10px; font-size: 14px; background: #FAFAFA; outline: none; }
@@ -229,6 +230,7 @@
       </div>
       <div id="detailModalName" style="font-size: 18px; font-weight: bold; color: var(--text-main); margin-bottom: 8px;"></div>
       <div id="detailModalNote" style="font-size: 14px; color: #666; margin-bottom: 16px; background: #FAFAFA; padding: 10px; border-radius: 10px; border: 1px solid var(--border-color);"></div>
+      <div id="detailModalNoteImgs" style="display:flex; flex-direction:column; gap:8px; margin-bottom:16px;"></div>
       <div style="font-size: 14px; font-weight: bold; color: var(--accent); margin-bottom: 8px;">📋 目前登記明細：</div>
       <div id="detailModalBuyers" style="display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px;"></div>
       <button class="btn-submit" onclick="closeModal('productDetailModal')">關閉視窗</button>
@@ -278,12 +280,14 @@
         </div>
       </div>
       <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開）</label><input type="text" id="editProdUnits" class="form-input" placeholder="盒,片" /></div>
+      <div class="form-group"><label class="form-label">色號 / 款式（選填，多個請用逗號隔開）</label><input type="text" id="editProdVariants" class="form-input" placeholder="例如：01 粉紅,02 珊瑚,03 裸色" /></div>
       <div class="form-group">
         <label class="form-label">商品圖片</label>
         <input type="file" id="editProdImageFile" class="form-input" accept="image/*" onchange="handleImageUpload(this, 'editProdImage')" style="margin-bottom: 6px;" />
         <input type="text" id="editProdImage" class="form-input" placeholder="上傳或貼上圖片網址..." />
       </div>
       <div class="form-group"><label class="form-label">備註說明</label><input type="text" id="editProdNote" class="form-input" /></div>
+      <div class="form-group"><label class="form-label">備註圖片（可多張；也可在上方備註欄直接貼上圖片）</label><input type="file" id="editNoteImgFile" class="form-input" accept="image/*" multiple onchange="addNoteImages(this, 'edit')" /><div id="editNoteThumbs" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;"></div></div>
       <div class="form-group" style="display: flex; align-items: center; gap: 10px; background: #FAFAFA; padding: 10px; border-radius: 12px; border: 1px solid var(--border-color);">
         <input type="checkbox" id="editProdHidden" style="width: 20px; height: 20px; cursor: pointer;" />
         <label for="editProdHidden" class="form-label" style="margin-bottom: 0; cursor: pointer;">隱藏此商品（主頁面暫不顯示）</label>
@@ -359,12 +363,14 @@
           </div>
         </div>
         <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開）</label><input type="text" id="itemUnits" class="form-input" value="瓶" placeholder="瓶,盒" /></div>
+        <div class="form-group"><label class="form-label">色號 / 款式（選填，多個請用逗號隔開）</label><input type="text" id="itemVariants" class="form-input" placeholder="例如：01 粉紅,02 珊瑚,03 裸色" /></div>
         <div class="form-group">
           <label class="form-label">商品圖片</label>
           <input type="file" id="itemImageFile" class="form-input" accept="image/*" onchange="handleImageUpload(this, 'itemImage')" style="margin-bottom: 6px;" />
           <input type="text" id="itemImage" class="form-input" placeholder="上傳或貼上圖片網址..." />
         </div>
         <div class="form-group"><label class="form-label">備註說明</label><input type="text" id="itemNote" class="form-input" placeholder="規格或口味..." /></div>
+        <div class="form-group"><label class="form-label">備註圖片（可多張；也可在上方備註欄直接貼上圖片）</label><input type="file" id="itemNoteImgFile" class="form-input" accept="image/*" multiple onchange="addNoteImages(this, 'item')" /><div id="itemNoteThumbs" style="display:flex; flex-wrap:wrap; gap:8px; margin-top:8px;"></div></div>
         <button class="btn-submit" onclick="saveNewProd()">確認新增商品</button>
       </div>
 
@@ -440,7 +446,7 @@
         .finally(() => {
           clearTimeout(imgTimer);
           imgTimer = setTimeout(() => {
-            renderList();
+            renderList(); renderNoteThumbs('item'); renderNoteThumbs('edit');
             var ae = document.activeElement;
             if ($('adminModal').style.display === 'flex' && !(ae && ae.classList.contains('stats-input'))) refreshAdmin();
           }, 150);
@@ -453,7 +459,12 @@
       return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
     }
     function findP(list, id) { return list.find(p => String(p.id) === String(id)); }
-    function sameBuyer(b, name, unit) { return (b.name || '').trim() === (name || '').trim() && (b.unit || '瓶') === unit; }
+    const SEP = '\u0001';              // 購物車 key：色號 + SEP + 單位
+    var selectedVariant = {};          // 首頁每個商品目前選的色號
+    function lineKey(v, u) { return v ? v + '｜' + u : u; }   // 採購進度的 key（無色號時與舊資料相容）
+    function sameBuyer(b, name, unit, variant) {
+      return (b.name || '').trim() === (name || '').trim() && (b.unit || '瓶') === unit && (b.variant || '') === (variant || '');
+    }
 
     /* ============ 狀態 ============ */
     var products = [], completedOrders = [], wishList = [];
@@ -551,6 +562,44 @@
         uploadingCount--; target.placeholder = '上傳或貼上圖片網址...';
       }
     }
+
+    /* ============ 備註圖片 (多張，上傳或貼上) ============ */
+    var noteImgState = { item: [], edit: [] };
+    async function uploadCompressed(file) {
+      var data = await compressImage(file, 600, 0.7);
+      var id = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+      await db.collection('images').doc(id).set({ data: data });
+      imgCache[id] = data;
+      return 'fs:' + id;
+    }
+    function renderNoteThumbs(which) {
+      var box = $(which + 'NoteThumbs'); if (!box) return;
+      box.innerHTML = noteImgState[which].map((u, i) =>
+        '<div style="position:relative;"><img src="' + esc(resolveImg(u) || DEFAULT_IMG) + '" class="note-thumb" style="width:64px; height:64px;" alt="" />' +
+        '<button type="button" data-act="rmNoteImg" data-w="' + which + '" data-i="' + i + '" style="position:absolute; top:-6px; right:-6px; width:20px; height:20px; border-radius:50%; border:none; background:#D9534F; color:#fff; font-size:12px; cursor:pointer;">✕</button></div>').join('');
+    }
+    async function addNoteImages(src, which) {
+      var files = Array.from(src.files || src).filter(f => /^image\//.test(f.type));
+      if (!files.length) return;
+      uploadingCount++;
+      try {
+        for (var k = 0; k < files.length; k++) {
+          if (noteImgState[which].length >= 6) { alert('備註圖片最多 6 張'); break; }
+          if (files[k].size > 10 * 1024 * 1024) { alert('⚠️ 圖片不能超過 10MB！'); continue; }
+          noteImgState[which].push(await uploadCompressed(files[k]));
+          renderNoteThumbs(which);
+        }
+      } catch (e) { console.error(e); alert('圖片上傳失敗：' + e.message); }
+      finally { uploadingCount--; if (src.tagName) src.value = ''; }
+    }
+    // 在備註欄直接貼上圖片
+    document.addEventListener('paste', e => {
+      var id = e.target && e.target.id;
+      var which = id === 'itemNote' ? 'item' : id === 'editProdNote' ? 'edit' : null;
+      if (!which || !e.clipboardData) return;
+      var files = Array.from(e.clipboardData.items || []).filter(i => i.kind === 'file' && i.type.indexOf('image/') === 0).map(i => i.getAsFile()).filter(Boolean);
+      if (files.length) { e.preventDefault(); addNoteImages(files, which); }
+    });
 
     /* ============ 側邊欄 / 篩選 ============ */
     function toggleDrawer() {
@@ -652,14 +701,20 @@
       return '"' + v.replace(/"/g, '""') + '"';
     }
     function exportToExcel() {
-      var rows = [['商品名稱', '品牌', '分類', '單位', '總需求數量', '採購成本', '匯率', '售價(NT$)', '總售價', '已採購數', '買家與數量明細']];
+      var rows = [['商品名稱', '品牌', '分類', '色號/款式', '單位', '總需求數量', '採購成本', '匯率', '售價(NT$)', '總售價', '已採購數', '買家與數量明細']];
       products.forEach(p => {
-        var buyers = p.buyers || [], unitTotals = {};
-        buyers.forEach(b => { var u = b.unit || '瓶'; unitTotals[u] = (unitTotals[u] || 0) + (b.count || 0); });
+        var buyers = p.buyers || [], counts = p.purchasedCounts || {};
+        var vs = (p.variants || []).slice();
+        buyers.forEach(b => { var v = b.variant || ''; if (v && vs.indexOf(v) < 0) vs.push(v); });
+        if (!vs.length || buyers.some(b => !(b.variant || ''))) vs.push('');
         (p.units && p.units.length ? p.units : ['瓶']).forEach(u => {
-          var need = unitTotals[u] || 0, pr = getUnitPricing(p, u);
-          var detail = buyers.filter(b => (b.unit || '瓶') === u).map(b => b.name + ' ' + b.count + u).join('; ');
-          rows.push([p.name, p.brand || '', p.category, u, need, pr.krwPrice, pr.rate, pr.finalNt, pr.finalNt * need, (p.purchasedCounts && p.purchasedCounts[u]) || 0, detail]);
+          var pr = getUnitPricing(p, u);
+          vs.forEach(v => {
+            var mine = buyers.filter(b => (b.unit || '瓶') === u && (b.variant || '') === v);
+            var need = mine.reduce((a, b) => a + (b.count || 0), 0);
+            if (v === '' && vs.length > 1 && need === 0) return;
+            rows.push([p.name, p.brand || '', p.category, v, u, need, pr.krwPrice, pr.rate, pr.finalNt, pr.finalNt * need, counts[lineKey(v, u)] || 0, mine.map(b => b.name + ' ' + b.count + u).join('; ')]);
+          });
         });
       });
       var csv = '\uFEFF' + rows.map(r => r.map(csvq).join(',')).join('\n');
@@ -690,10 +745,11 @@
       $('detailModalName').textContent = p.name;
       var noteEl = $('detailModalNote');
       if (p.note) { noteEl.textContent = p.note; noteEl.style.display = 'block'; } else noteEl.style.display = 'none';
+      $('detailModalNoteImgs').innerHTML = (p.noteImages || []).map(u => { var src = resolveImg(u); return src ? '<img src="' + esc(src) + '" style="width:100%; border-radius:12px; background:#F4EBE1;" alt="" />' : ''; }).join('');
       var box = $('detailModalBuyers');
       box.innerHTML = (!p.buyers || !p.buyers.length)
         ? '<div style="color:#999; font-size:13px; text-align:center; padding:10px;">目前尚無人登記</div>'
-        : p.buyers.map(b => '<div style="display:flex; justify-content:space-between; font-size:13px; padding:6px 10px; background:#FAFAFA; border-radius:8px; border:1px solid var(--border-color);"><span>👤 ' + esc(b.name) + '</span><b>+' + esc(b.count) + esc(b.unit || '瓶') + '</b></div>').join('');
+        : p.buyers.map(b => '<div style="display:flex; justify-content:space-between; font-size:13px; padding:6px 10px; background:#FAFAFA; border-radius:8px; border:1px solid var(--border-color);"><span>👤 ' + esc(b.name) + (b.variant ? ' · ' + esc(b.variant) : '') + '</span><b>+' + esc(b.count) + esc(b.unit || '瓶') + '</b></div>').join('');
       $('productDetailModal').style.display = 'flex';
     }
 
@@ -705,18 +761,30 @@
         if (p.isHidden) return;
         if (currentCategoryFilter !== '全部' && p.category !== currentCategoryFilter && p.brand !== currentCategoryFilter) return;
         var units = p.units && p.units.length ? p.units : ['瓶'];
+        var variants = p.variants || [];
+        if (selectedVariant[p.id] && variants.indexOf(selectedVariant[p.id]) < 0) delete selectedVariant[p.id];
+        var sv = selectedVariant[p.id] || '';
         var cart = pendingCart[p.id] || {};
         var id = esc(p.id);
 
         var buyerTags = (p.buyers || []).map(b =>
-          '<span class="tag tag-buyer" data-act="editOrder" data-id="' + id + '" data-buyer="' + esc(b.name) + '" data-unit="' + esc(b.unit || '瓶') + '" data-count="' + esc(b.count) + '" title="點擊修改">👤 ' + esc(b.name) + ' +' + esc(b.count) + esc(b.unit || '瓶') + '</span>').join('');
+          '<span class="tag tag-buyer" data-act="editOrder" data-id="' + id + '" data-buyer="' + esc(b.name) + '" data-unit="' + esc(b.unit || '瓶') + '" data-variant="' + esc(b.variant || '') + '" data-count="' + esc(b.count) + '" title="點擊修改">👤 ' + esc(b.name) + (b.variant ? ' · ' + esc(b.variant) : '') + ' +' + esc(b.count) + esc(b.unit || '瓶') + '</span>').join('');
+
+        var variantSel = variants.length
+          ? '<select class="form-select" style="margin-top:6px; padding:6px 8px; font-size:13px;" data-vsel="1" data-id="' + id + '"><option value="">🎨 請選擇色號 / 款式</option>' +
+            variants.map(v => '<option value="' + esc(v) + '"' + (v === sv ? ' selected' : '') + '>' + esc(v) + '</option>').join('') + '</select>'
+          : '';
+
+        var picked = Object.keys(cart).filter(k => cart[k] > 0 && k.split(SEP)[0]).map(k => {
+          var a = k.split(SEP); return esc(a[0]) + '×' + cart[k] + (units.length > 1 ? esc(a[1]) : '');
+        }).join('、');
 
         var controls = units.map(u =>
           '<div style="display:flex; align-items:center; gap:4px; margin-bottom:2px;">' +
             '<span style="font-size:11px; color:var(--text-sub);">' + (units.length > 1 ? esc(u) : '') + '</span>' +
             '<div class="qty-inline-controls">' +
               '<button class="btn-qty-mini" data-act="qty" data-id="' + id + '" data-unit="' + esc(u) + '" data-d="-1">-</button>' +
-              '<span class="qty-display-mini">' + (cart[u] || 0) + '</span>' +
+              '<span class="qty-display-mini">' + (cart[sv + SEP + u] || 0) + '</span>' +
               '<button class="btn-qty-mini plus" data-act="qty" data-id="' + id + '" data-unit="' + esc(u) + '" data-d="1">+</button>' +
             '</div></div>').join('');
 
@@ -726,6 +794,9 @@
             '<div class="item-tags"><span class="tag tag-category">' + esc(p.category) + '</span></div>' +
             '<div class="item-name">' + esc(p.name) + '</div>' +
             (p.note ? '<div class="item-note">' + esc(p.note) + '</div>' : '') +
+            (p.noteImages && p.noteImages.length ? '<div class="item-tags">' + p.noteImages.map(u => { var src = resolveImg(u); return src ? '<img src="' + esc(src) + '" class="note-thumb" alt="" data-act="detail" data-id="' + id + '" />' : ''; }).join('') + '</div>' : '') +
+            variantSel +
+            (picked ? '<div class="item-note" style="color:var(--accent);">🛒 已選：' + picked + '</div>' : '') +
             '<div class="item-tags">' + buyerTags + '</div>' +
           '</div>' +
           '<div class="item-action-box">' + controls + '</div></div>';
@@ -736,10 +807,13 @@
 
     function adjustPendingQty(id, unit, delta) {
       if (!$('globalBuyerInput').value.trim()) { alert('請先在上方輸入您的名字！'); $('globalBuyerInput').focus(); return; }
+      var p = findP(products, id), sv = selectedVariant[id] || '';
+      if (p && p.variants && p.variants.length && !sv) { alert('請先選擇色號 / 款式！'); return; }
+      var key = sv + SEP + unit;
       if (!pendingCart[id]) pendingCart[id] = {};
-      var next = Math.max(0, (pendingCart[id][unit] || 0) + delta);
-      if (next === 0) { delete pendingCart[id][unit]; if (!Object.keys(pendingCart[id]).length) delete pendingCart[id]; }
-      else pendingCart[id][unit] = next;
+      var next = Math.max(0, (pendingCart[id][key] || 0) + delta);
+      if (next === 0) { delete pendingCart[id][key]; if (!Object.keys(pendingCart[id]).length) delete pendingCart[id]; }
+      else pendingCart[id][key] = next;
       renderList();
     }
 
@@ -764,11 +838,12 @@
         ids.forEach(id => {
           var p = findP(s.items, id); if (!p) return;
           if (!p.buyers) p.buyers = [];
-          Object.keys(cart[id]).forEach(u => {
-            var q = cart[id][u]; if (q <= 0) return;
-            var ex = p.buyers.find(b => sameBuyer(b, buyerName, u));
-            if (ex) ex.count = (ex.count || 0) + q; else p.buyers.push({ name: buyerName, count: q, unit: u, bought: 0 });
-            summary += '• ' + p.name + ': ' + q + ' ' + u + '\n';
+          Object.keys(cart[id]).forEach(key => {
+            var q = cart[id][key]; if (q <= 0) return;
+            var parts = key.split(SEP), v = parts[0], u = parts[1];
+            var ex = p.buyers.find(b => sameBuyer(b, buyerName, u, v));
+            if (ex) ex.count = (ex.count || 0) + q; else p.buyers.push({ name: buyerName, count: q, unit: u, variant: v, bought: 0 });
+            summary += '• ' + p.name + (v ? ' [' + v + ']' : '') + ': ' + q + ' ' + u + '\n';
           });
         });
       }, () => {
@@ -849,11 +924,11 @@
     }
 
     /* ============ 訂單修改 ============ */
-    function openAdminEditOrderModal(id, buyerName, unitName, currentCount) {
+    function openAdminEditOrderModal(id, buyerName, unitName, currentCount, variant) {
       var p = findP(products, id); if (!p) return;
-      editingOrderInfo = { id: id, buyerName: buyerName, oldUnit: unitName };
+      editingOrderInfo = { id: id, buyerName: buyerName, oldUnit: unitName, variant: variant || '' };
       $('modalEditBuyerName').value = buyerName;
-      $('modalEditItemName').value = p.name;
+      $('modalEditItemName').value = p.name + (variant ? ' [' + variant + ']' : '');
       $('modalEditCountInput').value = currentCount;
       var units = p.units && p.units.length ? p.units : ['瓶'];
       $('modalEditUnitSelect').innerHTML = units.map(u => '<option value="' + esc(u) + '"' + (u === unitName ? ' selected' : '') + '>' + esc(u) + '</option>').join('');
@@ -868,13 +943,13 @@
       mutate(s => {
         var p = findP(s.items, info.id); if (!p) return;
         if (!p.buyers) p.buyers = [];
-        if (newCount === 0) { p.buyers = p.buyers.filter(b => !sameBuyer(b, info.buyerName, info.oldUnit)); return; }
-        var cur = p.buyers.find(b => sameBuyer(b, info.buyerName, info.oldUnit));
-        if (!cur) { p.buyers.push({ name: info.buyerName, count: newCount, unit: newUnit, bought: 0 }); return; }
+        if (newCount === 0) { p.buyers = p.buyers.filter(b => !sameBuyer(b, info.buyerName, info.oldUnit, info.variant)); return; }
+        var cur = p.buyers.find(b => sameBuyer(b, info.buyerName, info.oldUnit, info.variant));
+        if (!cur) { p.buyers.push({ name: info.buyerName, count: newCount, unit: newUnit, variant: info.variant, bought: 0 }); return; }
         cur.count = newCount; cur.unit = newUnit;
-        var dup = p.buyers.find(b => b !== cur && sameBuyer(b, info.buyerName, newUnit)); // 改單位後撞到同單位 → 合併
+        var dup = p.buyers.find(b => b !== cur && sameBuyer(b, info.buyerName, newUnit, info.variant)); // 改單位後撞到同單位 → 合併
         if (dup) { dup.count = (dup.count || 0) + cur.count; p.buyers = p.buyers.filter(b => b !== cur); }
-      }, () => { closeModal('editOrderModal'); alert('✅ 訂單數量與單位已更新！'); });
+      }, () => { closeModal('editOrderModal'); alert('✅ 訂單已更新！'); });
     }
 
     function completeCustomerOrders(buyerName) {
@@ -885,7 +960,7 @@
           if (!p.buyers) return;
           p.buyers.filter(b => b.name.trim() === buyerName.trim()).forEach(b => {
             var u = b.unit || '瓶', pr = getUnitPricing(p, u);
-            items.push({ productId: p.id, itemName: p.name, count: b.count, unit: u, ntPrice: pr.finalNt, krwPrice: pr.krwPrice, rate: pr.rate });
+            items.push({ productId: p.id, itemName: p.name, variant: b.variant || '', count: b.count, unit: u, ntPrice: pr.finalNt, krwPrice: pr.krwPrice, rate: pr.rate });
           });
           p.buyers = p.buyers.filter(b => b.name.trim() !== buyerName.trim());
         });
@@ -906,8 +981,8 @@
         if (missing.length) return missing;
         targets.forEach(t => {
           if (!t.p.buyers) t.p.buyers = [];
-          var ex = t.p.buyers.find(b => sameBuyer(b, comp.buyerName, t.it.unit));
-          if (ex) ex.count = (ex.count || 0) + t.it.count; else t.p.buyers.push({ name: comp.buyerName, count: t.it.count, unit: t.it.unit, bought: 0 });
+          var ex = t.p.buyers.find(b => sameBuyer(b, comp.buyerName, t.it.unit, t.it.variant));
+          if (ex) ex.count = (ex.count || 0) + t.it.count; else t.p.buyers.push({ name: comp.buyerName, count: t.it.count, unit: t.it.unit, variant: t.it.variant || '', bought: 0 });
         });
         s.completedOrders.splice(i, 1);
         return [];
@@ -917,17 +992,18 @@
     function deleteCompletedOrder(id) {
       if (confirm('確定永久刪除此歷史紀錄？')) mutate(s => { s.completedOrders = s.completedOrders.filter(c => String(c.id) !== String(id)); });
     }
-    function adminDeleteCustomerItem(id, buyer, unit) {
-      if (confirm('確定刪除此筆登記？')) mutate(s => { var p = findP(s.items, id); if (p && p.buyers) p.buyers = p.buyers.filter(b => !sameBuyer(b, buyer, unit)); });
+    function adminDeleteCustomerItem(id, buyer, unit, variant) {
+      if (confirm('確定刪除此筆登記？')) mutate(s => { var p = findP(s.items, id); if (p && p.buyers) p.buyers = p.buyers.filter(b => !sameBuyer(b, buyer, unit, variant)); });
     }
+
     function adminDeleteAllCustomerOrders(buyer) {
       if (confirm('⚠️ 刪除這位買家的所有登記？')) mutate(s => { s.items.forEach(p => { if (p.buyers) p.buyers = p.buyers.filter(b => b.name.trim() !== buyer.trim()); }); });
     }
     function deleteItemFromAdmin(id) {
       if (!confirm('確定徹底刪除此商品？')) return;
-      var old = findP(products, id), oldImg = old && old.image;
+      var old = findP(products, id), oldImgs = old ? [old.image].concat(old.noteImages || []) : [];
       mutate(s => { s.items = s.items.filter(p => String(p.id) !== String(id)); }, () => {
-        if (oldImg && oldImg.indexOf('fs:') === 0) db.collection('images').doc(oldImg.slice(3)).delete().catch(() => {});
+        oldImgs.forEach(u => { if (u && String(u).indexOf('fs:') === 0) db.collection('images').doc(String(u).slice(3)).delete().catch(() => {}); });
       });
     }
     function moveProduct(id, dir) {
@@ -937,11 +1013,12 @@
         var t = s.items[i]; s.items[i] = s.items[j]; s.items[j] = t;
       });
     }
-    function updatePurchasedQty(id, unit, delta) {
+    function updatePurchasedQty(id, variant, unit, delta) {
+      var key = lineKey(variant, unit);
       mutate(s => {
         var p = findP(s.items, id); if (!p) return;
         if (!p.purchasedCounts) p.purchasedCounts = {};
-        p.purchasedCounts[unit] = Math.max(0, (p.purchasedCounts[unit] || 0) + delta);
+        p.purchasedCounts[key] = Math.max(0, (p.purchasedCounts[key] || 0) + delta);
       });
     }
 
@@ -974,7 +1051,7 @@
       var map = {};
       products.forEach(p => (p.buyers || []).forEach(b => {
         var n = (b.name || '').trim(); if (!map[n]) map[n] = [];
-        map[n].push({ id: p.id, itemName: p.name, count: b.count, unit: b.unit || '瓶', ntPrice: getUnitPricing(p, b.unit || '瓶').finalNt });
+        map[n].push({ id: p.id, itemName: p.name, variant: b.variant || '', count: b.count, unit: b.unit || '瓶', ntPrice: getUnitPricing(p, b.unit || '瓶').finalNt });
       }));
       var names = Object.keys(map);
       if (!names.length) { box.innerHTML = '<div style="text-align:center; color:#999; padding:20px;">🎉 目前沒有未完成的訂單！</div>'; return; }
@@ -982,9 +1059,9 @@
         var total = 0;
         var rows = map[n].map(it => {
           total += it.ntPrice * it.count;
-          return '<div style="font-size:13px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;"><span>• ' + esc(it.itemName) + ' (' + esc(it.unit) + '): <b>' + esc(it.count) + '個</b></span>' +
-            '<div style="display:flex; gap:4px;"><button class="btn-edit-order" data-act="editOrder" data-id="' + esc(it.id) + '" data-buyer="' + esc(n) + '" data-unit="' + esc(it.unit) + '" data-count="' + esc(it.count) + '">修改</button>' +
-            '<button class="btn-del-prod" style="padding:2px 8px; font-size:11px;" data-act="delItem" data-id="' + esc(it.id) + '" data-buyer="' + esc(n) + '" data-unit="' + esc(it.unit) + '">刪除</button></div></div>';
+          return '<div style="font-size:13px; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;"><span>• ' + esc(it.itemName) + (it.variant ? ' [' + esc(it.variant) + ']' : '') + ' (' + esc(it.unit) + '): <b>' + esc(it.count) + '個</b></span>' +
+            '<div style="display:flex; gap:4px;"><button class="btn-edit-order" data-act="editOrder" data-id="' + esc(it.id) + '" data-buyer="' + esc(n) + '" data-unit="' + esc(it.unit) + '" data-count="' + esc(it.count) + '" data-variant="' + esc(it.variant) + '">修改</button>' +
+            '<button class="btn-del-prod" style="padding:2px 8px; font-size:11px;" data-act="delItem" data-id="' + esc(it.id) + '" data-buyer="' + esc(n) + '" data-unit="' + esc(it.unit) + '" data-variant="' + esc(it.variant) + '">刪除</button></div></div>';
         }).join('');
         return '<div class="customer-card"><div class="customer-name"><span>👤 ' + esc(n) + '</span><div style="display:flex; gap:6px;">' +
           '<button class="btn-complete-order" data-act="completeCust" data-buyer="' + esc(n) + '">✅ 完成訂單</button>' +
@@ -1000,7 +1077,7 @@
         var total = 0;
         var rows = (c.items || []).map(it => {
           var sub = toInt(it.ntPrice) * it.count; total += sub;
-          return '<div style="font-size:13px; margin-bottom:4px; color:#155724;">• ' + esc(it.itemName) + ' (' + esc(it.unit) + '): <b>' + esc(it.count) + '個</b> (NT$ ' + sub.toLocaleString() + ')</div>';
+          return '<div style="font-size:13px; margin-bottom:4px; color:#155724;">• ' + esc(it.itemName) + (it.variant ? ' [' + esc(it.variant) + ']' : '') + ' (' + esc(it.unit) + '): <b>' + esc(it.count) + '個</b> (NT$ ' + sub.toLocaleString() + ')</div>';
         }).join('');
         return '<div class="customer-card" style="background:#F4F9F4; border-color:#C3E6CB;"><div class="customer-name"><span style="color:#155724;">✅ ' + esc(c.buyerName) + ' (總計 NT$ ' + total.toLocaleString() + ') <small style="font-size:11px; color:#666;">(' + esc(c.completedAt) + ')</small></span>' +
           '<div style="display:flex; gap:4px;"><button class="btn-edit-order" style="background:#6c757d;" data-act="restoreComp" data-id="' + esc(c.id) + '">↩️ 恢復</button>' +
@@ -1014,7 +1091,7 @@
         var id = esc(p.id);
         return '<div class="admin-item-row"><img src="' + esc(imgOf(p)) + '" class="admin-thumb" alt="" />' +
           '<div class="admin-item-info"><div class="admin-item-title"><span>📦 ' + esc(p.name) + (p.isHidden ? ' (已隱藏)' : '') + '</span></div>' +
-          '<div style="font-size:12px; color:var(--text-sub); margin-bottom:4px;">分類：' + esc(p.category) + (p.brand ? ' | 品牌：' + esc(p.brand) : '') + ' | 單位：[' + esc((p.units || []).join(',')) + ']</div>' +
+          '<div style="font-size:12px; color:var(--text-sub); margin-bottom:4px;">分類：' + esc(p.category) + (p.brand ? ' | 品牌：' + esc(p.brand) : '') + ' | 單位：[' + esc((p.units || []).join(',')) + ']' + ((p.variants || []).length ? ' | 色號：' + esc(p.variants.join('、')) : '') + '</div>' +
           '<div class="admin-action-btns">' +
             '<button class="btn-edit-prod" data-act="editProd" data-id="' + id + '">✏️ 編輯</button>' +
             '<button class="btn-del-prod" data-act="delProd" data-id="' + id + '">🗑️ 刪除</button>' +
@@ -1030,17 +1107,21 @@
       products.forEach(p => {
         var buyers = (p.buyers || []).filter(b => (b.count || 0) > 0);
         if (!buyers.length) return;
-        var counts = p.purchasedCounts || {}, unitTotals = {};
-        var buyersHtml = buyers.map(b => {
-          var u = b.unit || '瓶'; unitTotals[u] = (unitTotals[u] || 0) + b.count;
-          return '<div class="admin-buyer-detail">👤 ' + esc(b.name) + ': <b>' + esc(b.count) + '</b> ' + esc(u) + '</div>';
-        }).join('');
+        var counts = p.purchasedCounts || {};
+        var buyersHtml = buyers.map(b =>
+          '<div class="admin-buyer-detail">👤 ' + esc(b.name) + (b.variant ? ' · ' + esc(b.variant) : '') + ': <b>' + esc(b.count) + '</b> ' + esc(b.unit || '瓶') + '</div>').join('');
 
         var progress = (p.units && p.units.length ? p.units : ['瓶']).map(u => {
-          var need = unitTotals[u] || 0; if (need <= 0) return '';
+          var lines = {}, need = 0;
+          buyers.forEach(b => { if ((b.unit || '瓶') !== u) return; var v = b.variant || ''; lines[v] = (lines[v] || 0) + b.count; need += b.count; });
+          if (need <= 0) return '';
           var pr = getUnitPricing(p, u), id = esc(p.id), eu = esc(u);
           var twd = pr.krwPrice ? Math.round(toInt(pr.krwPrice) / pr.rate) : 0;
           var attrs = ' data-id="' + id + '" data-unit="' + eu + '"';
+          var rows = Object.keys(lines).map(v =>
+            '<div class="progress-row"><span style="font-size:12px;">🛒 ' + (v ? esc(v) + '：' : '') + '<b>已買 ' + (counts[lineKey(v, u)] || 0) + ' / 共 ' + lines[v] + ' ' + eu + '</b></span>' +
+            '<div class="progress-controls"><button class="btn-mini-qty" data-act="purch" data-id="' + id + '" data-unit="' + eu + '" data-variant="' + esc(v) + '" data-d="-1">-</button>' +
+            '<button class="btn-mini-qty" data-act="purch" data-id="' + id + '" data-unit="' + eu + '" data-variant="' + esc(v) + '" data-d="1">+</button></div></div>').join('');
           return '<div class="progress-box" style="background:#FAFAFA; border:1px solid #EFECE6; padding:10px; border-radius:10px; margin-bottom:8px;">' +
             '<div style="font-weight:bold; font-size:13px; color:var(--accent); margin-bottom:6px;">📦 單位 [' + eu + '] 採購設定</div>' +
             '<div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:6px;">' +
@@ -1050,9 +1131,7 @@
             '<div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">' +
               '<div><label style="font-size:11px; color:#666;">換算台幣</label><input type="text" class="form-input" style="background:#eee;" readonly value="NT$ ' + twd + '" /></div>' +
               '<div><label style="font-size:11px; color:#666;">售價 (NT$)</label><input type="text" class="form-input stats-input" style="font-weight:bold; color:#28A745;"' + attrs + ' data-field="ntPrice" value="' + esc(pr.ntPrice) + '" /></div>' +
-            '</div>' +
-            '<div class="progress-row"><span style="font-size:12px;">🛒 採購進度：<b>已買 ' + (counts[u] || 0) + ' / 共 ' + need + ' ' + eu + '</b></span>' +
-            '<div class="progress-controls"><button class="btn-mini-qty" data-act="purch" data-id="' + id + '" data-unit="' + eu + '" data-d="-1">-</button><button class="btn-mini-qty" data-act="purch" data-id="' + id + '" data-unit="' + eu + '" data-d="1">+</button></div></div></div>';
+            '</div>' + rows + '</div>';
         }).join('');
 
         html += '<div class="admin-item-row"><img src="' + esc(imgOf(p)) + '" class="admin-thumb" alt="" />' +
@@ -1074,9 +1153,11 @@
       $('editProdBrand').value = p.brand || '';
       $('editProdBrandCustomContainer').style.display = 'none';
       $('editProdUnits').value = (p.units || []).join(',');
+      $('editProdVariants').value = (p.variants || []).join(',');
       $('editProdNote').value = p.note || '';
       $('editProdImage').value = p.image || '';
       $('editProdImageFile').value = '';
+      noteImgState.edit = (p.noteImages || []).slice(); renderNoteThumbs('edit'); $('editProdNoteImgFile').value = '';
       $('editProdHidden').checked = !!p.isHidden;
       $('editProdModal').style.display = 'flex';
     }
@@ -1087,8 +1168,8 @@
       if (uploadingCount > 0) { alert('圖片上傳中，請稍候再儲存。'); return; }
       var v = {
         name: $('editProdName').value.trim(), category: $('editProdCategory').value, brand: $('editProdBrand').value.trim(),
-        units: parseUnits($('editProdUnits').value), note: $('editProdNote').value.trim(),
-        image: $('editProdImage').value.trim(), isHidden: $('editProdHidden').checked
+        units: parseUnits($('editProdUnits').value), variants: parseUnits($('editProdVariants').value), note: $('editProdNote').value.trim(),
+        image: $('editProdImage').value.trim(), isHidden: $('editProdHidden').checked, noteImages: noteImgState.edit.slice()
       };
       if (!v.name) { alert('請填寫商品名稱！'); return; }
       if (!v.units.length) v.units = ['瓶'];
@@ -1103,12 +1184,13 @@
       var units = parseUnits($('itemUnits').value);
       var prod = {
         id: Date.now(), name: name, brand: $('itemBrand').value.trim(), prices: {}, buyers: [], category: $('itemCategory').value,
-        units: units.length ? units : ['瓶'], note: $('itemNote').value.trim(), image: $('itemImage').value.trim(),
+        units: units.length ? units : ['瓶'], variants: parseUnits($('itemVariants').value), note: $('itemNote').value.trim(), image: $('itemImage').value.trim(), noteImages: noteImgState.item.slice(),
         purchasedCounts: {}, isCompleted: false, isHidden: false
       };
       mutate(s => { s.items.unshift(prod); }, () => {
-        ['itemName', 'itemBrand', 'itemNote', 'itemImage', 'itemImageFile'].forEach(i => { $(i).value = ''; });
+        ['itemName', 'itemBrand', 'itemNote', 'itemImage', 'itemImageFile', 'itemVariants'].forEach(i => { $(i).value = ''; });
         $('itemBrandSelect').value = ''; $('itemBrandCustomContainer').style.display = 'none';
+        noteImgState.item = []; renderNoteThumbs('item');
         closeModal('adminModal'); alert('🎉 新增商品成功！');
       });
     }
@@ -1131,19 +1213,20 @@
         // 只有管理者，或名字與「購買人」欄位相同的買家，才能修改該筆訂單
         var me = $('globalBuyerInput').value.trim();
         if (!isAuthed && me !== (d.buyer || '').trim()) { alert('只能修改自己的訂單，請先在上方輸入相同的購買人名字。'); return; }
-        openAdminEditOrderModal(d.id, d.buyer, d.unit, parseInt(d.count));
+        openAdminEditOrderModal(d.id, d.buyer, d.unit, parseInt(d.count), d.variant || '');
       },
-      delItem: d => adminDeleteCustomerItem(d.id, d.buyer, d.unit),
+      delItem: d => adminDeleteCustomerItem(d.id, d.buyer, d.unit, d.variant || ''),
       delAllCust: d => adminDeleteAllCustomerOrders(d.buyer),
       completeCust: d => completeCustomerOrders(d.buyer),
       editProd: d => openEditProdModal(d.id),
       delProd: d => deleteItemFromAdmin(d.id),
       move: d => moveProduct(d.id, parseInt(d.d)),
-      purch: d => updatePurchasedQty(d.id, d.unit, parseInt(d.d)),
+      purch: d => updatePurchasedQty(d.id, d.variant || '', d.unit, parseInt(d.d)),
       restoreComp: d => restoreCompletedOrder(d.id),
       delComp: d => deleteCompletedOrder(d.id),
       delWish: d => deleteWish(d.id),
-      wish2prod: d => convertWishToProduct(d.id)
+      wish2prod: d => convertWishToProduct(d.id),
+      rmNoteImg: d => { noteImgState[d.w].splice(parseInt(d.i), 1); renderNoteThumbs(d.w); }
     };
     document.addEventListener('click', e => {
       var el = e.target.closest('[data-act]');
@@ -1152,6 +1235,11 @@
     document.addEventListener('input', e => {
       var el = e.target;
       if (el.classList && el.classList.contains('stats-input') && el.dataset.field) queuePrice(el.dataset.id, el.dataset.unit, el.dataset.field, el.value);
+    });
+
+    document.addEventListener('change', e => {
+      var el = e.target;
+      if (el.dataset && el.dataset.vsel) { selectedVariant[el.dataset.id] = el.value; renderList(); }
     });
 
     initRealtimeListener();
