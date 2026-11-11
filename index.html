@@ -611,7 +611,7 @@
     function getBrands() {
       var set = new Set();
       products.forEach(p => { if (p.brand && p.brand.trim()) set.add(p.brand.trim()); });
-      return Array.from(set);
+      return Array.from(set).sort((a, b) => a.localeCompare(b, 'en', { sensitivity: 'base', numeric: true }));
     }
 
     function updateDrawerBrands() {
