@@ -193,8 +193,8 @@ $("form").addEventListener("submit", async e=>{
   fields.forEach(f=> data[f]=$("f_"+f).value.trim().slice(0,2000));
   $("saveBtn").disabled=true;
   try{
-    if(editingId){ await updateDoc(doc(fs,"records",editingId),data); setMsg("formMsg","已更新。","ok"); }
-    else{ data.createdAt=Date.now(); data.createdBy=me.email; data.createdName=me.displayName||""; await addDoc(collection(fs,"records"),data); setMsg("formMsg","已儲存，大家都看得到了。","ok"); }
+    if(editingId){ await updateDoc(doc(fs,"or_records",editingId),data); setMsg("formMsg","已更新。","ok"); }
+    else{ data.createdAt=Date.now(); data.createdBy=me.email; data.createdName=me.displayName||""; await addDoc(collection(fs,"or_records"),data); setMsg("formMsg","已儲存，大家都看得到了。","ok"); }
     resetForm();
   }catch(err){ setMsg("formMsg", err.code==="permission-denied" ? "沒有權限，請聯絡管理者把你加入名單。" : "儲存失敗，請再試一次。","err"); }
   finally{ $("saveBtn").disabled=false; }
@@ -212,7 +212,7 @@ $("delBtn").onclick=()=>{ if(editingId) $("confirm").classList.add("show"); };
 $("cNo").onclick=()=> $("confirm").classList.remove("show");
 $("cYes").onclick=async()=>{
   $("confirm").classList.remove("show");
-  try{ await deleteDoc(doc(fs,"records",editingId)); resetForm(); setMsg("formMsg","已刪除。","ok"); }
+  try{ await deleteDoc(doc(fs,"or_records",editingId)); resetForm(); setMsg("formMsg","已刪除。","ok"); }
   catch(err){ setMsg("formMsg","刪除失敗，可能沒有權限。","err"); }
 };
 ["q_month","q_role","q_type","q_status","q_text"].forEach(id=> $(id).addEventListener("input", render));
@@ -268,7 +268,7 @@ $("loginBtn").onclick=async()=>{ try{ await signInWithPopup(auth,new GoogleAuthP
 function startListening(){
   if(unsub) unsub();
   const timer=setTimeout(()=>setStatus("資料暫時連不到，請檢查網路。",true),10000);
-  unsub=onSnapshot(query(collection(fs,"records"),orderBy("date","desc"),limit(2000)), snap=>{
+  unsub=onSnapshot(query(collection(fs,"or_records"),orderBy("date","desc"),limit(2000)), snap=>{
     clearTimeout(timer);
     records=snap.docs.map(d=>Object.assign({id:d.id},d.data()));
     records.sort((a,b)=>(b.date||"").localeCompare(a.date||"")||(b.createdAt||0)-(a.createdAt||0));

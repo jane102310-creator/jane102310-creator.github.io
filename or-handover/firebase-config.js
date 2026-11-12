@@ -1,9 +1,9 @@
-// 到 Firebase 主控台 → 專案設定 → 一般 → 你的應用程式（網頁）→ SDK 設定，把 firebaseConfig 整段貼在這裡
+// 與 korea-buy-list 專案共用（資料放在 or_records / or_members 集合）
 export const firebaseConfig = {
-  apiKey: "請貼上",
-  authDomain: "",
-  projectId: "",
-  storageBucket: "",
-  messagingSenderId: "",
-  appId: ""
+  apiKey: "AIzaSyBHmyi3-dmv2Zcn8ULXwuIIODSWVdcDTdY",
+  authDomain: "korea-buy-list.firebaseapp.com",
+  projectId: "korea-buy-list",
+  storageBucket: "korea-buy-list.firebasestorage.app",
+  messagingSenderId: "131856493166",
+  appId: "1:131856493166:web:1f4a1c108ffbfdb89a547f"
 };
