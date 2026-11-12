@@ -1,0 +1,17 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 只有 members 名單裡的 email 能讀寫紀錄
+    function isMember() {
+      return request.auth != null
+        && exists(/databases/$(database)/documents/members/$(request.auth.token.email));
+    }
+    match /records/{id} {
+      allow read, write: if isMember();
+    }
+    match /members/{email} {
+      allow read: if request.auth != null && request.auth.token.email == email;
+      allow write: if false; // 只能從 Firebase 主控台新增成員
+    }
+  }
+}
