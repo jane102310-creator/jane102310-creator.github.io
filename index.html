@@ -779,10 +779,11 @@
           var a = k.split(SEP); return esc(a[0]) + '×' + cart[k] + (units.length > 1 ? esc(a[1]) : '');
         }).join('、');
 
-        var controls = units.map(u =>
+        var needV = variants.length && !sv;
+        var controls = (needV ? '<div style="font-size:11px; color:#D9534F; margin-bottom:2px;">請先選款式</div>' : '') + units.map(u =>
           '<div style="display:flex; align-items:center; gap:4px; margin-bottom:2px;">' +
             '<span style="font-size:11px; color:var(--text-sub);">' + (units.length > 1 ? esc(u) : '') + '</span>' +
-            '<div class="qty-inline-controls">' +
+            '<div class="qty-inline-controls"' + (needV ? ' style="opacity:0.35;"' : '') + '>' +
               '<button class="btn-qty-mini" data-act="qty" data-id="' + id + '" data-unit="' + esc(u) + '" data-d="-1">-</button>' +
               '<span class="qty-display-mini">' + (cart[sv + SEP + u] || 0) + '</span>' +
               '<button class="btn-qty-mini plus" data-act="qty" data-id="' + id + '" data-unit="' + esc(u) + '" data-d="1">+</button>' +
@@ -808,7 +809,12 @@
     function adjustPendingQty(id, unit, delta) {
       if (!$('globalBuyerInput').value.trim()) { alert('請先在上方輸入您的名字！'); $('globalBuyerInput').focus(); return; }
       var p = findP(products, id), sv = selectedVariant[id] || '';
-      if (p && p.variants && p.variants.length && !sv) { alert('請先選擇色號 / 款式！'); return; }
+      if (p && p.variants && p.variants.length && !sv) {
+        alert('請先選擇「' + p.name + '」的色號 / 款式，再選數量！');
+        var vs = document.querySelector('select[data-vsel][data-id="' + CSS.escape(String(id)) + '"]');
+        if (vs) { vs.scrollIntoView({ block: 'center' }); vs.style.borderColor = '#D9534F'; vs.focus(); }
+        return;
+      }
       var key = sv + SEP + unit;
       if (!pendingCart[id]) pendingCart[id] = {};
       var next = Math.max(0, (pendingCart[id][key] || 0) + delta);
@@ -830,6 +836,21 @@
       if (!buyerName) { alert('請輸入您的名字！'); return; }
       var cart = JSON.parse(JSON.stringify(pendingCart)), ids = Object.keys(cart);
       if (!ids.length) { alert('尚未選擇任何數量！'); return; }
+      var missing = [], hasQty = false;
+      ids.forEach(id => {
+        var p = findP(products, id);
+        Object.keys(cart[id]).forEach(key => {
+          if (!(cart[id][key] > 0)) return;
+          hasQty = true;
+          if (p && p.variants && p.variants.length && !key.split(SEP)[0] && missing.indexOf(p.name) < 0) missing.push(p.name);
+        });
+      });
+      if (!hasQty) { alert('尚未選擇任何數量！'); return; }
+      if (missing.length) {
+        alert('以下商品還沒選色號 / 款式，請選好款式並重新選數量後再送出：\n\n• ' + missing.join('\n• '));
+        ids.forEach(id => { var p = findP(products, id); if (p && p.variants && p.variants.length) Object.keys(pendingCart[id] || {}).forEach(k => { if (!k.split(SEP)[0]) delete pendingCart[id][k]; }); if (pendingCart[id] && !Object.keys(pendingCart[id]).length) delete pendingCart[id]; });
+        renderList(); return;
+      }
 
       isSubmitting = true; $('btnConfirmCart').disabled = true;
       var summary = '';
