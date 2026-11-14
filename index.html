@@ -237,6 +237,8 @@
     </div>
   </div>
 
+  <datalist id="storeList"></datalist>
+
   <!-- 修改訂單數量 Modal -->
   <div class="modal-overlay" id="editOrderModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end; z-index: 1200;">
     <div class="modal-content" style="background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px;">
@@ -279,6 +281,7 @@
           <input type="text" id="editProdBrand" class="form-input" placeholder="請輸入新品牌名稱..." />
         </div>
       </div>
+      <div class="form-group"><label class="form-label">🏪 購買地點（可點選或自行輸入）</label><input type="text" id="editProdStore" class="form-input" list="storeList" placeholder="例如：藥局、OLIVE YOUNG、樂天超市" /></div>
       <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開）</label><input type="text" id="editProdUnits" class="form-input" placeholder="盒,片" /></div>
       <div class="form-group"><label class="form-label">色號 / 款式（選填，多個請用逗號隔開）</label><input type="text" id="editProdVariants" class="form-input" placeholder="例如：01 粉紅,02 珊瑚,03 裸色" /></div>
       <div class="form-group">
@@ -362,6 +365,7 @@
             <input type="text" id="itemBrand" class="form-input" placeholder="請輸入新品牌名稱..." />
           </div>
         </div>
+        <div class="form-group"><label class="form-label">🏪 購買地點（可點選或自行輸入）</label><input type="text" id="itemStore" class="form-input" list="storeList" placeholder="例如：藥局、OLIVE YOUNG、樂天超市" /></div>
         <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開）</label><input type="text" id="itemUnits" class="form-input" value="瓶" placeholder="瓶,盒" /></div>
         <div class="form-group"><label class="form-label">色號 / 款式（選填，多個請用逗號隔開）</label><input type="text" id="itemVariants" class="form-input" placeholder="例如：01 粉紅,02 珊瑚,03 裸色" /></div>
         <div class="form-group">
@@ -701,7 +705,7 @@
       return '"' + v.replace(/"/g, '""') + '"';
     }
     function exportToExcel() {
-      var rows = [['商品名稱', '品牌', '分類', '色號/款式', '單位', '總需求數量', '採購成本', '匯率', '售價(NT$)', '總售價', '已採購數', '買家與數量明細']];
+      var rows = [['商品名稱', '品牌', '購買地點', '分類', '色號/款式', '單位', '總需求數量', '採購成本', '匯率', '售價(NT$)', '總售價', '已採購數', '買家與數量明細']];
       products.forEach(p => {
         var buyers = p.buyers || [], counts = p.purchasedCounts || {};
         var vs = (p.variants || []).slice();
@@ -713,7 +717,7 @@
             var mine = buyers.filter(b => (b.unit || '瓶') === u && (b.variant || '') === v);
             var need = mine.reduce((a, b) => a + (b.count || 0), 0);
             if (v === '' && vs.length > 1 && need === 0) return;
-            rows.push([p.name, p.brand || '', p.category, v, u, need, pr.krwPrice, pr.rate, pr.finalNt, pr.finalNt * need, counts[lineKey(v, u)] || 0, mine.map(b => b.name + ' ' + b.count + u).join('; ')]);
+            rows.push([p.name, p.brand || '', p.store || '', p.category, v, u, need, pr.krwPrice, pr.rate, pr.finalNt, pr.finalNt * need, counts[lineKey(v, u)] || 0, mine.map(b => b.name + ' ' + b.count + u).join('; ')]);
           });
         });
       });
@@ -1106,13 +1110,22 @@
       }).join('');
     }
 
+    var DEFAULT_STORES = ['藥局', 'OLIVE YOUNG', '樂天超市', 'Daiso', 'E-Mart', 'Homeplus', '便利商店'];
+    function updateStoreList() {
+      var dl = $('storeList'); if (!dl) return;
+      var all = DEFAULT_STORES.slice();
+      products.forEach(p => { var st = (p.store || '').trim(); if (st && all.indexOf(st) < 0) all.push(st); });
+      dl.innerHTML = all.map(st => '<option value="' + esc(st) + '"></option>').join('');
+    }
+
     function updateAdminProductList() {
+      updateStoreList();
       var box = $('adminProductList'); if (!box) return;
       box.innerHTML = sectionHeader('📦 商品總數：' + products.length + ' 項') + products.map((p, i) => {
         var id = esc(p.id);
         return '<div class="admin-item-row"><img src="' + esc(imgOf(p)) + '" class="admin-thumb" alt="" />' +
           '<div class="admin-item-info"><div class="admin-item-title"><span>📦 ' + esc(p.name) + (p.isHidden ? ' (已隱藏)' : '') + '</span></div>' +
-          '<div style="font-size:12px; color:var(--text-sub); margin-bottom:4px;">分類：' + esc(p.category) + (p.brand ? ' | 品牌：' + esc(p.brand) : '') + ' | 單位：[' + esc((p.units || []).join(',')) + ']' + ((p.variants || []).length ? ' | 色號：' + esc(p.variants.join('、')) : '') + '</div>' +
+          '<div style="font-size:12px; color:var(--text-sub); margin-bottom:4px;">' + (p.store ? '🏪 ' + esc(p.store) + ' | ' : '') + '分類：' + esc(p.category) + (p.brand ? ' | 品牌：' + esc(p.brand) : '') + ' | 單位：[' + esc((p.units || []).join(',')) + ']' + ((p.variants || []).length ? ' | 色號：' + esc(p.variants.join('、')) : '') + '</div>' +
           '<div class="admin-action-btns">' +
             '<button class="btn-edit-prod" data-act="editProd" data-id="' + id + '">✏️ 編輯</button>' +
             '<button class="btn-del-prod" data-act="delProd" data-id="' + id + '">🗑️ 刪除</button>' +
@@ -1156,7 +1169,7 @@
         }).join('');
 
         html += '<div class="admin-item-row"><img src="' + esc(imgOf(p)) + '" class="admin-thumb" alt="" />' +
-          '<div class="admin-item-info"><div class="admin-item-title"><span>📦 ' + esc(p.name) + '</span></div>' + buyersHtml + progress + '</div></div>';
+          '<div class="admin-item-info"><div class="admin-item-title"><span>📦 ' + esc(p.name) + '</span></div>' + (p.store ? '<div style="font-size:12px; color:var(--accent); margin-bottom:4px;">🏪 購買地點：' + esc(p.store) + '</div>' : '') + buyersHtml + progress + '</div></div>';
       });
       box.innerHTML = html || '<div style="text-align:center; color:#999; padding:20px;">目前尚無人下單，採購統計無待採購項目</div>';
     }
@@ -1173,6 +1186,7 @@
       $('editProdBrandSelect').value = p.brand || '';
       $('editProdBrand').value = p.brand || '';
       $('editProdBrandCustomContainer').style.display = 'none';
+      $('editProdStore').value = p.store || ''; updateStoreList();
       $('editProdUnits').value = (p.units || []).join(',');
       $('editProdVariants').value = (p.variants || []).join(',');
       $('editProdNote').value = p.note || '';
@@ -1188,7 +1202,7 @@
       if (editingProdId === null) return;
       if (uploadingCount > 0) { alert('圖片上傳中，請稍候再儲存。'); return; }
       var v = {
-        name: $('editProdName').value.trim(), category: $('editProdCategory').value, brand: $('editProdBrand').value.trim(),
+        name: $('editProdName').value.trim(), category: $('editProdCategory').value, brand: $('editProdBrand').value.trim(), store: $('editProdStore').value.trim(),
         units: parseUnits($('editProdUnits').value), variants: parseUnits($('editProdVariants').value), note: $('editProdNote').value.trim(),
         image: $('editProdImage').value.trim(), isHidden: $('editProdHidden').checked, noteImages: noteImgState.edit.slice()
       };
@@ -1204,12 +1218,12 @@
       if (uploadingCount > 0) { alert('圖片上傳中，請稍候再新增。'); return; }
       var units = parseUnits($('itemUnits').value);
       var prod = {
-        id: Date.now(), name: name, brand: $('itemBrand').value.trim(), prices: {}, buyers: [], category: $('itemCategory').value,
+        id: Date.now(), name: name, brand: $('itemBrand').value.trim(), store: $('itemStore').value.trim(), prices: {}, buyers: [], category: $('itemCategory').value,
         units: units.length ? units : ['瓶'], variants: parseUnits($('itemVariants').value), note: $('itemNote').value.trim(), image: $('itemImage').value.trim(), noteImages: noteImgState.item.slice(),
         purchasedCounts: {}, isCompleted: false, isHidden: false
       };
       mutate(s => { s.items.unshift(prod); }, () => {
-        ['itemName', 'itemBrand', 'itemNote', 'itemImage', 'itemImageFile', 'itemVariants'].forEach(i => { $(i).value = ''; });
+        ['itemName', 'itemBrand', 'itemStore', 'itemNote', 'itemImage', 'itemImageFile', 'itemVariants'].forEach(i => { $(i).value = ''; });
         $('itemBrandSelect').value = ''; $('itemBrandCustomContainer').style.display = 'none';
         noteImgState.item = []; renderNoteThumbs('item');
         closeModal('adminModal'); alert('🎉 新增商品成功！');
