@@ -237,8 +237,6 @@
     </div>
   </div>
 
-  <datalist id="storeList"></datalist>
-
   <!-- 修改訂單數量 Modal -->
   <div class="modal-overlay" id="editOrderModal" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.4); display: none; justify-content: center; align-items: flex-end; z-index: 1200;">
     <div class="modal-content" style="background: var(--card-bg); width: 100%; max-width: 480px; border-top-left-radius: 24px; border-top-right-radius: 24px; padding: 24px;">
@@ -281,7 +279,11 @@
           <input type="text" id="editProdBrand" class="form-input" placeholder="請輸入新品牌名稱..." />
         </div>
       </div>
-      <div class="form-group"><label class="form-label">🏪 購買地點（可點選或自行輸入）</label><input type="text" id="editProdStore" class="form-input" list="storeList" placeholder="例如：藥局、OLIVE YOUNG、樂天超市" /></div>
+      <div class="form-group">
+        <label class="form-label">🏪 購買地點</label>
+        <select id="editProdStoreSelect" class="form-select" onchange="handleBrandSelectChange('editProdStoreSelect', 'editProdStoreCustomContainer', 'editProdStore')" style="margin-bottom: 6px;"><option value="">(未設定)</option></select>
+        <div id="editProdStoreCustomContainer" style="display:none;"><input type="text" id="editProdStore" class="form-input" placeholder="請輸入新的購買地點..." /></div>
+      </div>
       <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開）</label><input type="text" id="editProdUnits" class="form-input" placeholder="盒,片" /></div>
       <div class="form-group"><label class="form-label">色號 / 款式（選填，多個請用逗號隔開）</label><input type="text" id="editProdVariants" class="form-input" placeholder="例如：01 粉紅,02 珊瑚,03 裸色" /></div>
       <div class="form-group">
@@ -365,7 +367,11 @@
             <input type="text" id="itemBrand" class="form-input" placeholder="請輸入新品牌名稱..." />
           </div>
         </div>
-        <div class="form-group"><label class="form-label">🏪 購買地點（可點選或自行輸入）</label><input type="text" id="itemStore" class="form-input" list="storeList" placeholder="例如：藥局、OLIVE YOUNG、樂天超市" /></div>
+        <div class="form-group">
+          <label class="form-label">🏪 購買地點</label>
+          <select id="itemStoreSelect" class="form-select" onchange="handleBrandSelectChange('itemStoreSelect', 'itemStoreCustomContainer', 'itemStore')" style="margin-bottom: 6px;"><option value="">(未設定)</option></select>
+          <div id="itemStoreCustomContainer" style="display:none;"><input type="text" id="itemStore" class="form-input" placeholder="請輸入新的購買地點..." /></div>
+        </div>
         <div class="form-group"><label class="form-label">數量單位（多個單位請用逗號隔開）</label><input type="text" id="itemUnits" class="form-input" value="瓶" placeholder="瓶,盒" /></div>
         <div class="form-group"><label class="form-label">色號 / 款式（選填，多個請用逗號隔開）</label><input type="text" id="itemVariants" class="form-input" placeholder="例如：01 粉紅,02 珊瑚,03 裸色" /></div>
         <div class="form-group">
@@ -514,7 +520,7 @@
         if (document.activeElement !== $('siteTitleInput')) $('siteTitleInput').value = SITE_TITLE;
         if (document.activeElement !== $('exchangeRateInput')) $('exchangeRateInput').value = GLOBAL_EXCHANGE_RATE;
 
-        renderList(); renderWishList(); updateBrandDropdowns();
+        renderList(); renderWishList(); updateBrandDropdowns(); updateStoreList();
         if ($('adminModal').style.display === 'flex') {
           var ae = document.activeElement;
           if (!(ae && ae.classList.contains('stats-input'))) refreshAdmin();
@@ -1111,11 +1117,19 @@
     }
 
     var DEFAULT_STORES = ['藥局', 'OLIVE YOUNG', '樂天超市', 'Daiso', 'E-Mart', 'Homeplus', '便利商店'];
-    function updateStoreList() {
-      var dl = $('storeList'); if (!dl) return;
+    function updateStoreList(selectedForEdit) {
       var all = DEFAULT_STORES.slice();
       products.forEach(p => { var st = (p.store || '').trim(); if (st && all.indexOf(st) < 0) all.push(st); });
-      dl.innerHTML = all.map(st => '<option value="' + esc(st) + '"></option>').join('');
+      [['itemStoreSelect', 'itemStoreCustomContainer'], ['editProdStoreSelect', 'editProdStoreCustomContainer']].forEach(pair => {
+        var sel = $(pair[0]); if (!sel) return;
+        var prev = sel.value;
+        sel.innerHTML = '<option value="">(未設定)</option>' +
+          all.map(st => '<option value="' + esc(st) + '">' + esc(st) + '</option>').join('') +
+          '<option value="CUSTOM_NEW">＋ 新增購買地點...</option>';
+        var want = (pair[0] === 'editProdStoreSelect' && selectedForEdit !== undefined) ? selectedForEdit : prev;
+        sel.value = (want === 'CUSTOM_NEW' || all.includes(want)) ? want : '';
+        $(pair[1]).style.display = sel.value === 'CUSTOM_NEW' ? 'block' : 'none';
+      });
     }
 
     function updateAdminProductList() {
@@ -1186,7 +1200,7 @@
       $('editProdBrandSelect').value = p.brand || '';
       $('editProdBrand').value = p.brand || '';
       $('editProdBrandCustomContainer').style.display = 'none';
-      $('editProdStore').value = p.store || ''; updateStoreList();
+      $('editProdStore').value = p.store || ''; updateStoreList(p.store || '');
       $('editProdUnits').value = (p.units || []).join(',');
       $('editProdVariants').value = (p.variants || []).join(',');
       $('editProdNote').value = p.note || '';
@@ -1225,6 +1239,7 @@
       mutate(s => { s.items.unshift(prod); }, () => {
         ['itemName', 'itemBrand', 'itemStore', 'itemNote', 'itemImage', 'itemImageFile', 'itemVariants'].forEach(i => { $(i).value = ''; });
         $('itemBrandSelect').value = ''; $('itemBrandCustomContainer').style.display = 'none';
+        $('itemStoreSelect').value = ''; $('itemStoreCustomContainer').style.display = 'none';
         noteImgState.item = []; renderNoteThumbs('item');
         closeModal('adminModal'); alert('🎉 新增商品成功！');
       });
@@ -1234,7 +1249,7 @@
       var targets = [1, 7, 8, 2, 6, 5, 3, 4];
       document.querySelectorAll('.admin-tab-btn').forEach((b, i) => b.classList.toggle('active', targets[i] === tabNum));
       document.querySelectorAll('.admin-section').forEach(sec => sec.classList.toggle('active', sec.id === 'adminSec' + tabNum));
-      if (tabNum === 3) updateBrandDropdowns(); else refreshAdmin();
+      if (tabNum === 3) { updateBrandDropdowns(); updateStoreList(); } else refreshAdmin();
     }
 
     /* ============ 事件委派：取代 onclick 字串拼接 ============ */
