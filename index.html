@@ -155,7 +155,7 @@
         <button class="filter-pill" data-cat="美妝保養" onclick="setCategoryFilter('美妝保養')">美妝保養</button>
         <button class="filter-pill" data-cat="文具雜貨" onclick="setCategoryFilter('文具雜貨')">文具雜貨</button>
       </div>
-      <div id="itemListHome"></div>
+      <div id="itemListHome"><div style="text-align:center; color:var(--text-sub); padding:40px 0;">⏳ 資料載入中，請稍候...</div></div>
     </div>
 
     <!-- 2. 分類 -->
@@ -941,9 +941,38 @@
       else { $('adminPwdInput').value = ''; $('loginModal').style.display = 'flex'; }
     }
     function closeModal(id) { $(id).style.display = 'none'; }
+    // 舊資料裡直接存成 data:image 的圖片會讓整份資料變得很大（Firebase 上限 1MB、載入變慢），
+    // 管理者登入時自動搬到 images 集合，資料只留 fs:ID
+    var migrating = false;
+    async function migrateInlineImages() {
+      if (migrating) return;
+      var found = [];
+      function scan(v) { if (typeof v === 'string' && v.indexOf('data:image') === 0 && found.indexOf(v) < 0) found.push(v); }
+      products.forEach(p => { scan(p.image); (p.noteImages || []).forEach(scan); });
+      wishList.forEach(w => Object.keys(w).forEach(k => scan(w[k])));
+      if (!found.length) return;
+      migrating = true;
+      try {
+        var map = {};
+        for (var i = 0; i < found.length; i++) {
+          var id = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+          await db.collection('images').doc(id).set({ data: found[i] });
+          imgCache[id] = found[i]; map[found[i]] = 'fs:' + id;
+        }
+        var fix = v => (typeof v === 'string' && map[v]) ? map[v] : v;
+        await mutate(s => {
+          s.items.forEach(p => { p.image = fix(p.image); if (Array.isArray(p.noteImages)) p.noteImages = p.noteImages.map(fix); });
+          s.wishList.forEach(w => Object.keys(w).forEach(k => { w[k] = fix(w[k]); }));
+        });
+        console.log('已搬移 ' + found.length + ' 張內嵌圖片');
+      } catch (e) { console.error('圖片搬移失敗', e); }
+      finally { migrating = false; }
+    }
+
     function submitLogin() {
       if ($('adminPwdInput').value === ADMIN_PASSWORD) {
         isAuthed = true; closeModal('loginModal'); refreshAdmin(); $('adminModal').style.display = 'flex';
+        migrateInlineImages();
       } else alert('密碼錯誤！');
     }
     function saveNewPassword() {
