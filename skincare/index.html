@@ -121,26 +121,28 @@
   .viewtabs{display:flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:14px;background:var(--card)}
   .viewtabs button{flex:1;border:none;background:transparent;padding:10px 0;font-size:13px;color:var(--sub);font-family:inherit;letter-spacing:.08em;cursor:pointer}
   .viewtabs button.on{background:var(--accent);color:#F8F6F1}
-  .cabinet{margin-top:14px;background:linear-gradient(180deg,#CDB594,#BFA580);border-radius:14px 14px 8px 8px;padding:12px 12px 16px;box-shadow:0 10px 24px rgba(62,55,49,.18),inset 0 1px 0 rgba(255,255,255,.35)}
-  .plaque{text-align:center;margin:2px auto 10px;font-family:var(--serif);font-size:13px;color:#5B4A39;letter-spacing:.3em}
-  .plaque small{display:block;font-family:-apple-system,sans-serif;font-size:9.5px;letter-spacing:.4em;color:#7C6650;margin-top:2px}
-  .cab-in{background:linear-gradient(180deg,#F6F1E8 0%,#EEE6D9 100%);border-radius:6px;box-shadow:inset 0 3px 10px rgba(80,60,40,.22);padding:4px 6px 0;overflow:hidden}
-  .shelf{display:grid;grid-template-columns:repeat(4,1fr);align-items:end;gap:4px;padding:16px 2px 0;min-height:150px;position:relative}
-  .shelf::after{content:"";position:absolute;left:-6px;right:-6px;bottom:-10px;height:12px;background:linear-gradient(180deg,#D8C3A3,#C3A983);box-shadow:0 5px 8px rgba(80,60,40,.25);border-radius:1px}
-  .shelf-wrap{margin-bottom:18px;position:relative}
-  .shelf-wrap:last-child{margin-bottom:10px}
-  .prod{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;cursor:pointer;position:relative;padding-bottom:2px;min-width:0;-webkit-tap-highlight-color:transparent}
-  .prod img{max-width:100%;max-height:128px;object-fit:contain;filter:drop-shadow(0 4px 3px rgba(60,45,30,.28));transition:transform .15s}
-  .prod:active img,.prod:active .bottle{transform:translateY(-4px)}
-  .prod .sdot{position:absolute;top:0;right:8%;width:9px;height:9px;border-radius:50%;border:2px solid #F6F1E8}
+  .vanity{margin-top:14px;background:linear-gradient(180deg,#F7F4EE 0%,#F1ECE3 100%);border:1px solid var(--line);border-radius:14px;padding:22px 14px 0;overflow:hidden}
+  .mirror{display:block;width:150px;margin:0 auto 6px}
+  .mirror-t{text-align:center;margin:-74px auto 34px;position:relative;font-family:var(--serif);color:var(--accent);font-size:14px;letter-spacing:.32em;line-height:1.5}
+  .mirror-t small{display:block;font-family:-apple-system,sans-serif;font-size:9px;letter-spacing:.42em;color:var(--sub)}
+  .shelf{display:flex;justify-content:space-evenly;align-items:flex-end;min-height:150px;padding:0 4px;position:relative;margin:0 4px}
+  .shelf::after{content:"";position:absolute;left:-2px;right:-2px;bottom:-7px;height:7px;border-radius:2px;background:linear-gradient(180deg,#E3D3BA 0%,#CDB797 100%);box-shadow:0 7px 9px -5px rgba(90,70,45,.35)}
+  .shelf-wrap{margin-bottom:26px}
+  .prod{width:31%;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;cursor:pointer;position:relative;-webkit-tap-highlight-color:transparent}
+  .prod img{max-width:92%;max-height:138px;object-fit:contain;filter:drop-shadow(0 5px 4px rgba(60,45,30,.22));transition:transform .2s}
+  .prod:active img,.prod:active svg{transform:translateY(-5px)}
+  .prod svg{width:54px;height:110px;transition:transform .2s}
+  .prod .sdot{position:absolute;top:2px;right:14%;width:8px;height:8px;border-radius:50%;box-shadow:0 0 0 2px #F6F2EB}
   .prod .sdot.warn{background:var(--warn)} .prod .sdot.bad{background:var(--bad)}
-  .bottle{width:58%;height:96px;border-radius:12px 12px 6px 6px;background:linear-gradient(90deg,#E9E1D3,#FBF8F2 45%,#E3D9C8);border:1px solid #D6CBB8;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 4px 5px rgba(60,45,30,.18);transition:transform .15s}
-  .bottle::before{content:"";position:absolute;top:-16px;left:30%;width:40%;height:16px;background:#CDBFA8;border-radius:4px 4px 0 0}
-  .bottle span{writing-mode:vertical-rl;font-size:10px;color:var(--sub);letter-spacing:.1em;max-height:84px;overflow:hidden}
-  .labels{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:16px 2px 0}
-  .labels div{font-size:10.5px;color:#5B4A39;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
-  .labels div small{display:block;color:#8E7A64;font-size:9.5px}
-  .cab-empty{padding:40px 10px;text-align:center;font-family:var(--serif);color:var(--sub);font-size:13.5px;line-height:2}
+  .labels{display:flex;justify-content:space-evenly;padding:16px 4px 0;margin:0 4px}
+  .labels div{width:31%;font-family:var(--serif);font-size:11.5px;color:var(--text);text-align:center;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;word-break:break-all}
+  .labels div small{display:block;font-family:-apple-system,sans-serif;color:var(--sub);font-size:9.5px;letter-spacing:.08em;margin-bottom:2px}
+  .counter{margin:6px -14px 0;padding:0}
+  .counter .top{height:12px;background:linear-gradient(180deg,#E7D9C3,#D2BE9E);box-shadow:0 3px 6px rgba(90,70,45,.18)}
+  .counter .drawers{display:grid;grid-template-columns:1fr 1fr;gap:8px;padding:10px 14px 14px;background:#EADFCD}
+  .counter .drawers div{height:42px;border:1px solid #D3C2A6;border-radius:4px;background:linear-gradient(180deg,#F1E8DA,#E7DAC6);position:relative}
+  .counter .drawers div::after{content:"";position:absolute;left:50%;top:50%;width:18px;height:3px;margin:-1.5px 0 0 -9px;border-radius:2px;background:#B59C78}
+  .cab-empty{padding:30px 10px 40px;text-align:center;font-family:var(--serif);color:var(--sub);font-size:13.5px;line-height:2}
   .sheet .item{border:none;background:transparent}
   .sheet .item .detail{display:block;background:transparent;border-top:1px solid var(--line);padding:2px 0 4px}
   .sheet .item-top{padding:4px 0 12px;cursor:default}
@@ -723,19 +725,21 @@ function renderCabinet(rows){
   let r=[...rows];
   if($('#sort').value==='brand') r.sort((a,b)=>a.it.brand.localeCompare(b.it.brand,'zh-Hant')||CATS.indexOf(a.it.cat)-CATS.indexOf(b.it.cat));
   let inner='';
-  if(!items.length) inner='<div class="cab-empty">化妝櫃還是空的<br>按右下角 ＋ 放上第一瓶</div>';
+  const bottle=`<svg viewBox="0 0 54 110" fill="none" stroke="#8C7F72" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><rect x="19" y="4" width="16" height="12" rx="2"/><path d="M22 16v6c-8 2-13 8-13 15v62c0 5 4 8 8 8h20c4 0 8-3 8-8V37c0-7-5-13-13-15v-6"/><path d="M15 62h24"/><path d="M27 76l1.2 3 3 1.2-3 1.2-1.2 3-1.2-3-3-1.2 3-1.2z" fill="#C9A06A" stroke="none"/></svg>`;
+  if(!items.length) inner='<div class="cab-empty">化妝台還是空的<br>按右下角 ＋ 放上第一瓶</div>';
   else if(!r.length) inner='<div class="cab-empty">沒有符合條件的保養品</div>';
   else{
-    const per=4, n=Math.max(2,Math.ceil(r.length/per));
+    const per=3, n=Math.ceil(r.length/per);
     for(let k=0;k<n;k++){
       const row=r.slice(k*per,k*per+per);
       inner+=`<div class="shelf-wrap"><div class="shelf">${row.map(({it,i})=>{
-        const key=it.cut||it.img, dot=(i.level==='bad'||i.level==='warn')?`<span class="sdot ${i.level}"></span>`:'';
-        return `<div class="prod" data-sheet="${it.id}">${dot}${key?`<img data-img="${key}" alt="">`:`<div class="bottle"><span>${esc(it.brand)}</span></div>`}</div>`;
-      }).join('')}</div><div class="labels">${row.map(({it})=>`<div>${esc(it.name)}<small>${esc(it.brand)}</small></div>`).join('')}</div></div>`;
+        const key=it.cut||it.img, dot=(i.level==='bad'||i.level==='warn'||i.lowStock)?`<span class="sdot ${i.level==='bad'?'bad':'warn'}"></span>`:'';
+        return `<div class="prod" data-sheet="${it.id}">${dot}${key?`<img data-img="${key}" alt="">`:bottle}</div>`;
+      }).join('')}</div><div class="labels">${row.map(({it})=>`<div><small>${esc(it.brand)}</small>${esc(it.name)}</div>`).join('')}</div></div>`;
     }
   }
-  cab.innerHTML=`<div class="cabinet"><div class="plaque">나의 화장대<small>MY VANITY</small></div><div class="cab-in">${inner}</div></div>`;
+  const mirror=`<svg class="mirror" viewBox="0 0 150 120"><path d="M14 118V66a61 61 0 0 1 122 0v52" fill="none" stroke="#4A4038" stroke-width="2"/><path d="M22 118V67a53 53 0 0 1 106 0v51" fill="#EFE8DD" stroke="#CDBFA9" stroke-width="1"/><path d="M40 52a40 40 0 0 1 22-24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".8"/><path d="M118 34l1.6 4 4 1.6-4 1.6-1.6 4-1.6-4-4-1.6 4-1.6z" fill="#C9A06A"/></svg>`;
+  cab.innerHTML=`<div class="vanity">${mirror}<div class="mirror-t">나의 화장대<small>MY VANITY</small></div>${inner}<div class="counter"><div class="top"></div><div class="drawers"><div></div><div></div></div></div></div>`;
   fillImgs();
 }
 $('#cabinet').addEventListener('click',e=>{ const p=e.target.closest('[data-sheet]'); if(p) openSheet(p.dataset.sheet); });
