@@ -88,7 +88,20 @@
   .f input,.f select,.f textarea{width:100%;padding:12px 14px;border:1px solid var(--line);border-radius:14px;font-size:15px;background:var(--bg);color:var(--text);font-family:inherit;outline:none;-webkit-appearance:none;appearance:none}
   .f input:focus,.f select:focus,.f textarea:focus{border-color:var(--sub)}
   .f textarea{min-height:80px;resize:vertical;line-height:1.6}
-  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
+  .two .f{min-width:0}
+  .f input[type=date]{display:block;min-width:0;max-width:100%;min-height:46px;text-align:left}
+  .f input[type=date]::-webkit-date-and-time-value{text-align:left}
+  .combo{position:relative}
+  .combo input{padding-right:40px}
+  .combo .arrow{position:absolute;right:6px;top:50%;transform:translateY(-50%);width:34px;height:34px;border:none;background:none;color:var(--sub);font-size:12px;cursor:pointer}
+  .combo-list{display:none;position:absolute;left:0;right:0;top:calc(100% + 6px);background:var(--card);border:1px solid var(--line);border-radius:16px;box-shadow:0 12px 30px rgba(59,55,52,.12);max-height:240px;overflow-y:auto;z-index:5;padding:6px}
+  .combo.open .combo-list{display:block}
+  .opt{padding:11px 12px;border-radius:10px;font-size:14px;cursor:pointer;display:flex;justify-content:space-between;gap:8px}
+  .opt:active,.opt.hl{background:var(--bg)}
+  .opt small{color:var(--muted);font-size:11px;flex:none}
+  .opt.new{color:var(--sub)}
+  .opt-sep{font-size:10px;letter-spacing:.2em;color:var(--muted);padding:8px 12px 4px}
   .hintbtn{font-size:11.5px;color:var(--text);background:none;border:none;cursor:pointer;float:right;text-decoration:underline;text-underline-offset:3px;font-family:inherit}
   .footer-tools{margin-top:32px;text-align:center;display:flex;gap:6px;justify-content:center}
   .note{font-size:11.5px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.7}
@@ -148,12 +161,19 @@
     <input type="hidden" id="fId">
     <div class="f">
       <label>品牌 *</label>
-      <input id="fBrand" list="brandList" required placeholder="例：La Roche-Posay、雪花秀">
-      <datalist id="brandList"></datalist>
+      <div class="combo" id="cBrand">
+        <input id="fBrand" required placeholder="點選或輸入品牌" autocomplete="off">
+        <button type="button" class="arrow" tabindex="-1">▼</button>
+        <div class="combo-list"></div>
+      </div>
     </div>
     <div class="f">
       <label>品名 *</label>
-      <input id="fName" required placeholder="例：B5 全面修復霜">
+      <div class="combo" id="cName">
+        <input id="fName" required placeholder="點選或輸入品名" autocomplete="off">
+        <button type="button" class="arrow" tabindex="-1">▼</button>
+        <div class="combo-list"></div>
+      </div>
     </div>
     <div class="two">
       <div class="f">
@@ -289,7 +309,6 @@ function render(){
   $('#brandChips').innerHTML = ['all',...brands].map(b=>`<span class="chip ${filter.brand===b?'on':''}" data-k="brand" data-v="${esc(b)}">${b==='all'?'全部':esc(b)} ${b==='all'?'':'('+items.filter(it=>it.brand.trim()===b).length+')'}</span>`).join('');
   const cats=CATS.filter(c=>items.some(it=>it.cat===c));
   $('#catChips').innerHTML = ['all',...cats].map(c=>`<span class="chip ${filter.cat===c?'on':''}" data-k="cat" data-v="${c}">${c==='all'?'全部':c}</span>`).join('');
-  $('#brandList').innerHTML = brands.map(b=>`<option value="${esc(b)}">`).join('');
 
   // filter
   const q = filter.q.trim().toLowerCase();
@@ -418,7 +437,7 @@ function openForm(it){
   $('#delBtn').style.display = it ? '' : 'none';
   $('#modalBg').classList.add('show');
 }
-function closeForm(){ $('#modalBg').classList.remove('show'); }
+function closeForm(){ $('#modalBg').classList.remove('show'); document.querySelectorAll('.combo.open').forEach(c=>c.classList.remove('open')); }
 $('#addBtn').onclick=()=>openForm(null);
 $('#closeBtn').onclick=closeForm; $('#cancelBtn').onclick=closeForm;
 $('#modalBg').addEventListener('click',e=>{ if(e.target===$('#modalBg')) closeForm(); });
@@ -472,6 +491,60 @@ $('#importFile').onchange=e=>{
   };
   r.readAsText(f);
 };
+
+
+// ---- 下拉選單（品牌／品名）----
+const PRESET_BRANDS=['理膚寶水 La Roche-Posay','雅漾 Avène','薇姿 Vichy','適樂膚 CeraVe','契爾氏 Kiehl\'s','倩碧 Clinique','雅詩蘭黛 Estée Lauder','蘭蔻 Lancôme','SK-II','資生堂 Shiseido','肌研 Hada Labo','珂潤 Curél','碧兒泉 Biotherm','寶拉珍選 Paula\'s Choice','The Ordinary','雪花秀 Sulwhasoo','后 Whoo','蘭芝 Laneige','悅詩風吟 Innisfree','COSRX','Dr.Jart+','Torriden','Anua','Round Lab','Beauty of Joseon','Aestura','Illiyoon','d\'Alba','Mediheal','Abib','Skin1004','KAHI','AHC','VT'];
+function brandOptions(){
+  const mine=[...new Set(items.map(it=>it.brand.trim()))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+  const counts={}; items.forEach(it=>counts[it.brand.trim()]=(counts[it.brand.trim()]||0)+1);
+  return {mine, counts, preset:PRESET_BRANDS.filter(b=>!mine.includes(b))};
+}
+function nameOptions(){
+  const br=$('#fBrand').value.trim();
+  const list=items.filter(it=>!br||it.brand.trim()===br);
+  const seen=new Map(); list.forEach(it=>{ if(!seen.has(it.name)) seen.set(it.name,it); });
+  return [...seen.values()];
+}
+function setupCombo(boxId, build, onPick){
+  const box=$(boxId), inp=box.querySelector('input'), lst=box.querySelector('.combo-list');
+  const draw=()=>{ lst.innerHTML=build(inp.value.trim()); };
+  const open=()=>{ document.querySelectorAll('.combo.open').forEach(c=>c!==box&&c.classList.remove('open')); draw(); box.classList.add('open'); };
+  inp.addEventListener('focus',open);
+  inp.addEventListener('input',open);
+  box.querySelector('.arrow').addEventListener('click',()=>{ if(box.classList.contains('open')){box.classList.remove('open');} else { open(); inp.focus(); } });
+  lst.addEventListener('mousedown',e=>e.preventDefault());
+  lst.addEventListener('click',e=>{ const o=e.target.closest('.opt'); if(!o) return; inp.value=o.dataset.v; box.classList.remove('open'); onPick&&onPick(o.dataset.v); });
+  return {close:()=>box.classList.remove('open')};
+}
+document.addEventListener('click',e=>{ if(!e.target.closest('.combo')) document.querySelectorAll('.combo.open').forEach(c=>c.classList.remove('open')); });
+const match=(t,q)=>!q||t.toLowerCase().includes(q.toLowerCase());
+setupCombo('#cBrand', q=>{
+  const {mine,counts,preset}=brandOptions(); let h='';
+  const m=mine.filter(b=>match(b,q)), p=preset.filter(b=>match(b,q));
+  if(q && !mine.includes(q) && !PRESET_BRANDS.includes(q)) h+=`<div class="opt new" data-v="${esc(q)}">＋ 新增品牌「${esc(q)}」</div>`;
+  if(m.length) h+=`<div class="opt-sep">我的品牌</div>`+m.map(b=>`<div class="opt" data-v="${esc(b)}"><span>${esc(b)}</span><small>${counts[b]} 項</small></div>`).join('');
+  if(p.length) h+=`<div class="opt-sep">常見品牌</div>`+p.map(b=>`<div class="opt" data-v="${esc(b)}"><span>${esc(b)}</span></div>`).join('');
+  return h||`<div class="opt-sep">直接輸入新品牌名稱</div>`;
+}, ()=>{ $('#fName').focus(); });
+setupCombo('#cName', q=>{
+  const br=$('#fBrand').value.trim();
+  const opts=nameOptions().filter(it=>match(it.name,q)); let h='';
+  if(q && !opts.some(it=>it.name===q)) h+=`<div class="opt new" data-v="${esc(q)}">＋ 新增品名「${esc(q)}」</div>`;
+  if(opts.length) h+=`<div class="opt-sep">${br?esc(br)+' 的品項':'我的品項'}</div>`+opts.map(it=>`<div class="opt" data-v="${esc(it.name)}"><span>${esc(it.name)}</span><small>${br?esc(it.cat):esc(it.brand)}</small></div>`).join('');
+  return h||`<div class="opt-sep">${br?'這個品牌還沒有品項，直接輸入品名':'直接輸入品名'}</div>`;
+}, v=>{
+  // 選到已有的品項 → 自動帶入類別、容量、PAO、用法、功效（只填空白欄位）
+  if($('#fId').value) return;
+  const br=$('#fBrand').value.trim();
+  const src=items.find(it=>it.name===v&&(!br||it.brand.trim()===br)); if(!src) return;
+  if(!br) $('#fBrand').value=src.brand;
+  $('#fCat').value=src.cat; $('#fPao').value=String(src.pao||12);
+  if(!$('#fSize').value) $('#fSize').value=src.size||'';
+  if(!$('#fUse').value) $('#fUse').value=src.use||'';
+  if(!$('#fEff').value) $('#fEff').value=src.eff||'';
+  toast('已帶入之前的用法與功效');
+});
 
 function toast(t){ const el=$('#toast'); el.textContent=t; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('show'),1800); }
 render();
