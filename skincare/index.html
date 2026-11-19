@@ -101,6 +101,7 @@
   .opt:active,.opt.hl{background:var(--bg)}
   .opt small{color:var(--muted);font-size:11px;flex:none}
   .opt.new{color:var(--sub)}
+  .pastebar{width:100%;margin-bottom:16px;padding:12px;border:1px dashed var(--muted);border-radius:14px;background:var(--bg);color:var(--text);font-size:13px;cursor:pointer;font-family:inherit}
   .opt-sep{font-size:10px;letter-spacing:.2em;color:var(--muted);padding:8px 12px 4px}
   .hintbtn{font-size:11.5px;color:var(--text);background:none;border:none;cursor:pointer;float:right;text-decoration:underline;text-underline-offset:3px;font-family:inherit}
   .footer-tools{margin-top:32px;text-align:center;display:flex;gap:6px;justify-content:center}
@@ -159,6 +160,7 @@
   <form class="modal" id="form" autocomplete="off">
     <h3><span id="formTitle">新增保養品</span><button type="button" class="x" id="closeBtn">×</button></h3>
     <input type="hidden" id="fId">
+    <button type="button" class="pastebar" id="pasteBtn">貼上 Claude 給的保養品代碼，自動填寫</button>
     <div class="f">
       <label>品牌 *</label>
       <div class="combo" id="cBrand">
@@ -547,6 +549,40 @@ setupCombo('#cName', q=>{
 });
 
 function toast(t){ const el=$('#toast'); el.textContent=t; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('show'),1800); }
+
+// ---- 貼上 Claude 的代碼 ----
+const CAT_ALIAS={'精華':'精華液','乳霜':'面霜','保濕霜':'面霜','卸妝油':'卸妝','卸妝水':'卸妝','洗顏':'洗面乳','潔面':'洗面乳','化粧水':'化妝水','爽膚水':'化妝水','防曬乳':'防曬','隔離':'防曬','唇膏':'護唇','身體乳':'身體保養'};
+function parseCode(txt){
+  if(!txt) return null;
+  const m=txt.match(/\{[\s\S]*\}/); if(!m) return null;
+  try{ return JSON.parse(m[0]); }catch(e){ return null; }
+}
+function fillFromCode(d){
+  if(!d||(!d.brand&&!d.name)) return false;
+  const pick=(...k)=>{ for(const x of k) if(d[x]!=null&&d[x]!=='') return d[x]; return ''; };
+  $('#fBrand').value=pick('brand','品牌');
+  $('#fName').value=pick('name','品名');
+  let c=pick('cat','category','類別'); c=CAT_ALIAS[c]||c; $('#fCat').value=CATS.includes(c)?c:'其他';
+  const sz=pick('size','容量'); if(sz) $('#fSize').value=sz;
+  const pao=parseInt(pick('pao','PAO')); if([3,6,9,12,18,24,36].includes(pao)) $('#fPao').value=String(pao);
+  const use=pick('use','usage','如何使用','使用方法'); if(use) $('#fUse').value=Array.isArray(use)?use.join('\n'):use;
+  const eff=pick('eff','benefits','功效'); if(eff) $('#fEff').value=Array.isArray(eff)?eff.join('\n'):eff;
+  const note=pick('note','備註'); if(note) $('#fNote').value=note;
+  return true;
+}
+$('#pasteBtn').onclick=async()=>{
+  let txt='';
+  try{ txt=await navigator.clipboard.readText(); }catch(e){}
+  if(!parseCode(txt)) txt=prompt('把 Claude 給你的代碼貼在這裡：')||'';
+  const d=parseCode(txt);
+  if(fillFromCode(d)) toast('已自動填好，記得補開瓶日和庫存');
+  else if(txt) alert('看不懂這段代碼，請確認有完整複製（包含前後的大括號 { }）');
+};
+// 也支援連結：#add=代碼
+(function(){
+  const h=location.hash; if(!h.startsWith('#add=')) return;
+  try{ const d=JSON.parse(decodeURIComponent(h.slice(5))); history.replaceState(null,'',location.pathname); openForm(null); fillFromCode(d); toast('已自動填好，記得補開瓶日和庫存'); }catch(e){}
+})();
 render();
 </script>
 </body>
