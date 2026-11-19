@@ -6,6 +6,8 @@
 <meta name="theme-color" content="#F8F6F2">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>我的保養品專區</title>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 <style>
   :root{
     --bg:#F8F6F2; --card:#FFFFFF; --text:#3B3734; --sub:#8F8882; --muted:#BDB6AE;
@@ -18,6 +20,8 @@
   header{padding:4px 4px 22px}
   header .en{font-size:11px;letter-spacing:.32em;color:var(--sub);font-weight:500}
   header h1{font-size:24px;font-weight:600;margin-top:6px;letter-spacing:-.02em}
+  .sync::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--muted);margin-right:5px;vertical-align:1px}
+  .sync.on::before{background:var(--ok)} .sync.err{color:var(--bad)} .sync.err::before{background:var(--bad)}
   header p{font-size:12px;color:var(--muted);margin-top:6px;letter-spacing:.04em}
 
   .stats{display:grid;grid-template-columns:repeat(4,1fr);background:var(--card);border-radius:22px;padding:18px 0;margin-bottom:12px}
@@ -115,7 +119,7 @@
   <header>
     <div class="en">MY SKINCARE</div>
     <h1>我的保養品</h1>
-    <p id="today"></p>
+    <p><span id="today"></span>　<span id="sync" class="sync">連線中…</span></p>
   </header>
 
   <div class="stats">
@@ -151,7 +155,7 @@
     <button class="btn ghost" id="importBtn">匯入備份</button>
     <input type="file" id="importFile" accept=".json,application/json" hidden>
   </div>
-  <p class="note">資料存在這台裝置的瀏覽器裡。換手機或清除瀏覽器資料前，<br>記得先按「備份資料」，再到新裝置「匯入備份」。</p>
+  <p class="note">資料已同步到雲端，手機和電腦打開這個網址都會看到一樣的內容。<br>「備份資料」可以另外存一份檔案，以防萬一。</p>
 </div>
 
 <button class="fab" id="addBtn" aria-label="新增保養品">＋</button>
@@ -261,7 +265,7 @@ let filter = {status:'all', brand:'all', cat:'all', q:''};
 const $ = s => document.querySelector(s);
 
 function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ return []; } }
-function save(){ try{ localStorage.setItem(KEY, JSON.stringify(items)); }catch(e){ toast('儲存失敗，請先備份資料'); } }
+function save(it){ try{ localStorage.setItem(KEY, JSON.stringify(items)); }catch(e){} if(it) cloudPut(it); }
 function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
 function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
 function parse(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
@@ -407,7 +411,7 @@ $('#list').addEventListener('click', e=>{
     it.openDate=''; toast('這瓶用完了');
   }
   if(act==='edit'){ openForm(it); return; }
-  save(); rerenderKeepOpen();
+  save(it); rerenderKeepOpen();
 });
 function rerenderKeepOpen(){ render(); openIds.forEach(id=>{ const el=document.querySelector(`.item[data-id="${id}"]`); if(el) el.classList.add('open'); }); }
 
@@ -460,14 +464,15 @@ $('#form').addEventListener('submit', e=>{
     use:$('#fUse').value.trim(), eff:$('#fEff').value.trim(), note:$('#fNote').value.trim()
   };
   if(!data.brand||!data.name) return;
-  if(id){ Object.assign(items.find(x=>x.id===id), data); toast('已更新'); }
-  else { items.push({id:uid(), created:Date.now(), ...data}); toast('已新增'); }
-  save(); closeForm(); rerenderKeepOpen();
+  let target;
+  if(id){ target=items.find(x=>x.id===id); Object.assign(target, data); toast('已更新'); }
+  else { target={id:uid(), created:Date.now(), ...data}; items.push(target); toast('已新增'); }
+  save(target); closeForm(); rerenderKeepOpen();
 });
 $('#delBtn').onclick=()=>{
   const id=$('#fId').value; const it=items.find(x=>x.id===id);
   if(!confirm(`確定刪除「${it.brand} ${it.name}」嗎？刪除後無法復原。`)) return;
-  items=items.filter(x=>x.id!==id); openIds.delete(id); save(); closeForm(); render(); toast('已刪除');
+  items=items.filter(x=>x.id!==id); openIds.delete(id); save(); cloudDel(id); closeForm(); render(); toast('已刪除');
 };
 
 // backup
@@ -485,9 +490,11 @@ $('#importFile').onchange=e=>{
       const d=JSON.parse(r.result); const arr=Array.isArray(d)?d:d.items;
       if(!Array.isArray(arr)) throw 0;
       const mode = items.length ? (confirm(`備份裡有 ${arr.length} 項。\n按「確定」= 取代目前資料\n按「取消」= 合併（同一筆會以備份為準）`)?'replace':'merge') : 'replace';
+      const old=items.map(x=>x.id);
       if(mode==='replace') items=arr;
       else { const m=new Map(items.map(x=>[x.id,x])); arr.forEach(x=>m.set(x.id,x)); items=[...m.values()]; }
-      save(); render(); toast('匯入完成');
+      items.forEach(x=>{ if(!x.id) x.id=uid(); });
+      save(); cloudBatch(items, mode==='replace'?old.filter(i=>!items.some(x=>x.id===i)):[]); render(); toast('匯入完成');
     }catch(err){ alert('這個檔案不是保養品備份，無法匯入'); }
     e.target.value='';
   };
@@ -584,6 +591,47 @@ $('#pasteBtn').onclick=async()=>{
   try{ const d=JSON.parse(decodeURIComponent(h.slice(5))); history.replaceState(null,'',location.pathname); openForm(null); fillFromCode(d); toast('已自動填好，記得補開瓶日和庫存'); }catch(e){}
 })();
 render();
+
+// ---- 雲端同步（Firebase：korea-buy-list 專案，skincare_items 資料夾，與代購清單分開）----
+let col=null;
+function setSync(t,cls){ const el=$('#sync'); el.textContent=t; el.className='sync '+(cls||''); }
+function cloudErr(e){ console.error(e); setSync(e&&e.code==='permission-denied'?'雲端沒有權限':'雲端連線失敗','err'); if(e&&e.code==='permission-denied') toast('Firebase 規則不允許寫入保養品資料'); }
+function clean(it){ const o={}; Object.keys(it).forEach(k=>{ if(it[k]!==undefined) o[k]=it[k]; }); o.updated=Date.now(); return o; }
+function cloudPut(it){ if(col) col.doc(it.id).set(clean(it)).catch(cloudErr); }
+function cloudDel(id){ if(col) col.doc(id).delete().catch(cloudErr); }
+function cloudBatch(list, delIds){
+  if(!col) return;
+  const chunks=[]; const ops=[...list.map(x=>['set',x]),...delIds.map(i=>['del',i])];
+  for(let i=0;i<ops.length;i+=400) chunks.push(ops.slice(i,i+400));
+  chunks.forEach(ch=>{ const b=col.firestore.batch(); ch.forEach(([t,x])=>t==='set'?b.set(col.doc(x.id),clean(x)):b.delete(col.doc(x))); b.commit().catch(cloudErr); });
+}
+(function initCloud(){
+  if(typeof firebase==='undefined'){ setSync('離線（只存在這台裝置）','err'); return; }
+  try{
+    const app = firebase.apps.length ? firebase.app() : firebase.initializeApp({
+      apiKey:"AIzaSyBHmyi3-dmv2Zcn8ULXwuIIODSWVdcDTdY", authDomain:"korea-buy-list.firebaseapp.com",
+      projectId:"korea-buy-list", storageBucket:"korea-buy-list.firebasestorage.app",
+      messagingSenderId:"131856493166", appId:"1:131856493166:web:1f4a1c108ffbfdb89a547f"
+    });
+    const db=app.firestore();
+    col=db.collection('skincare_items');
+    let first=true;
+    col.onSnapshot({includeMetadataChanges:true}, snap=>{
+      const cloud=snap.docs.map(d=>{ const x=d.data(); delete x.updated; return {id:d.id,...x}; });
+      if(first){
+        first=false;
+        // 第一次連上：把這台裝置上、雲端還沒有的資料上傳
+        const ids=new Set(cloud.map(x=>x.id));
+        const localOnly=items.filter(x=>!ids.has(x.id));
+        if(localOnly.length){ cloudBatch(localOnly,[]); cloud.push(...localOnly); }
+      }
+      items=cloud;
+      try{ localStorage.setItem(KEY, JSON.stringify(items)); }catch(e){}
+      setSync(snap.metadata.fromCache?'離線中（恢復連線後會自動同步）':'已同步雲端', snap.metadata.fromCache?'':'on');
+      rerenderKeepOpen();
+    }, cloudErr);
+  }catch(e){ cloudErr(e); }
+})();
 </script>
 </body>
 </html>
