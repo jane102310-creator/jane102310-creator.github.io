@@ -257,7 +257,7 @@
 
 <script>
 const KEY = 'skincare-items-v1';
-const CATS = ['洗面乳','卸妝','化妝水','精華液','安瓶','乳液','面霜','眼霜','防曬','面膜','身體保養','護唇','其他'];
+const CATS = ['洗面乳','卸妝','化妝水','精華液','安瓶','乳液','面霜','眼霜','防曬','面膜','身體保養','護唇','頭皮護理','其他'];
 const HINTS = {
   '洗面乳': {use:'早晚使用。手和臉打濕後，取約 1 元硬幣大小，加水搓出泡沫，以畫圈方式輕柔按摩全臉約 30 秒，再用溫水洗淨。', eff:'清潔臉部油脂、汗水與髒污。'},
   '卸妝':  {use:'晚上使用。以乾手乾臉取適量，輕輕按摩全臉溶解彩妝與防曬，加少量水乳化後，再用溫水洗淨，之後接洗面乳（雙重清潔）。', eff:'卸除彩妝、防曬與毛孔髒污。'},
@@ -271,6 +271,7 @@ const HINTS = {
   '面膜':  {use:'洗臉、化妝水後敷 10–15 分鐘，取下後輕拍至吸收，再接乳液或面霜。每週 2–3 次。', eff:'密集補水或針對性保養。'},
   '身體保養':{use:'洗澡後趁身體微濕時，取適量塗抹全身。', eff:'滋潤身體肌膚，改善乾燥粗糙。'},
   '護唇':  {use:'隨時可擦，睡前可厚擦一層當唇膜。', eff:'滋潤嘴唇，預防乾裂脫皮。'},
+  '頭皮護理':{use:'洗髮後用毛巾擦到半乾，直接塗在頭皮，用指腹按摩 1 分鐘幫助吸收，不需沖洗。', eff:'調理頭皮環境、減少掉髮、讓髮根更有力。'},
   '其他':  {use:'', eff:''}
 };
 
@@ -572,7 +573,7 @@ setupCombo('#cName', q=>{
 function toast(t){ const el=$('#toast'); el.textContent=t; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('show'),1800); }
 
 // ---- 貼上 Claude 的代碼 ----
-const CAT_ALIAS={'精華':'精華液','乳霜':'面霜','保濕霜':'面霜','卸妝油':'卸妝','卸妝水':'卸妝','洗顏':'洗面乳','潔面':'洗面乳','化粧水':'化妝水','爽膚水':'化妝水','防曬乳':'防曬','隔離':'防曬','唇膏':'護唇','身體乳':'身體保養'};
+const CAT_ALIAS={'精華':'精華液','乳霜':'面霜','保濕霜':'面霜','卸妝油':'卸妝','卸妝水':'卸妝','洗顏':'洗面乳','潔面':'洗面乳','化粧水':'化妝水','爽膚水':'化妝水','防曬乳':'防曬','隔離':'防曬','唇膏':'護唇','身體乳':'身體保養','頭皮':'頭皮護理','頭皮精華':'頭皮護理','頭髮':'頭皮護理'};
 function parseCode(txt){
   if(!txt) return null;
   const m=txt.match(/\{[\s\S]*\}/); if(!m) return null;
@@ -589,6 +590,7 @@ function fillFromCode(d){
   const use=pick('use','usage','如何使用','使用方法'); if(use) $('#fUse').value=Array.isArray(use)?use.join('\n'):use;
   const eff=pick('eff','benefits','功效'); if(eff) $('#fEff').value=Array.isArray(eff)?eff.join('\n'):eff;
   const note=pick('note','備註'); if(note) $('#fNote').value=note;
+  const exp=pick('exp','expDate','有效期限'); if(/^\d{4}-\d{2}-\d{2}$/.test(exp)) $('#fExp').value=exp;
   return true;
 }
 $('#pasteBtn').onclick=async()=>{
