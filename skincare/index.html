@@ -1,0 +1,473 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#FDFBF7">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>我的保養品專區</title>
+<style>
+  :root{
+    --bg:#FDFBF7; --card:#FFFFFF; --text:#5A4D41; --sub:#8C705F; --muted:#B3A495;
+    --accent:#B07D62; --accent-light:#F4EBE1; --border:#EFECE6;
+    --ok:#7A9E7E; --ok-bg:#EAF2EA; --warn:#C9963B; --warn-bg:#FBF1DE; --bad:#C0675B; --bad-bg:#F8E4E1;
+    --shadow:0 4px 16px rgba(90,77,65,.07);
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:-apple-system,BlinkMacSystemFont,"PingFang TC","Noto Sans TC","Segoe UI",sans-serif;background:var(--bg);color:var(--text);padding:16px 14px 110px;-webkit-tap-highlight-color:transparent}
+  .wrap{max-width:560px;margin:0 auto}
+  header{text-align:center;padding:10px 0 16px}
+  header h1{font-size:22px;letter-spacing:1px}
+  header p{font-size:13px;color:var(--sub);margin-top:4px}
+
+  .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}
+  .stat{background:var(--card);border-radius:16px;padding:12px 4px;text-align:center;box-shadow:var(--shadow);cursor:pointer;border:2px solid transparent}
+  .stat.active{border-color:var(--accent)}
+  .stat b{display:block;font-size:22px;color:var(--accent)}
+  .stat span{font-size:11.5px;color:var(--sub)}
+  .stat.warnc b{color:var(--bad)}
+
+  .tools{background:var(--card);border-radius:18px;padding:12px;box-shadow:var(--shadow);margin-bottom:14px}
+  .search{width:100%;padding:11px 14px;border:1px solid var(--border);border-radius:12px;font-size:15px;background:var(--bg);color:var(--text)}
+  .chips{display:flex;gap:6px;overflow-x:auto;padding-top:10px;scrollbar-width:none}
+  .chips::-webkit-scrollbar{display:none}
+  .chip{flex:none;padding:6px 12px;border-radius:20px;border:1px solid var(--border);background:var(--bg);font-size:13px;color:var(--sub);cursor:pointer;white-space:nowrap}
+  .chip.on{background:var(--accent);border-color:var(--accent);color:#fff}
+  .row-label{font-size:11.5px;color:var(--muted);margin-top:10px}
+  .sortrow{display:flex;justify-content:space-between;align-items:center;margin-top:10px;font-size:13px;color:var(--sub)}
+  .sortrow select{border:1px solid var(--border);border-radius:10px;padding:5px 8px;background:var(--bg);color:var(--text);font-size:13px}
+
+  .brand-group h2{font-size:14px;color:var(--sub);margin:16px 4px 8px;display:flex;justify-content:space-between}
+  .item{background:var(--card);border-radius:18px;box-shadow:var(--shadow);margin-bottom:10px;overflow:hidden;border-left:5px solid var(--border)}
+  .item.s-ok{border-left-color:var(--ok)} .item.s-warn{border-left-color:var(--warn)} .item.s-bad{border-left-color:var(--bad)} .item.s-new{border-left-color:var(--muted)}
+  .item-top{padding:14px 14px 10px;cursor:pointer}
+  .item-head{display:flex;justify-content:space-between;gap:8px;align-items:flex-start}
+  .brand{font-size:12px;color:var(--sub);font-weight:600}
+  .name{font-size:16px;font-weight:700;margin-top:2px;line-height:1.35}
+  .cat{flex:none;font-size:11.5px;background:var(--accent-light);color:var(--accent);padding:3px 9px;border-radius:10px}
+  .meta{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .tag{font-size:12px;padding:4px 9px;border-radius:9px;background:var(--bg);color:var(--sub)}
+  .tag.ok{background:var(--ok-bg);color:var(--ok)} .tag.warn{background:var(--warn-bg);color:var(--warn)} .tag.bad{background:var(--bad-bg);color:var(--bad)}
+  .bar{height:5px;background:var(--bg);border-radius:4px;margin-top:10px;overflow:hidden}
+  .bar i{display:block;height:100%;background:var(--ok);border-radius:4px}
+  .bar.warn i{background:var(--warn)} .bar.bad i{background:var(--bad)}
+
+  .detail{display:none;padding:0 14px 14px;border-top:1px dashed var(--border)}
+  .item.open .detail{display:block}
+  .detail h4{font-size:13px;color:var(--accent);margin:12px 0 4px}
+  .detail p{font-size:14px;line-height:1.65;white-space:pre-wrap}
+  .detail p.empty{color:var(--muted);font-size:13px}
+  .stock-ctl{display:flex;align-items:center;gap:10px;margin-top:14px;flex-wrap:wrap}
+  .stock-ctl .lbl{font-size:13px;color:var(--sub)}
+  .qty{display:flex;align-items:center;border:1px solid var(--border);border-radius:12px;overflow:hidden}
+  .qty button{width:36px;height:34px;border:none;background:var(--bg);font-size:18px;color:var(--accent);cursor:pointer}
+  .qty span{min-width:34px;text-align:center;font-weight:700}
+  .actions{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+  .btn{border:none;border-radius:12px;padding:9px 14px;font-size:14px;cursor:pointer;background:var(--accent-light);color:var(--accent);font-weight:600}
+  .btn.primary{background:var(--accent);color:#fff}
+  .btn.ghost{background:transparent;border:1px solid var(--border);color:var(--sub)}
+  .btn.danger{background:var(--bad-bg);color:var(--bad)}
+  .empty-state{text-align:center;color:var(--muted);padding:40px 10px;font-size:14px;line-height:1.8}
+
+  .fab{position:fixed;right:20px;bottom:calc(24px + env(safe-area-inset-bottom));width:58px;height:58px;border-radius:50%;background:var(--accent);color:#fff;font-size:30px;border:none;box-shadow:0 6px 18px rgba(176,125,98,.45);cursor:pointer;z-index:10}
+
+  .modal-bg{position:fixed;inset:0;background:rgba(60,48,40,.4);display:none;align-items:flex-end;justify-content:center;z-index:20}
+  .modal-bg.show{display:flex}
+  .modal{background:var(--card);width:100%;max-width:560px;max-height:92vh;overflow-y:auto;border-radius:22px 22px 0 0;padding:18px 16px calc(22px + env(safe-area-inset-bottom))}
+  @media(min-width:600px){.modal-bg{align-items:center}.modal{border-radius:22px}}
+  .modal h3{font-size:18px;margin-bottom:12px;display:flex;justify-content:space-between;align-items:center}
+  .x{border:none;background:none;font-size:24px;color:var(--muted);cursor:pointer}
+  .f{margin-bottom:12px}
+  .f label{display:block;font-size:13px;color:var(--sub);margin-bottom:5px;font-weight:600}
+  .f label small{font-weight:400;color:var(--muted)}
+  .f input,.f select,.f textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:12px;font-size:15px;background:var(--bg);color:var(--text);font-family:inherit}
+  .f textarea{min-height:76px;resize:vertical;line-height:1.55}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .hintbtn{font-size:12px;color:var(--accent);background:none;border:none;cursor:pointer;float:right;font-weight:600}
+  .footer-tools{margin-top:24px;text-align:center;display:flex;gap:8px;justify-content:center;flex-wrap:wrap}
+  .note{font-size:12px;color:var(--muted);text-align:center;margin-top:10px;line-height:1.6}
+  .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:var(--text);color:#fff;padding:9px 16px;border-radius:20px;font-size:14px;opacity:0;transition:.25s;pointer-events:none;z-index:30}
+  .toast.show{opacity:1}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>🧴 我的保養品專區</h1>
+    <p id="today"></p>
+  </header>
+
+  <div class="stats">
+    <div class="stat" data-f="all"><b id="sTypes">0</b><span>品項</span></div>
+    <div class="stat" data-f="all"><b id="sBottles">0</b><span>總瓶數</span></div>
+    <div class="stat" data-f="opened"><b id="sOpened">0</b><span>使用中</span></div>
+    <div class="stat warnc" data-f="alert"><b id="sAlert">0</b><span>快過期/缺貨</span></div>
+  </div>
+
+  <div class="tools">
+    <input class="search" id="q" placeholder="🔍 搜尋品牌、品名、功效…">
+    <div class="row-label">狀態</div>
+    <div class="chips" id="statusChips"></div>
+    <div class="row-label">品牌</div>
+    <div class="chips" id="brandChips"></div>
+    <div class="row-label">類別</div>
+    <div class="chips" id="catChips"></div>
+    <div class="sortrow">
+      <span id="count"></span>
+      <select id="sort">
+        <option value="brand">依品牌分組</option>
+        <option value="expire">依到期日（最急的在前）</option>
+        <option value="opened">依開瓶日（最新在前）</option>
+        <option value="stock">依庫存（最少在前）</option>
+      </select>
+    </div>
+  </div>
+
+  <div id="list"></div>
+
+  <div class="footer-tools">
+    <button class="btn ghost" id="exportBtn">⬇️ 備份資料</button>
+    <button class="btn ghost" id="importBtn">⬆️ 匯入備份</button>
+    <input type="file" id="importFile" accept=".json,application/json" hidden>
+  </div>
+  <p class="note">資料存在這台裝置的瀏覽器裡。換手機或清除瀏覽器資料前，<br>記得先按「備份資料」，再到新裝置「匯入備份」。</p>
+</div>
+
+<button class="fab" id="addBtn" aria-label="新增保養品">＋</button>
+
+<div class="modal-bg" id="modalBg">
+  <form class="modal" id="form" autocomplete="off">
+    <h3><span id="formTitle">新增保養品</span><button type="button" class="x" id="closeBtn">×</button></h3>
+    <input type="hidden" id="fId">
+    <div class="f">
+      <label>品牌 *</label>
+      <input id="fBrand" list="brandList" required placeholder="例：La Roche-Posay、雪花秀">
+      <datalist id="brandList"></datalist>
+    </div>
+    <div class="f">
+      <label>品名 *</label>
+      <input id="fName" required placeholder="例：B5 全面修復霜">
+    </div>
+    <div class="two">
+      <div class="f">
+        <label>類別</label>
+        <select id="fCat"></select>
+      </div>
+      <div class="f">
+        <label>容量 <small>(選填)</small></label>
+        <input id="fSize" placeholder="例：50ml">
+      </div>
+    </div>
+    <div class="two">
+      <div class="f">
+        <label>開瓶日 <small>(沒開就留空)</small></label>
+        <input type="date" id="fOpen">
+      </div>
+      <div class="f">
+        <label>開封後可用 <small>(PAO)</small></label>
+        <select id="fPao">
+          <option value="3">3 個月</option>
+          <option value="6">6 個月</option>
+          <option value="9">9 個月</option>
+          <option value="12" selected>12 個月</option>
+          <option value="18">18 個月</option>
+          <option value="24">24 個月</option>
+          <option value="36">36 個月</option>
+        </select>
+      </div>
+    </div>
+    <div class="two">
+      <div class="f">
+        <label>未開封庫存 <small>(瓶)</small></label>
+        <input type="number" id="fStock" min="0" value="0" inputmode="numeric">
+      </div>
+      <div class="f">
+        <label>有效期限 <small>(選填)</small></label>
+        <input type="date" id="fExp">
+      </div>
+    </div>
+    <div class="f">
+      <label>如何使用 <button type="button" class="hintbtn" data-hint="use">帶入常見用法</button></label>
+      <textarea id="fUse" placeholder="例：早晚洗臉後，取適量均勻塗抹全臉…"></textarea>
+    </div>
+    <div class="f">
+      <label>功效 <button type="button" class="hintbtn" data-hint="eff">帶入常見功效</button></label>
+      <textarea id="fEff" placeholder="例：保濕、修護、舒緩泛紅…"></textarea>
+    </div>
+    <div class="f">
+      <label>備註 <small>(選填，例：購買地點、價格、使用心得)</small></label>
+      <textarea id="fNote" style="min-height:56px"></textarea>
+    </div>
+    <div class="actions" style="justify-content:flex-end">
+      <button type="button" class="btn danger" id="delBtn" style="margin-right:auto;display:none">刪除</button>
+      <button type="button" class="btn ghost" id="cancelBtn">取消</button>
+      <button type="submit" class="btn primary">儲存</button>
+    </div>
+  </form>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const KEY = 'skincare-items-v1';
+const CATS = ['洗面乳','卸妝','化妝水','精華液','安瓶','乳液','面霜','眼霜','防曬','面膜','身體保養','護唇','其他'];
+const HINTS = {
+  '洗面乳': {use:'早晚使用。手和臉打濕後，取約 1 元硬幣大小，加水搓出泡沫，以畫圈方式輕柔按摩全臉約 30 秒，再用溫水洗淨。', eff:'清潔臉部油脂、汗水與髒污。'},
+  '卸妝':  {use:'晚上使用。以乾手乾臉取適量，輕輕按摩全臉溶解彩妝與防曬，加少量水乳化後，再用溫水洗淨，之後接洗面乳（雙重清潔）。', eff:'卸除彩妝、防曬與毛孔髒污。'},
+  '化妝水': {use:'洗臉後第一步。倒在手心或化妝棉上，輕拍全臉至吸收。', eff:'補充水分、調理肌膚，幫助後續保養吸收。'},
+  '精華液': {use:'化妝水後使用。取 2–3 滴於手心，均勻按壓全臉。', eff:'針對性保養（依產品：保濕、美白、抗老、修護等）。'},
+  '安瓶':  {use:'化妝水後使用，取 1–2 滴按壓全臉，或依產品說明集中使用一段時間。', eff:'高濃度密集保養。'},
+  '乳液':  {use:'精華後使用。取適量點在額頭、兩頰、下巴，由內往外推開。', eff:'保濕、鎖住水分，適合一般或偏油肌膚。'},
+  '面霜':  {use:'保養最後一步（早上在防曬前）。取適量均勻塗抹全臉，乾燥處可加量。', eff:'深層滋潤、鎖水、修護肌膚屏障。'},
+  '眼霜':  {use:'乳霜前使用。用無名指取米粒大小，輕點在眼周，由內往外輕拍至吸收。', eff:'滋潤眼周、改善細紋與乾燥。'},
+  '防曬':  {use:'早上保養最後一步、上妝前。取足量（約兩指長）均勻塗抹臉頸，出門前 15–20 分鐘擦，戶外每 2–3 小時補擦。', eff:'阻隔紫外線 UVA/UVB，預防曬黑、曬傷與光老化。'},
+  '面膜':  {use:'洗臉、化妝水後敷 10–15 分鐘，取下後輕拍至吸收，再接乳液或面霜。每週 2–3 次。', eff:'密集補水或針對性保養。'},
+  '身體保養':{use:'洗澡後趁身體微濕時，取適量塗抹全身。', eff:'滋潤身體肌膚，改善乾燥粗糙。'},
+  '護唇':  {use:'隨時可擦，睡前可厚擦一層當唇膜。', eff:'滋潤嘴唇，預防乾裂脫皮。'},
+  '其他':  {use:'', eff:''}
+};
+
+let items = load();
+let filter = {status:'all', brand:'all', cat:'all', q:''};
+const $ = s => document.querySelector(s);
+
+function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || []; }catch(e){ return []; } }
+function save(){ try{ localStorage.setItem(KEY, JSON.stringify(items)); }catch(e){ toast('儲存失敗，請先備份資料'); } }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,6); }
+function todayStr(){ const d=new Date(); return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0'); }
+function parse(s){ const [y,m,d]=s.split('-').map(Number); return new Date(y,m-1,d); }
+function fmt(d){ return d.getFullYear()+'/'+(d.getMonth()+1)+'/'+d.getDate(); }
+function addMonths(d,n){ const r=new Date(d); r.setMonth(r.getMonth()+n); return r; }
+function daysBetween(a,b){ return Math.round((b-a)/86400000); }
+function esc(s){ return String(s||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+function info(it){
+  const now = parse(todayStr());
+  const r = {opened:!!it.openDate, daysOpen:null, useBy:null, left:null, pct:0, level:'new'};
+  if(it.openDate){
+    const od = parse(it.openDate);
+    r.daysOpen = daysBetween(od, now);
+    r.useBy = addMonths(od, Number(it.pao||12));
+  }
+  if(it.expDate){
+    const ex = parse(it.expDate);
+    if(!r.useBy || ex < r.useBy) r.useBy = ex;
+  }
+  if(r.useBy){
+    r.left = daysBetween(now, r.useBy);
+    if(it.openDate){
+      const total = daysBetween(parse(it.openDate), r.useBy) || 1;
+      r.pct = Math.max(0, Math.min(100, r.left/total*100));
+    }
+    r.level = r.left < 0 ? 'bad' : r.left <= 30 ? 'warn' : (r.opened ? 'ok' : 'new');
+  } else if(r.opened) r.level='ok';
+  r.lowStock = r.opened && Number(it.stock||0) === 0;
+  return r;
+}
+
+function render(){
+  $('#today').textContent = '今天 ' + fmt(new Date());
+  const all = items.map(it=>({it, i:info(it)}));
+  $('#sTypes').textContent = items.length;
+  $('#sBottles').textContent = items.reduce((s,it)=>s+Number(it.stock||0)+(it.openDate?1:0),0);
+  $('#sOpened').textContent = all.filter(x=>x.i.opened).length;
+  $('#sAlert').textContent = all.filter(x=>x.i.level==='bad'||x.i.level==='warn'||x.i.lowStock).length;
+  document.querySelectorAll('.stat').forEach(s=>s.classList.toggle('active', s.dataset.f!=='all' && s.dataset.f===filter.status));
+
+  // chips
+  const statuses=[['all','全部'],['opened','使用中'],['unopened','未開封'],['alert','快過期/缺貨'],['expired','已過期']];
+  $('#statusChips').innerHTML = statuses.map(([v,l])=>`<span class="chip ${filter.status===v?'on':''}" data-k="status" data-v="${v}">${l}</span>`).join('');
+  const brands=[...new Set(items.map(it=>it.brand.trim()))].sort((a,b)=>a.localeCompare(b,'zh-Hant'));
+  if(filter.brand!=='all' && !brands.includes(filter.brand)) filter.brand='all';
+  $('#brandChips').innerHTML = ['all',...brands].map(b=>`<span class="chip ${filter.brand===b?'on':''}" data-k="brand" data-v="${esc(b)}">${b==='all'?'全部':esc(b)} ${b==='all'?'':'('+items.filter(it=>it.brand.trim()===b).length+')'}</span>`).join('');
+  const cats=CATS.filter(c=>items.some(it=>it.cat===c));
+  $('#catChips').innerHTML = ['all',...cats].map(c=>`<span class="chip ${filter.cat===c?'on':''}" data-k="cat" data-v="${c}">${c==='all'?'全部':c}</span>`).join('');
+  $('#brandList').innerHTML = brands.map(b=>`<option value="${esc(b)}">`).join('');
+
+  // filter
+  const q = filter.q.trim().toLowerCase();
+  let rows = all.filter(({it,i})=>{
+    if(filter.brand!=='all' && it.brand.trim()!==filter.brand) return false;
+    if(filter.cat!=='all' && it.cat!==filter.cat) return false;
+    if(filter.status==='opened' && !i.opened) return false;
+    if(filter.status==='unopened' && i.opened) return false;
+    if(filter.status==='alert' && !(i.level==='bad'||i.level==='warn'||i.lowStock)) return false;
+    if(filter.status==='expired' && i.level!=='bad') return false;
+    if(q && ![it.brand,it.name,it.cat,it.use,it.eff,it.note].join(' ').toLowerCase().includes(q)) return false;
+    return true;
+  });
+  $('#count').textContent = `顯示 ${rows.length} / ${items.length} 項`;
+
+  const sort = $('#sort').value;
+  const byExp = (a,b)=>(a.i.left??99999)-(b.i.left??99999);
+  if(sort==='expire') rows.sort(byExp);
+  else if(sort==='opened') rows.sort((a,b)=>(b.it.openDate||'').localeCompare(a.it.openDate||''));
+  else if(sort==='stock') rows.sort((a,b)=>Number(a.it.stock||0)-Number(b.it.stock||0));
+
+  if(!items.length){
+    $('#list').innerHTML = `<div class="empty-state">還沒有任何保養品 🌿<br>按右下角的 <b>＋</b> 新增第一瓶吧！</div>`; return;
+  }
+  if(!rows.length){ $('#list').innerHTML = `<div class="empty-state">沒有符合條件的保養品</div>`; return; }
+
+  if(sort==='brand'){
+    const groups={};
+    rows.forEach(r=>{ (groups[r.it.brand.trim()] ||= []).push(r); });
+    $('#list').innerHTML = Object.keys(groups).sort((a,b)=>a.localeCompare(b,'zh-Hant')).map(b=>{
+      const g=groups[b].sort((x,y)=>CATS.indexOf(x.it.cat)-CATS.indexOf(y.it.cat));
+      return `<div class="brand-group"><h2><span>${esc(b)}</span><span>${g.length} 項</span></h2>${g.map(card).join('')}</div>`;
+    }).join('');
+  } else {
+    $('#list').innerHTML = rows.map(card).join('');
+  }
+}
+
+function card({it,i}){
+  const tags=[];
+  if(i.opened){
+    tags.push(`<span class="tag">📅 開瓶 ${fmt(parse(it.openDate))}・第 ${i.daysOpen+1} 天</span>`);
+  } else tags.push(`<span class="tag">🔒 未開封</span>`);
+  if(i.useBy){
+    const cls = i.level==='bad'?'bad':i.level==='warn'?'warn':'ok';
+    const txt = i.left<0 ? `已過期 ${-i.left} 天` : i.left===0 ? '今天到期' : `剩 ${i.left} 天（${fmt(i.useBy)}）`;
+    tags.push(`<span class="tag ${cls}">⏳ ${txt}</span>`);
+  }
+  const stock=Number(it.stock||0);
+  tags.push(`<span class="tag ${i.lowStock?'warn':''}">📦 庫存 ${stock} 瓶${i.lowStock?'・該補貨了':''}</span>`);
+  const bar = i.opened && i.useBy ? `<div class="bar ${i.level==='bad'?'bad':i.level==='warn'?'warn':''}"><i style="width:${i.pct}%"></i></div>` : '';
+  return `<div class="item s-${i.level}" data-id="${it.id}">
+    <div class="item-top" data-act="toggle">
+      <div class="item-head">
+        <div><div class="brand">${esc(it.brand)}</div><div class="name">${esc(it.name)}${it.size?` <small style="font-weight:400;color:var(--muted);font-size:12px">${esc(it.size)}</small>`:''}</div></div>
+        <span class="cat">${esc(it.cat)}</span>
+      </div>
+      <div class="meta">${tags.join('')}</div>${bar}
+    </div>
+    <div class="detail">
+      <h4>🧴 如何使用</h4><p class="${it.use?'':'empty'}">${it.use?esc(it.use):'尚未填寫，按「編輯」補上'}</p>
+      <h4>✨ 功效</h4><p class="${it.eff?'':'empty'}">${it.eff?esc(it.eff):'尚未填寫，按「編輯」補上'}</p>
+      ${it.note?`<h4>📝 備註</h4><p>${esc(it.note)}</p>`:''}
+      <div class="stock-ctl"><span class="lbl">未開封庫存</span>
+        <div class="qty"><button data-act="minus">−</button><span>${stock}</span><button data-act="plus">＋</button></div>
+      </div>
+      <div class="actions">
+        <button class="btn primary" data-act="newbottle">${i.opened?'🔄 用完了，開新的一瓶':'✂️ 今天開瓶'}</button>
+        ${i.opened?`<button class="btn" data-act="finish">✅ 用完（不開新的）</button>`:''}
+        <button class="btn ghost" data-act="edit">✏️ 編輯</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+// list interactions
+let openIds = new Set();
+$('#list').addEventListener('click', e=>{
+  const el=e.target.closest('[data-act]'); if(!el) return;
+  const box=el.closest('.item'); const id=box.dataset.id; const it=items.find(x=>x.id===id);
+  const act=el.dataset.act;
+  if(act==='toggle'){ box.classList.toggle('open'); box.classList.contains('open')?openIds.add(id):openIds.delete(id); return; }
+  if(act==='plus'){ it.stock=Number(it.stock||0)+1; }
+  if(act==='minus'){ it.stock=Math.max(0,Number(it.stock||0)-1); }
+  if(act==='newbottle'){
+    if(it.openDate){
+      if(Number(it.stock||0)<=0 && !confirm('庫存是 0，確定要記錄開新的一瓶嗎？（庫存不會變負數）')) return;
+      it.stock=Math.max(0,Number(it.stock||0)-1);
+    } else if(Number(it.stock||0)>0) it.stock=Number(it.stock)-1;
+    it.openDate=todayStr(); toast('已記錄今天開瓶 ✂️');
+  }
+  if(act==='finish'){
+    if(!confirm('確定這瓶用完了嗎？會清除開瓶日，保留品項與庫存。')) return;
+    it.openDate=''; toast('辛苦了，這瓶用完了 ✅');
+  }
+  if(act==='edit'){ openForm(it); return; }
+  save(); rerenderKeepOpen();
+});
+function rerenderKeepOpen(){ render(); openIds.forEach(id=>{ const el=document.querySelector(`.item[data-id="${id}"]`); if(el) el.classList.add('open'); }); }
+
+// filters
+document.querySelector('.tools').addEventListener('click', e=>{
+  const c=e.target.closest('.chip'); if(!c) return;
+  filter[c.dataset.k]=c.dataset.v; rerenderKeepOpen();
+});
+document.querySelectorAll('.stat').forEach(s=>s.addEventListener('click',()=>{ filter.status = (filter.status===s.dataset.f? 'all' : s.dataset.f); rerenderKeepOpen(); }));
+$('#q').addEventListener('input', e=>{ filter.q=e.target.value; rerenderKeepOpen(); });
+$('#sort').addEventListener('change', rerenderKeepOpen);
+
+// form
+$('#fCat').innerHTML = CATS.map(c=>`<option>${c}</option>`).join('');
+function openForm(it){
+  $('#formTitle').textContent = it ? '編輯保養品' : '新增保養品';
+  $('#fId').value = it?.id || '';
+  $('#fBrand').value = it?.brand || (filter.brand!=='all'?filter.brand:'');
+  $('#fName').value = it?.name || '';
+  $('#fCat').value = it?.cat || '化妝水';
+  $('#fSize').value = it?.size || '';
+  $('#fOpen').value = it?.openDate || '';
+  $('#fPao').value = String(it?.pao || 12);
+  $('#fStock').value = it?.stock ?? 0;
+  $('#fExp').value = it?.expDate || '';
+  $('#fUse').value = it?.use || '';
+  $('#fEff').value = it?.eff || '';
+  $('#fNote').value = it?.note || '';
+  $('#delBtn').style.display = it ? '' : 'none';
+  $('#modalBg').classList.add('show');
+}
+function closeForm(){ $('#modalBg').classList.remove('show'); }
+$('#addBtn').onclick=()=>openForm(null);
+$('#closeBtn').onclick=closeForm; $('#cancelBtn').onclick=closeForm;
+$('#modalBg').addEventListener('click',e=>{ if(e.target===$('#modalBg')) closeForm(); });
+document.querySelectorAll('.hintbtn').forEach(b=>b.onclick=()=>{
+  const h=HINTS[$('#fCat').value]||{}; const t=b.dataset.hint==='use'?$('#fUse'):$('#fEff');
+  const v=b.dataset.hint==='use'?h.use:h.eff;
+  if(!v){ toast('這個類別沒有預設內容，請自行輸入'); return; }
+  if(t.value && !confirm('要用常見內容取代目前填寫的文字嗎？')) return;
+  t.value=v;
+});
+$('#form').addEventListener('submit', e=>{
+  e.preventDefault();
+  const id=$('#fId').value;
+  const data={
+    brand:$('#fBrand').value.trim(), name:$('#fName').value.trim(), cat:$('#fCat').value,
+    size:$('#fSize').value.trim(), openDate:$('#fOpen').value, pao:Number($('#fPao').value),
+    stock:Math.max(0,parseInt($('#fStock').value)||0), expDate:$('#fExp').value,
+    use:$('#fUse').value.trim(), eff:$('#fEff').value.trim(), note:$('#fNote').value.trim()
+  };
+  if(!data.brand||!data.name) return;
+  if(id){ Object.assign(items.find(x=>x.id===id), data); toast('已更新'); }
+  else { items.push({id:uid(), created:Date.now(), ...data}); toast('已新增 🌿'); }
+  save(); closeForm(); rerenderKeepOpen();
+});
+$('#delBtn').onclick=()=>{
+  const id=$('#fId').value; const it=items.find(x=>x.id===id);
+  if(!confirm(`確定刪除「${it.brand} ${it.name}」嗎？刪除後無法復原。`)) return;
+  items=items.filter(x=>x.id!==id); openIds.delete(id); save(); closeForm(); render(); toast('已刪除');
+};
+
+// backup
+$('#exportBtn').onclick=()=>{
+  const blob=new Blob([JSON.stringify({app:'skincare',version:1,exported:new Date().toISOString(),items},null,2)],{type:'application/json'});
+  const a=document.createElement('a'); a.href=URL.createObjectURL(blob); a.download=`保養品備份_${todayStr()}.json`; a.click();
+  setTimeout(()=>URL.revokeObjectURL(a.href),1000);
+};
+$('#importBtn').onclick=()=>$('#importFile').click();
+$('#importFile').onchange=e=>{
+  const f=e.target.files[0]; if(!f) return;
+  const r=new FileReader();
+  r.onload=()=>{
+    try{
+      const d=JSON.parse(r.result); const arr=Array.isArray(d)?d:d.items;
+      if(!Array.isArray(arr)) throw 0;
+      const mode = items.length ? (confirm(`備份裡有 ${arr.length} 項。\n按「確定」= 取代目前資料\n按「取消」= 合併（同一筆會以備份為準）`)?'replace':'merge') : 'replace';
+      if(mode==='replace') items=arr;
+      else { const m=new Map(items.map(x=>[x.id,x])); arr.forEach(x=>m.set(x.id,x)); items=[...m.values()]; }
+      save(); render(); toast('匯入完成');
+    }catch(err){ alert('這個檔案不是保養品備份，無法匯入'); }
+    e.target.value='';
+  };
+  r.readAsText(f);
+};
+
+function toast(t){ const el=$('#toast'); el.textContent=t; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('show'),1800); }
+render();
+</script>
+</body>
+</html>
