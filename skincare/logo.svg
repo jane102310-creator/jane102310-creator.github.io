@@ -1,26 +1,12 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-  <!-- 나의 화장대 · MY VANITY logo -->
-  <rect width="240" height="240" rx="54" fill="#F1EEE7"/>
-  <circle cx="120" cy="120" r="94" fill="none" stroke="#4A4038" stroke-width="2.4"/>
-  <circle cx="120" cy="120" r="87" fill="none" stroke="#C9BBA6" stroke-width="1.2"/>
-
-  <!-- 葉子 -->
-  <path d="M72 168 C66 140 78 120 100 112 C102 136 92 156 72 168 Z" fill="#B9C6AE" stroke="#4A4038" stroke-width="2" stroke-linejoin="round"/>
-  <path d="M74 165 C82 148 90 132 99 116" fill="none" stroke="#4A4038" stroke-width="1.6" stroke-linecap="round"/>
-
-  <!-- 滴管瓶 -->
-  <path d="M108 52 C108 42 132 42 132 52 L132 70 L108 70 Z" fill="#4A4038"/>
-  <rect x="104" y="70" width="32" height="14" rx="3" fill="#ECE4D8" stroke="#4A4038" stroke-width="2.4"/>
-  <path d="M100 96 Q100 86 110 84 L130 84 Q140 86 140 96 L140 168 Q140 176 132 176 L108 176 Q100 176 100 168 Z" fill="#ECE4D8" stroke="#4A4038" stroke-width="2.4" stroke-linejoin="round"/>
-  <path d="M100 128 L140 128 L140 168 Q140 176 132 176 L108 176 Q100 176 100 168 Z" fill="#D9C8AE"/>
-  <path d="M100 96 Q100 86 110 84 L130 84 Q140 86 140 96 L140 168 Q140 176 132 176 L108 176 Q100 176 100 168 Z" fill="none" stroke="#4A4038" stroke-width="2.4" stroke-linejoin="round"/>
-  <line x1="108" y1="104" x2="132" y2="104" stroke="#4A4038" stroke-width="1.6"/>
-  <line x1="112" y1="111" x2="128" y2="111" stroke="#4A4038" stroke-width="1.2"/>
-  <path d="M107 92 L107 120" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity=".7"/>
-
-  <!-- 水滴 -->
-  <path d="M160 96 C160 96 150 110 150 117 A10 10 0 0 0 170 117 C170 110 160 96 160 96 Z" fill="#C08378" stroke="#4A4038" stroke-width="2" stroke-linejoin="round"/>
-  <circle cx="157" cy="117" r="2.2" fill="#FFFFFF" opacity=".8"/>
-  <!-- 小星光 -->
-  <path d="M168 150 L170 156 L176 158 L170 160 L168 166 L166 160 L160 158 L166 156 Z" fill="#C9A06A"/>
+  <rect width="240" height="240" rx="54" fill="#DDE2D6"/>
+  <g fill="none" stroke="#3E3731" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 一筆畫精華瓶 -->
+    <path d="M106 62 h28 v14 h-28 z"/>
+    <path d="M112 76 v8 c-14 4 -20 12 -20 24 v66 c0 8 6 14 14 14 h28 c8 0 14 -6 14 -14 v-66 c0 -12 -6 -20 -20 -24 v-8"/>
+    <path d="M104 136 h32"/>
+    <!-- 水滴 -->
+    <path d="M168 92 c0 0 -10 13 -10 20 a10 10 0 0 0 20 0 c0 -7 -10 -20 -10 -20z"/>
+  </g>
+  <path d="M120 152 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" fill="#3E3731"/>
 </svg>
