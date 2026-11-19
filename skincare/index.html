@@ -592,19 +592,19 @@ $('#pasteBtn').onclick=async()=>{
 })();
 render();
 
-// ---- 雲端同步（Firebase：korea-buy-list 專案，skincare_items 資料夾，與代購清單分開）----
-let col=null;
+// ---- 雲端同步（Firebase：korea-buy-list 專案 → storeData/skincareDoc，獨立一份文件，與代購商品分開）----
+let cdoc=null, pushTimer=null;
 function setSync(t,cls){ const el=$('#sync'); el.textContent=t; el.className='sync '+(cls||''); }
-function cloudErr(e){ console.error(e); setSync(e&&e.code==='permission-denied'?'雲端沒有權限':'雲端連線失敗','err'); if(e&&e.code==='permission-denied') toast('Firebase 規則不允許寫入保養品資料'); }
-function clean(it){ const o={}; Object.keys(it).forEach(k=>{ if(it[k]!==undefined) o[k]=it[k]; }); o.updated=Date.now(); return o; }
-function cloudPut(it){ if(col) col.doc(it.id).set(clean(it)).catch(cloudErr); }
-function cloudDel(id){ if(col) col.doc(id).delete().catch(cloudErr); }
-function cloudBatch(list, delIds){
-  if(!col) return;
-  const chunks=[]; const ops=[...list.map(x=>['set',x]),...delIds.map(i=>['del',i])];
-  for(let i=0;i<ops.length;i+=400) chunks.push(ops.slice(i,i+400));
-  chunks.forEach(ch=>{ const b=col.firestore.batch(); ch.forEach(([t,x])=>t==='set'?b.set(col.doc(x.id),clean(x)):b.delete(col.doc(x))); b.commit().catch(cloudErr); });
+function cloudErr(e){ console.error(e); setSync(e&&e.code==='permission-denied'?'雲端沒有權限':'雲端連線失敗','err'); }
+function clean(it){ const o={}; Object.keys(it).forEach(k=>{ if(it[k]!==undefined) o[k]=it[k]; }); return o; }
+function pushAll(){
+  if(!cdoc) return;
+  clearTimeout(pushTimer);
+  pushTimer=setTimeout(()=>{ cdoc.set({items:items.map(clean), updated:Date.now()}).catch(cloudErr); },300);
 }
+function cloudPut(){ pushAll(); }
+function cloudDel(){ pushAll(); }
+function cloudBatch(){ pushAll(); }
 (function initCloud(){
   if(typeof firebase==='undefined'){ setSync('離線（只存在這台裝置）','err'); return; }
   try{
@@ -613,19 +613,18 @@ function cloudBatch(list, delIds){
       projectId:"korea-buy-list", storageBucket:"korea-buy-list.firebasestorage.app",
       messagingSenderId:"131856493166", appId:"1:131856493166:web:1f4a1c108ffbfdb89a547f"
     });
-    const db=app.firestore();
-    col=db.collection('skincare_items');
+    cdoc=app.firestore().collection('storeData').doc('skincareDoc');
     let first=true;
-    col.onSnapshot({includeMetadataChanges:true}, snap=>{
-      const cloud=snap.docs.map(d=>{ const x=d.data(); delete x.updated; return {id:d.id,...x}; });
+    cdoc.onSnapshot({includeMetadataChanges:true}, snap=>{
+      const cloud=(snap.exists && Array.isArray(snap.data().items)) ? snap.data().items : [];
       if(first){
         first=false;
-        // 第一次連上：把這台裝置上、雲端還沒有的資料上傳
+        // 第一次連上：把這台裝置上、雲端還沒有的資料一起合併上傳
         const ids=new Set(cloud.map(x=>x.id));
         const localOnly=items.filter(x=>!ids.has(x.id));
-        if(localOnly.length){ cloudBatch(localOnly,[]); cloud.push(...localOnly); }
-      }
-      items=cloud;
+        if(localOnly.length){ items=[...cloud,...localOnly]; pushAll(); }
+        else items=cloud;
+      } else if(!snap.metadata.hasPendingWrites) items=cloud;
       try{ localStorage.setItem(KEY, JSON.stringify(items)); }catch(e){}
       setSync(snap.metadata.fromCache?'離線中（恢復連線後會自動同步）':'已同步雲端', snap.metadata.fromCache?'':'on');
       rerenderKeepOpen();
