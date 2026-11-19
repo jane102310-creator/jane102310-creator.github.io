@@ -6,6 +6,9 @@
 <meta name="theme-color" content="#F1EEE7">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <title>我的保養品專區</title>
+<link rel="icon" type="image/svg+xml" href="logo.svg">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<meta name="apple-mobile-web-app-title" content="我的保養品">
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
 
@@ -24,6 +27,8 @@
   .wrap{max-width:540px;margin:0 auto}
   header{padding:0 2px 22px}
   header .en{font-size:11px;letter-spacing:.42em;color:var(--sub)}
+  .brandline{display:flex;align-items:center;gap:12px}
+  .logo{width:46px;height:46px;flex:none}
   header h1{font-family:var(--serif);font-size:30px;font-weight:700;margin-top:14px;letter-spacing:.02em}
   header p{font-size:13.5px;color:var(--sub);margin-top:10px;letter-spacing:.06em}
   .sync::before{content:"";display:inline-block;width:6px;height:6px;border-radius:50%;background:var(--muted);margin-right:5px;vertical-align:2px}
@@ -111,6 +116,36 @@
   .photo-prev{width:84px;height:84px;border-radius:10px;object-fit:cover;border:1px solid var(--line);background:var(--card);flex:none}
   .photo-prev.ph{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px}
   .photo-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+
+  /* ===== 化妝櫃 ===== */
+  .viewtabs{display:flex;gap:0;border:1px solid var(--line);border-radius:8px;overflow:hidden;margin-bottom:14px;background:var(--card)}
+  .viewtabs button{flex:1;border:none;background:transparent;padding:10px 0;font-size:13px;color:var(--sub);font-family:inherit;letter-spacing:.08em;cursor:pointer}
+  .viewtabs button.on{background:var(--accent);color:#F8F6F1}
+  .cabinet{margin-top:14px;background:linear-gradient(180deg,#CDB594,#BFA580);border-radius:14px 14px 8px 8px;padding:12px 12px 16px;box-shadow:0 10px 24px rgba(62,55,49,.18),inset 0 1px 0 rgba(255,255,255,.35)}
+  .plaque{text-align:center;margin:2px auto 10px;font-family:var(--serif);font-size:13px;color:#5B4A39;letter-spacing:.3em}
+  .plaque small{display:block;font-family:-apple-system,sans-serif;font-size:9.5px;letter-spacing:.4em;color:#7C6650;margin-top:2px}
+  .cab-in{background:linear-gradient(180deg,#F6F1E8 0%,#EEE6D9 100%);border-radius:6px;box-shadow:inset 0 3px 10px rgba(80,60,40,.22);padding:4px 6px 0;overflow:hidden}
+  .shelf{display:grid;grid-template-columns:repeat(4,1fr);align-items:end;gap:4px;padding:16px 2px 0;min-height:150px;position:relative}
+  .shelf::after{content:"";position:absolute;left:-6px;right:-6px;bottom:-10px;height:12px;background:linear-gradient(180deg,#D8C3A3,#C3A983);box-shadow:0 5px 8px rgba(80,60,40,.25);border-radius:1px}
+  .shelf-wrap{margin-bottom:18px;position:relative}
+  .shelf-wrap:last-child{margin-bottom:10px}
+  .prod{display:flex;flex-direction:column;align-items:center;justify-content:flex-end;cursor:pointer;position:relative;padding-bottom:2px;min-width:0;-webkit-tap-highlight-color:transparent}
+  .prod img{max-width:100%;max-height:128px;object-fit:contain;filter:drop-shadow(0 4px 3px rgba(60,45,30,.28));transition:transform .15s}
+  .prod:active img,.prod:active .bottle{transform:translateY(-4px)}
+  .prod .sdot{position:absolute;top:0;right:8%;width:9px;height:9px;border-radius:50%;border:2px solid #F6F1E8}
+  .prod .sdot.warn{background:var(--warn)} .prod .sdot.bad{background:var(--bad)}
+  .bottle{width:58%;height:96px;border-radius:12px 12px 6px 6px;background:linear-gradient(90deg,#E9E1D3,#FBF8F2 45%,#E3D9C8);border:1px solid #D6CBB8;display:flex;align-items:center;justify-content:center;position:relative;box-shadow:0 4px 5px rgba(60,45,30,.18);transition:transform .15s}
+  .bottle::before{content:"";position:absolute;top:-16px;left:30%;width:40%;height:16px;background:#CDBFA8;border-radius:4px 4px 0 0}
+  .bottle span{writing-mode:vertical-rl;font-size:10px;color:var(--sub);letter-spacing:.1em;max-height:84px;overflow:hidden}
+  .labels{display:grid;grid-template-columns:repeat(4,1fr);gap:4px;padding:16px 2px 0}
+  .labels div{font-size:10.5px;color:#5B4A39;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;line-height:1.3}
+  .labels div small{display:block;color:#8E7A64;font-size:9.5px}
+  .cab-empty{padding:40px 10px;text-align:center;font-family:var(--serif);color:var(--sub);font-size:13.5px;line-height:2}
+  .sheet .item{border:none;background:transparent}
+  .sheet .item .detail{display:block;background:transparent;border-top:1px solid var(--line);padding:2px 0 4px}
+  .sheet .item-top{padding:4px 0 12px;cursor:default}
+  .sheet .bigimg{background:radial-gradient(circle at 50% 60%,#FFFFFF,#F1EEE7 70%)}
+  .cutbtn{margin-top:6px}
   .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:var(--accent);color:#F8F6F1;padding:10px 18px;border-radius:8px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:30}
   .toast.show{opacity:1}
   .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
@@ -139,7 +174,7 @@
 <div class="wrap">
   <header>
     <div class="en">나의 스킨케어 — MY SKINCARE</div>
-    <h1>我的保養品 小日記</h1>
+    <h1 class="brandline"><img src="logo.svg" alt="" class="logo">我的保養品 小日記</h1>
     <p><span id="today"></span>　<span id="sync" class="sync">連線中…</span></p>
   </header>
 
@@ -170,6 +205,8 @@
     </div>
   </div>
 
+  <div class="viewtabs"><button data-view="cabinet">化妝櫃 화장대</button><button data-view="list">清單 리스트</button></div>
+  <div id="cabinet"></div>
   <div id="list"></div>
 
   <div class="footer-tools">
@@ -193,6 +230,7 @@
         <div id="photoPrev" class="photo-prev ph">無照片</div>
         <div class="photo-btns">
           <button type="button" class="btn" id="photoBtn">拍照／選照片</button>
+          <button type="button" class="btn" id="cutBtn" style="display:none">✂ 自動去背</button>
           <button type="button" class="btn ghost" id="photoDel" style="display:none">移除照片</button>
         </div>
         <input type="file" id="photoFile" accept="image/*" hidden>
@@ -272,6 +310,7 @@
   </form>
 </div>
 
+<div class="modal-bg" id="sheetBg"><div class="modal sheet" id="sheet"></div></div>
 <div class="toast" id="toast"></div>
 
 <script>
@@ -370,6 +409,7 @@ function render(){
   else if(sort==='opened') rows.sort((a,b)=>(b.it.openDate||'').localeCompare(a.it.openDate||''));
   else if(sort==='stock') rows.sort((a,b)=>Number(a.it.stock||0)-Number(b.it.stock||0));
 
+  window._rows=rows; renderCabinet(rows);
   if(!items.length){
     $('#list').innerHTML = `<div class="empty-state">還沒有任何保養品<br>按右下角的 ＋ 新增第一瓶</div>`; return;
   }
@@ -427,11 +467,11 @@ function card({it,i}){ queueMicrotask(fillImgs);
 
 // list interactions
 let openIds = new Set();
-$('#list').addEventListener('click', e=>{
+function onItemClick(e){
   const el=e.target.closest('[data-act]'); if(!el) return;
   const box=el.closest('.item'); const id=box.dataset.id; const it=items.find(x=>x.id===id);
   const act=el.dataset.act;
-  if(act==='toggle'){ box.classList.toggle('open'); box.classList.contains('open')?openIds.add(id):openIds.delete(id); return; }
+  if(act==='toggle'){ if(box.closest('#sheet')) return; box.classList.toggle('open'); box.classList.contains('open')?openIds.add(id):openIds.delete(id); return; }
   if(act==='plus'){ it.stock=Number(it.stock||0)+1; }
   if(act==='minus'){ it.stock=Math.max(0,Number(it.stock||0)-1); }
   if(act==='newbottle'){
@@ -445,10 +485,12 @@ $('#list').addEventListener('click', e=>{
     if(!confirm('確定這瓶用完了嗎？會清除開瓶日，保留品項與庫存。')) return;
     it.openDate=''; toast('這瓶用完了');
   }
-  if(act==='edit'){ openForm(it); return; }
+  if(act==='edit'){ closeSheet(); openForm(it); return; }
   save(it); rerenderKeepOpen();
-});
-function rerenderKeepOpen(){ render(); openIds.forEach(id=>{ const el=document.querySelector(`.item[data-id="${id}"]`); if(el) el.classList.add('open'); }); }
+}
+$('#list').addEventListener('click',onItemClick);
+$('#sheet').addEventListener('click',onItemClick);
+function rerenderKeepOpen(){ render(); openIds.forEach(id=>{ const el=document.querySelector(`#list .item[data-id="${id}"]`); if(el) el.classList.add('open'); }); if(sheetId){ if(items.some(x=>x.id===sheetId)) openSheet(sheetId); else closeSheet(); } }
 
 // filters
 document.querySelector('.tools').addEventListener('click', e=>{
@@ -476,7 +518,7 @@ function openForm(it){
   $('#fEff').value = it?.eff || '';
   $('#fNote').value = it?.note || '';
   $('#delBtn').style.display = it ? '' : 'none';
-  photoState={data:null, removed:false, cur:it?.img||''}; showPrev(it?.img?imgCache[it.img]:null); if(it?.img && !imgCache[it.img]) getImg(it.img).then(d=>{ if(photoState.cur===it.img && !photoState.data) showPrev(d); });
+  photoState={data:null, cut:null, removed:false, cur:it?.img||'', cutCur:it?.cut||''}; const pk=it?(it.cut||it.img):''; showPrev(pk?imgCache[pk]:null); if(pk && !imgCache[pk]) getImg(pk).then(d=>{ if(photoState.cur===it.img && !photoState.data && !photoState.cut) showPrev(d); });
   $('#modalBg').classList.add('show');
 }
 function closeForm(){ $('#modalBg').classList.remove('show'); document.querySelectorAll('.combo.open').forEach(c=>c.classList.remove('open')); }
@@ -501,20 +543,25 @@ $('#form').addEventListener('submit', e=>{
   };
   if(!data.brand||!data.name) return;
   const prevImg = id ? (items.find(x=>x.id===id)||{}).img : '';
-  if(photoState.removed){ data.img=''; }
-  else if(photoState.data){ data.img='sk_'+(id||'')+Date.now().toString(36); }
-  else data.img=prevImg||'';
+  const prevCut = id ? (items.find(x=>x.id===id)||{}).cut : '';
+  if(photoState.removed){ data.img=''; data.cut=''; }
+  else {
+    if(photoState.data){ data.img='sk_'+(id||'')+Date.now().toString(36); } else data.img=prevImg||'';
+    if(photoState.cut){ data.cut='skc_'+(id||'')+Date.now().toString(36); } else data.cut=photoState.data?'':(prevCut||'');
+  }
   let target;
   if(id){ target=items.find(x=>x.id===id); Object.assign(target, data); toast('已更新'); }
   else { target={id:uid(), created:Date.now(), ...data}; items.push(target); toast('已新增'); }
   if(photoState.data){ const key=target.img; imgCache[key]=photoState.data; putImg(key, photoState.data); }
+  if(photoState.cut){ imgCache[target.cut]=photoState.cut; putImg(target.cut, photoState.cut); }
   if(prevImg && prevImg!==target.img) delImg(prevImg);
+  if(prevCut && prevCut!==target.cut) delImg(prevCut);
   save(target); closeForm(); rerenderKeepOpen();
 });
 $('#delBtn').onclick=()=>{
   const id=$('#fId').value; const it=items.find(x=>x.id===id);
   if(!confirm(`確定刪除「${it.brand} ${it.name}」嗎？刪除後無法復原。`)) return;
-  if(it.img) delImg(it.img); items=items.filter(x=>x.id!==id); openIds.delete(id); save(); cloudDel(id); closeForm(); render(); toast('已刪除');
+  if(it.img) delImg(it.img); if(it.cut) delImg(it.cut); items=items.filter(x=>x.id!==id); openIds.delete(id); save(); cloudDel(id); closeForm(); render(); toast('已刪除');
 };
 
 // backup
@@ -631,8 +678,8 @@ function fillImgs(){
 }
 function showPrev(data){
   const box=$('#photoPrev');
-  if(data){ box.outerHTML=`<img id="photoPrev" class="photo-prev" src="${data}">`; $('#photoDel').style.display=''; }
-  else { box.outerHTML=`<div id="photoPrev" class="photo-prev ph">${photoState.cur&&!photoState.removed?'載入中…':'無照片'}</div>`; $('#photoDel').style.display=(photoState.cur&&!photoState.removed)?'':'none'; }
+  if(data){ box.outerHTML=`<img id="photoPrev" class="photo-prev" src="${data}" style="object-fit:contain;background:repeating-conic-gradient(#EEE9E0 0 25%,#F8F6F1 0 50%) 0 0/14px 14px">`; $('#photoDel').style.display=''; $('#cutBtn').style.display=''; $('#cutBtn').textContent=(photoState.cut||(!photoState.data&&photoState.cutCur))?'✓ 已去背（重新去背）':'✂ 自動去背'; }
+  else { $('#cutBtn').style.display='none'; box.outerHTML=`<div id="photoPrev" class="photo-prev ph">${photoState.cur&&!photoState.removed?'載入中…':'無照片'}</div>`; $('#photoDel').style.display=(photoState.cur&&!photoState.removed)?'':'none'; }
 }
 function compress(file){
   return new Promise((res,rej)=>{
@@ -656,10 +703,108 @@ function compress(file){
 $('#photoBtn').onclick=()=>$('#photoFile').click();
 $('#photoFile').onchange=async e=>{
   const f=e.target.files[0]; e.target.value=''; if(!f) return;
-  try{ const d=await compress(f); photoState.data=d; photoState.removed=false; showPrev(d); }
+  try{ const d=await compress(f); photoState.data=d; photoState.cut=null; photoState.removed=false; showPrev(d); }
   catch(err){ alert('這張照片讀不出來，換一張試試'); }
 };
-$('#photoDel').onclick=()=>{ photoState.data=null; photoState.removed=true; showPrev(null); };
+$('#photoDel').onclick=()=>{ photoState.data=null; photoState.cut=null; photoState.removed=true; showPrev(null); };
+
+
+// ===== 化妝櫃 =====
+let view=(()=>{ try{ return localStorage.getItem('skincare-view')||'cabinet'; }catch(e){ return 'cabinet'; } })();
+let sheetId=null;
+function setView(v){ view=v; try{ localStorage.setItem('skincare-view',v); }catch(e){} document.querySelectorAll('.viewtabs button').forEach(b=>b.classList.toggle('on',b.dataset.view===v)); rerenderKeepOpen(); }
+document.querySelectorAll('.viewtabs button').forEach(b=>b.onclick=()=>setView(b.dataset.view));
+function renderCabinet(rows){
+  document.querySelectorAll('.viewtabs button').forEach(b=>b.classList.toggle('on',b.dataset.view===view));
+  const cab=$('#cabinet'), list=$('#list');
+  if(view!=='cabinet'){ cab.style.display='none'; list.style.display=''; return; }
+  cab.style.display=''; list.style.display='none';
+  let r=[...rows];
+  if($('#sort').value==='brand') r.sort((a,b)=>a.it.brand.localeCompare(b.it.brand,'zh-Hant')||CATS.indexOf(a.it.cat)-CATS.indexOf(b.it.cat));
+  let inner='';
+  if(!items.length) inner='<div class="cab-empty">化妝櫃還是空的<br>按右下角 ＋ 放上第一瓶</div>';
+  else if(!r.length) inner='<div class="cab-empty">沒有符合條件的保養品</div>';
+  else{
+    const per=4, n=Math.max(2,Math.ceil(r.length/per));
+    for(let k=0;k<n;k++){
+      const row=r.slice(k*per,k*per+per);
+      inner+=`<div class="shelf-wrap"><div class="shelf">${row.map(({it,i})=>{
+        const key=it.cut||it.img, dot=(i.level==='bad'||i.level==='warn')?`<span class="sdot ${i.level}"></span>`:'';
+        return `<div class="prod" data-sheet="${it.id}">${dot}${key?`<img data-img="${key}" alt="">`:`<div class="bottle"><span>${esc(it.brand)}</span></div>`}</div>`;
+      }).join('')}</div><div class="labels">${row.map(({it})=>`<div>${esc(it.name)}<small>${esc(it.brand)}</small></div>`).join('')}</div></div>`;
+    }
+  }
+  cab.innerHTML=`<div class="cabinet"><div class="plaque">나의 화장대<small>MY VANITY</small></div><div class="cab-in">${inner}</div></div>`;
+  fillImgs();
+}
+$('#cabinet').addEventListener('click',e=>{ const p=e.target.closest('[data-sheet]'); if(p) openSheet(p.dataset.sheet); });
+function openSheet(id){
+  const it=items.find(x=>x.id===id); if(!it) return;
+  sheetId=id;
+  $('#sheet').innerHTML=`<h3><span>${esc(it.brand)}</span><button type="button" class="x" onclick="closeSheet()">×</button></h3>`+card({it,i:info(it)}).replace('class="item ','class="item open ');
+  const big=$('#sheet .bigimg'); if(big && it.cut) big.dataset.img=it.cut;
+  $('#sheet .thumb')?.remove();
+  $('#sheetBg').classList.add('show'); fillImgs();
+}
+function closeSheet(){ sheetId=null; $('#sheetBg').classList.remove('show'); }
+$('#sheetBg').addEventListener('click',e=>{ if(e.target===$('#sheetBg')) closeSheet(); });
+
+// ===== 去背 =====
+const BG_LIB='https://cdn.jsdelivr.net/npm/@imgly/background-removal@1.7.0/+esm';
+function loadImg(src){ return new Promise((res,rej)=>{ const im=new Image(); im.onload=()=>res(im); im.onerror=rej; im.src=src; }); }
+async function finishCut(src){
+  // 裁掉透明邊、縮小，存成 PNG（保留透明）
+  const im=await loadImg(src);
+  const c=document.createElement('canvas'); c.width=im.width; c.height=im.height;
+  const g=c.getContext('2d'); g.drawImage(im,0,0);
+  const d=g.getImageData(0,0,c.width,c.height).data;
+  let x0=c.width,y0=c.height,x1=-1,y1=-1;
+  for(let y=0;y<c.height;y++) for(let x=0;x<c.width;x++){ if(d[(y*c.width+x)*4+3]>20){ if(x<x0)x0=x; if(x>x1)x1=x; if(y<y0)y0=y; if(y>y1)y1=y; } }
+  if(x1<0) throw new Error('empty');
+  const w=x1-x0+1,h=y1-y0+1; let max=560, out='';
+  for(let t=0;t<8;t++){
+    const sc=Math.min(1,max/Math.max(w,h)); const o=document.createElement('canvas');
+    o.width=Math.max(1,Math.round(w*sc)); o.height=Math.max(1,Math.round(h*sc));
+    o.getContext('2d').drawImage(c,x0,y0,w,h,0,0,o.width,o.height);
+    out=o.toDataURL('image/png'); if(out.length<280000) break; max=Math.round(max*0.82);
+  }
+  return out;
+}
+async function whiteCut(src){
+  // 備用：把和四邊相連、接近背景色的區域變透明（適合白底或單色底的照片）
+  const im=await loadImg(src); const sc=Math.min(1,700/Math.max(im.width,im.height));
+  const c=document.createElement('canvas'); c.width=Math.round(im.width*sc); c.height=Math.round(im.height*sc);
+  const g=c.getContext('2d'); g.drawImage(im,0,0,c.width,c.height);
+  const W=c.width,H=c.height, img=g.getImageData(0,0,W,H), d=img.data;
+  let br=0,bg=0,bb=0,n=0; const smp=(x,y)=>{ const i=(y*W+x)*4; br+=d[i];bg+=d[i+1];bb+=d[i+2];n++; };
+  for(let x=0;x<W;x+=4){ smp(x,0); smp(x,H-1); } for(let y=0;y<H;y+=4){ smp(0,y); smp(W-1,y); }
+  br/=n;bg/=n;bb/=n; const tol=48*48;
+  const seen=new Uint8Array(W*H), st=[];
+  const push=(x,y)=>{ const k=y*W+x; if(seen[k]) return; const i=k*4, dr=d[i]-br,dg=d[i+1]-bg,db=d[i+2]-bb; if(dr*dr+dg*dg+db*db>tol) return; seen[k]=1; st.push(k); };
+  for(let x=0;x<W;x++){ push(x,0); push(x,H-1); } for(let y=0;y<H;y++){ push(0,y); push(W-1,y); }
+  while(st.length){ const k=st.pop(), x=k%W, y=(k-x)/W; d[k*4+3]=0; if(x>0)push(x-1,y); if(x<W-1)push(x+1,y); if(y>0)push(x,y-1); if(y<H-1)push(x,y+1); }
+  g.putImageData(img,0,0); return c.toDataURL('image/png');
+}
+async function removeBg(src, onMsg){
+  try{
+    onMsg('載入去背工具…（第一次約 40MB，之後會快很多）');
+    const mod=await import(BG_LIB); const fn=mod.removeBackground||mod.default;
+    const blob=await fn(src,{model:'isnet_quint8',output:{format:'image/png'},progress:(k,c,t)=>{ if(t) onMsg(`下載去背模型 ${Math.round(c/t*100)}%`); }});
+    onMsg('整理圖片…');
+    const url=await new Promise(r=>{ const fr=new FileReader(); fr.onload=()=>r(fr.result); fr.readAsDataURL(blob); });
+    return await finishCut(url);
+  }catch(e){
+    console.warn('AI 去背失敗，改用白底去背',e); onMsg('改用簡易去背…');
+    return await finishCut(await whiteCut(src));
+  }
+}
+$('#cutBtn').onclick=async()=>{
+  const src=photoState.data || imgCache[photoState.cur]; if(!src){ toast('照片還在載入，稍等一下'); return; }
+  const b=$('#cutBtn'); b.disabled=true;
+  try{ const out=await removeBg(src, m=>b.textContent=m); photoState.cut=out; showPrev(out); toast('去背完成，記得按儲存'); }
+  catch(e){ alert('這張照片去背失敗，換一張背景比較單純的照片試試'); b.textContent='✂ 自動去背'; }
+  b.disabled=false;
+};
 
 function toast(t){ const el=$('#toast'); el.textContent=t; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('show'),1800); }
 
