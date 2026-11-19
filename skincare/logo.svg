@@ -1,12 +1,13 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
-  <rect width="240" height="240" rx="54" fill="#DDE2D6"/>
-  <g fill="none" stroke="#3E3731" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-    <!-- 一筆畫精華瓶 -->
-    <path d="M106 62 h28 v14 h-28 z"/>
-    <path d="M112 76 v8 c-14 4 -20 12 -20 24 v66 c0 8 6 14 14 14 h28 c8 0 14 -6 14 -14 v-66 c0 -12 -6 -20 -20 -24 v-8"/>
-    <path d="M104 136 h32"/>
-    <!-- 水滴 -->
-    <path d="M168 92 c0 0 -10 13 -10 20 a10 10 0 0 0 20 0 c0 -7 -10 -20 -10 -20z"/>
-  </g>
-  <path d="M120 152 l2 5 5 2 -5 2 -2 5 -2 -5 -5 -2 5 -2z" fill="#3E3731"/>
+  <rect width="240" height="240" rx="54" fill="#F1EEE7"/>
+  <!-- 拱形化妝鏡 -->
+  <path d="M64 186 V112 A56 56 0 0 1 176 112 V186" fill="none" stroke="#4A4038" stroke-width="3"/>
+  <path d="M74 186 V114 A46 46 0 0 1 166 114 V186" fill="#E8E0D3" stroke="#B9AA94" stroke-width="1.2"/>
+  <line x1="52" y1="186" x2="188" y2="186" stroke="#4A4038" stroke-width="3" stroke-linecap="round"/>
+  <!-- 瓶子剪影 -->
+  <rect x="96" y="128" width="22" height="58" rx="5" fill="#4A4038"/>
+  <rect x="101" y="116" width="12" height="13" rx="2" fill="#4A4038"/>
+  <rect x="124" y="152" width="26" height="34" rx="6" fill="#A7B39C"/>
+  <rect x="127" y="145" width="20" height="8" rx="2" fill="#A7B39C"/>
+  <path d="M84 98 l2.4 6 6 2.4 -6 2.4 -2.4 6 -2.4 -6 -6 -2.4 6 -2.4z" fill="#C9A06A"/>
 </svg>
