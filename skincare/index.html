@@ -103,6 +103,14 @@
   .hintbtn{font-size:11.5px;color:var(--accent);background:none;border:none;cursor:pointer;float:right;text-decoration:underline;text-underline-offset:3px;font-family:inherit}
   .footer-tools{margin-top:32px;text-align:center;display:flex;gap:6px;justify-content:center}
   .note{font-size:11.5px;color:var(--muted);text-align:center;margin-top:12px;line-height:1.8}
+  .thumb{width:62px;height:62px;flex:none;border-radius:8px;object-fit:cover;background:var(--bg);border:1px solid var(--line)}
+  .thumb.ph{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:10px;letter-spacing:.1em}
+  .head-l{display:flex;gap:12px;align-items:flex-start;min-width:0}
+  .bigimg{display:block;width:100%;max-height:340px;object-fit:contain;background:var(--bg);border-radius:8px;margin-top:14px;border:1px solid var(--line2)}
+  .photo-f{display:flex;gap:12px;align-items:center}
+  .photo-prev{width:84px;height:84px;border-radius:10px;object-fit:cover;border:1px solid var(--line);background:var(--card);flex:none}
+  .photo-prev.ph{display:flex;align-items:center;justify-content:center;color:var(--muted);font-size:11px}
+  .photo-btns{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
   .toast{position:fixed;left:50%;bottom:100px;transform:translateX(-50%);background:var(--accent);color:#F8F6F1;padding:10px 18px;border-radius:8px;font-size:13px;opacity:0;transition:.25s;pointer-events:none;z-index:30}
   .toast.show{opacity:1}
   .two{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px}
@@ -179,6 +187,17 @@
     <h3><span id="formTitle">新增保養品</span><button type="button" class="x" id="closeBtn">×</button></h3>
     <input type="hidden" id="fId">
     <button type="button" class="pastebar" id="pasteBtn">貼上 Claude 給的保養品代碼，自動填寫</button>
+    <div class="f">
+      <label>照片 <small>(選填)</small></label>
+      <div class="photo-f">
+        <div id="photoPrev" class="photo-prev ph">無照片</div>
+        <div class="photo-btns">
+          <button type="button" class="btn" id="photoBtn">拍照／選照片</button>
+          <button type="button" class="btn ghost" id="photoDel" style="display:none">移除照片</button>
+        </div>
+        <input type="file" id="photoFile" accept="image/*" hidden>
+      </div>
+    </div>
     <div class="f">
       <label>品牌 *</label>
       <div class="combo" id="cBrand">
@@ -368,7 +387,7 @@ function render(){
   }
 }
 
-function card({it,i}){
+function card({it,i}){ queueMicrotask(fillImgs);
   const tags=[];
   if(i.opened){
     tags.push(`<span class="tag"><em>開瓶</em>${fmt(parse(it.openDate))}・D+${i.daysOpen+1}</span>`);
@@ -384,12 +403,13 @@ function card({it,i}){
   return `<div class="item s-${i.level}" data-id="${it.id}">
     <div class="item-top" data-act="toggle">
       <div class="item-head">
-        <div><div class="brand"><span class="dot"></span>${esc(it.brand)}</div><div class="name">${esc(it.name)}${it.size?` <small style="font-weight:400;color:var(--muted);font-size:12px">${esc(it.size)}</small>`:''}</div></div>
+        <div class="head-l">${it.img?`<img class="thumb" data-img="${it.img}" alt="">`:''}<div><div class="brand"><span class="dot"></span>${esc(it.brand)}</div><div class="name">${esc(it.name)}${it.size?` <small style="font-weight:400;color:var(--muted);font-size:12px">${esc(it.size)}</small>`:''}</div></div></div>
         <span class="cat">${esc(it.cat)}</span>
       </div>
       <div class="meta">${tags.join('')}</div>${bar}
     </div>
     <div class="detail">
+      ${it.img?`<img class="bigimg" data-img="${it.img}" alt="">`:''}
       <h4>사용법 ・ 使用方法</h4><p class="${it.use?'':'empty'}">${it.use?esc(it.use):'尚未填寫，按「編輯」補上'}</p>
       <h4>효능 ・ 功效</h4><p class="${it.eff?'':'empty'}">${it.eff?esc(it.eff):'尚未填寫，按「編輯」補上'}</p>
       ${it.note?`<h4>메모 ・ 備註</h4><p>${esc(it.note)}</p>`:''}
@@ -456,6 +476,7 @@ function openForm(it){
   $('#fEff').value = it?.eff || '';
   $('#fNote').value = it?.note || '';
   $('#delBtn').style.display = it ? '' : 'none';
+  photoState={data:null, removed:false, cur:it?.img||''}; showPrev(it?.img?imgCache[it.img]:null); if(it?.img && !imgCache[it.img]) getImg(it.img).then(d=>{ if(photoState.cur===it.img && !photoState.data) showPrev(d); });
   $('#modalBg').classList.add('show');
 }
 function closeForm(){ $('#modalBg').classList.remove('show'); document.querySelectorAll('.combo.open').forEach(c=>c.classList.remove('open')); }
@@ -479,15 +500,21 @@ $('#form').addEventListener('submit', e=>{
     use:$('#fUse').value.trim(), eff:$('#fEff').value.trim(), note:$('#fNote').value.trim()
   };
   if(!data.brand||!data.name) return;
+  const prevImg = id ? (items.find(x=>x.id===id)||{}).img : '';
+  if(photoState.removed){ data.img=''; }
+  else if(photoState.data){ data.img='sk_'+(id||'')+Date.now().toString(36); }
+  else data.img=prevImg||'';
   let target;
   if(id){ target=items.find(x=>x.id===id); Object.assign(target, data); toast('已更新'); }
   else { target={id:uid(), created:Date.now(), ...data}; items.push(target); toast('已新增'); }
+  if(photoState.data){ const key=target.img; imgCache[key]=photoState.data; putImg(key, photoState.data); }
+  if(prevImg && prevImg!==target.img) delImg(prevImg);
   save(target); closeForm(); rerenderKeepOpen();
 });
 $('#delBtn').onclick=()=>{
   const id=$('#fId').value; const it=items.find(x=>x.id===id);
   if(!confirm(`確定刪除「${it.brand} ${it.name}」嗎？刪除後無法復原。`)) return;
-  items=items.filter(x=>x.id!==id); openIds.delete(id); save(); cloudDel(id); closeForm(); render(); toast('已刪除');
+  if(it.img) delImg(it.img); items=items.filter(x=>x.id!==id); openIds.delete(id); save(); cloudDel(id); closeForm(); render(); toast('已刪除');
 };
 
 // backup
@@ -569,6 +596,70 @@ setupCombo('#cName', q=>{
   if(!$('#fEff').value) $('#fEff').value=src.eff||'';
   toast('已帶入之前的用法與功效');
 });
+
+
+// ---- 照片：壓縮後存在 Firestore images/sk_xxx（與代購圖片同一個資料夾，用 sk_ 開頭區分）----
+const imgCache={}; let photoState={data:null,removed:false,cur:''};
+const IMGKEY='skincare-img-';
+function imgsDb(){ return (typeof firebase!=='undefined' && firebase.apps.length) ? firebase.app().firestore().collection('images') : null; }
+async function getImg(key){
+  if(imgCache[key]) return imgCache[key];
+  try{ const l=localStorage.getItem(IMGKEY+key); if(l){ imgCache[key]=l; return l; } }catch(e){}
+  const db=imgsDb(); if(!db) return null;
+  try{ const d=await db.doc(key).get(); if(d.exists){ imgCache[key]=d.data().data; try{ localStorage.setItem(IMGKEY+key, imgCache[key]); }catch(e){} return imgCache[key]; } }catch(e){ console.error(e); }
+  return null;
+}
+function putImg(key,data){
+  try{ localStorage.setItem(IMGKEY+key,data); }catch(e){}
+  const db=imgsDb(); if(db) db.doc(key).set({data}).catch(e=>{ console.error(e); toast('照片上傳失敗'); });
+}
+function delImg(key){
+  try{ localStorage.removeItem(IMGKEY+key); }catch(e){}
+  delete imgCache[key];
+  const db=imgsDb(); if(db) db.doc(key).delete().catch(()=>{});
+}
+let fillQueued=false;
+function fillImgs(){
+  if(fillQueued) return; fillQueued=true;
+  setTimeout(()=>{ fillQueued=false;
+    document.querySelectorAll('img[data-img]:not([src])').forEach(el=>{
+      const k=el.dataset.img;
+      if(imgCache[k]) el.src=imgCache[k];
+      else getImg(k).then(d=>{ if(d) document.querySelectorAll(`img[data-img="${k}"]`).forEach(x=>x.src=d); else el.style.visibility='hidden'; });
+    });
+  },0);
+}
+function showPrev(data){
+  const box=$('#photoPrev');
+  if(data){ box.outerHTML=`<img id="photoPrev" class="photo-prev" src="${data}">`; $('#photoDel').style.display=''; }
+  else { box.outerHTML=`<div id="photoPrev" class="photo-prev ph">${photoState.cur&&!photoState.removed?'載入中…':'無照片'}</div>`; $('#photoDel').style.display=(photoState.cur&&!photoState.removed)?'':'none'; }
+}
+function compress(file){
+  return new Promise((res,rej)=>{
+    const url=URL.createObjectURL(file); const im=new Image();
+    im.onload=()=>{
+      let max=900, q=0.8, out='';
+      for(let tries=0;tries<8;tries++){
+        const sc=Math.min(1,max/Math.max(im.width,im.height));
+        const c=document.createElement('canvas'); c.width=Math.round(im.width*sc); c.height=Math.round(im.height*sc);
+        c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+        out=c.toDataURL('image/jpeg',q);
+        if(out.length<280000) break;
+        if(q>0.55) q-=0.1; else max=Math.round(max*0.8);
+      }
+      URL.revokeObjectURL(url); res(out);
+    };
+    im.onerror=()=>{ URL.revokeObjectURL(url); rej(); };
+    im.src=url;
+  });
+}
+$('#photoBtn').onclick=()=>$('#photoFile').click();
+$('#photoFile').onchange=async e=>{
+  const f=e.target.files[0]; e.target.value=''; if(!f) return;
+  try{ const d=await compress(f); photoState.data=d; photoState.removed=false; showPrev(d); }
+  catch(err){ alert('這張照片讀不出來，換一張試試'); }
+};
+$('#photoDel').onclick=()=>{ photoState.data=null; photoState.removed=true; showPrev(null); };
 
 function toast(t){ const el=$('#toast'); el.textContent=t; el.classList.add('show'); clearTimeout(toast._t); toast._t=setTimeout(()=>el.classList.remove('show'),1800); }
 
