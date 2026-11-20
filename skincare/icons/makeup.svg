@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+  <rect width="240" height="240" rx="54" fill="#F1EEE7"/>
+  <!-- 口紅 -->
+  <path d="M84 98 L84 70 Q84 56 98 50 L112 44 L112 98 Z" fill="#C08378" stroke="#4A4038" stroke-width="3" stroke-linejoin="round"/>
+  <rect x="78" y="98" width="40" height="26" rx="3" fill="#D9C8AE" stroke="#4A4038" stroke-width="3"/>
+  <rect x="72" y="124" width="52" height="78" rx="6" fill="#4A4038"/>
+  <line x1="80" y1="140" x2="116" y2="140" stroke="#D9C8AE" stroke-width="2"/>
+  <!-- 粉餅 -->
+  <circle cx="166" cy="164" r="38" fill="#E9DCCB" stroke="#4A4038" stroke-width="3"/>
+  <circle cx="166" cy="164" r="26" fill="#EBC8B8" stroke="#4A4038" stroke-width="2"/>
+  <path d="M154 154 Q160 148 168 150" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" opacity=".8"/>
+  <path d="M170 74 l3 7.5 7.5 3 -7.5 3 -3 7.5 -3 -7.5 -7.5 -3 7.5 -3z" fill="#C9A06A"/>
+  <path d="M196 104 l1.8 4.5 4.5 1.8 -4.5 1.8 -1.8 4.5 -1.8 -4.5 -4.5 -1.8 4.5 -1.8z" fill="#C9A06A"/>
+</svg>

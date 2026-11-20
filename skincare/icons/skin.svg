@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+  <rect width="240" height="240" rx="54" fill="#F1EEE7"/>
+  <!-- 滴管精華瓶 -->
+  <path d="M106 40 C106 30 134 30 134 40 L134 62 L106 62 Z" fill="#4A4038"/>
+  <rect x="101" y="62" width="38" height="16" rx="3" fill="#E8E0D3" stroke="#4A4038" stroke-width="3"/>
+  <path d="M96 92 Q96 80 108 78 L132 78 Q144 80 144 92 L144 188 Q144 198 134 198 L106 198 Q96 198 96 188 Z" fill="#F6F2EB"/>
+  <path d="M96 136 L144 136 L144 188 Q144 198 134 198 L106 198 Q96 198 96 188 Z" fill="#A7B39C"/>
+  <path d="M96 92 Q96 80 108 78 L132 78 Q144 80 144 92 L144 188 Q144 198 134 198 L106 198 Q96 198 96 188 Z" fill="none" stroke="#4A4038" stroke-width="3" stroke-linejoin="round"/>
+  <line x1="106" y1="104" x2="134" y2="104" stroke="#4A4038" stroke-width="2"/>
+  <path d="M104 90 L104 124" stroke="#FFFFFF" stroke-width="3.5" stroke-linecap="round" opacity=".8"/>
+  <!-- 水滴 -->
+  <path d="M172 96 C172 96 161 111 161 119 A11 11 0 0 0 183 119 C183 111 172 96 172 96 Z" fill="#D9C8AE" stroke="#4A4038" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M66 70 l2.4 6 6 2.4 -6 2.4 -2.4 6 -2.4 -6 -6 -2.4 6 -2.4z" fill="#C9A06A"/>
+</svg>

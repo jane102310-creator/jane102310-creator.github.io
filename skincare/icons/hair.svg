@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 240">
+  <rect width="240" height="240" rx="54" fill="#F1EEE7"/>
+  <!-- 髮絲 -->
+  <g fill="none" stroke="#4A4038" stroke-width="3" stroke-linecap="round">
+    <path d="M70 52 C96 78 60 112 92 140 C118 162 92 186 104 204"/>
+    <path d="M90 46 C116 74 82 108 112 136 C138 160 114 184 126 204"/>
+    <path d="M110 44 C136 70 104 104 132 132 C156 156 136 182 148 202" stroke="#A7B39C"/>
+  </g>
+  <!-- 梳子 -->
+  <g transform="rotate(-28 168 128)">
+    <rect x="128" y="96" width="82" height="22" rx="8" fill="#D9C8AE" stroke="#4A4038" stroke-width="3"/>
+    <g stroke="#4A4038" stroke-width="3" stroke-linecap="round">
+      <line x1="138" y1="118" x2="138" y2="146"/><line x1="150" y1="118" x2="150" y2="146"/><line x1="162" y1="118" x2="162" y2="146"/>
+      <line x1="174" y1="118" x2="174" y2="146"/><line x1="186" y1="118" x2="186" y2="146"/><line x1="198" y1="118" x2="198" y2="146"/>
+    </g>
+  </g>
+  <path d="M184 60 l2.4 6 6 2.4 -6 2.4 -2.4 6 -2.4 -6 -6 -2.4 6 -2.4z" fill="#C9A06A"/>
+</svg>
