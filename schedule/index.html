@@ -1,212 +1,381 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<!DOCTYPE html>
+<html lang="zh-Hant"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>每日上班表</title>
-<meta name="claude:viewport-fit-sides" content="cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
 <style>
-/* Layout: cream planner — soft butter surfaces, rounded pills, one day per screen */
-:root{
-  --bg:#FBF6EC; --surface:#FFFDF8; --ink:#5A4636; --muted:#A08D7B; --line:#EFE4D2;
-  --day:#B7791F; --day-bg:#FCEFCF; --eve:#9B6A8C; --eve-bg:#F6E6EE; --night:#5F7FA3; --night-bg:#E5EEF6;
-  --off:#8C9A7E; --off-bg:#EDF2E4; --accent:#C9965B; --sel-bg:#F6DFA9; --sel-ink:#5A4636; --wkend:#D98B73;
-  --shadow:0 2px 10px rgba(150,115,70,.08);
-  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
-  --round:"Huninn","Noto Sans TC","PingFang TC",system-ui,sans-serif;
-  --mono:"Huninn","Noto Sans TC",ui-rounded,system-ui,sans-serif;
-}
-@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
-  --bg:#2A221C; --surface:#352B24; --ink:#F3E7D6; --muted:#B9A48E; --line:#4A3D33;
-  --day:#F2C477; --day-bg:#4A3A22; --eve:#E3B3CF; --eve-bg:#45303C; --night:#A9C3E0; --night-bg:#2F3A47;
-  --off:#C2CDB3; --off-bg:#36402F; --accent:#E3B47A; --sel-bg:#E8C98A; --sel-ink:#3A2C20; --wkend:#F0A890;
-  --shadow:0 2px 10px rgba(0,0,0,.25); color-scheme:dark}}
-:root[data-theme="dark"]{
-  --bg:#2A221C; --surface:#352B24; --ink:#F3E7D6; --muted:#B9A48E; --line:#4A3D33;
-  --day:#F2C477; --day-bg:#4A3A22; --eve:#E3B3CF; --eve-bg:#45303C; --night:#A9C3E0; --night-bg:#2F3A47;
-  --off:#C2CDB3; --off-bg:#36402F; --accent:#E3B47A; --sel-bg:#E8C98A; --sel-ink:#3A2C20; --wkend:#F0A890;
-  --shadow:0 2px 10px rgba(0,0,0,.25); color-scheme:dark}
-
-body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-tap-highlight-color:transparent}
-body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
-.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line);border-radius:0 0 22px 22px;box-shadow:var(--shadow)}
-.top-in{max-width:720px;margin:0 auto;padding-block:10px 8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:8px}
+/* VOICE: 溫和、好用，像護理站白板旁的那本班表夾
+   IDEA: 每月的紙本班表 → 拍照 → 變成可點的每日班表
+   PICTURE: 上方是日期條與當天班別卡；上傳頁是可以逐格修正的班表格子
+   COLOUR and TYPE: 奶油底、白班黃、小夜紫、大夜藍、休假綠；Huninn 圓體 + Noto Sans TC
+   LAYOUT: 單欄，手機優先；分頁：每日 / 整月 / 上傳新班表 */
+:root{color-scheme:light dark;
+  --bg:light-dark(#FBF6EC,#2A221C);--surface:light-dark(#FFFDF8,#352B24);--ink:light-dark(#5A4636,#F3E7D6);
+  --muted:light-dark(#9A8674,#B9A48E);--line:light-dark(#EFE4D2,#4A3D33);
+  --day:light-dark(#A86A12,#F2C477);--day-bg:light-dark(#FCEFCF,#4A3A22);
+  --eve:light-dark(#8A557A,#E3B3CF);--eve-bg:light-dark(#F6E6EE,#45303C);
+  --night:light-dark(#4F6F93,#A9C3E0);--night-bg:light-dark(#E5EEF6,#2F3A47);
+  --off:light-dark(#6F7F60,#C2CDB3);--off-bg:light-dark(#EDF2E4,#36402F);
+  --accent:light-dark(#B9813F,#E3B47A);--sel:light-dark(#F6DFA9,#E8C98A);--sel-ink:#3A2C20;
+  --warn:light-dark(#C0462E,#F0A890);--warn-bg:light-dark(#FBE3DC,#4A2A22);--wk:light-dark(#D07A60,#F0A890);
+  --shadow:0 2px 10px light-dark(rgba(150,115,70,.09),rgba(0,0,0,.25));
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;--round:"Huninn","Noto Sans TC",system-ui,sans-serif}
+:root[data-theme=light]{color-scheme:light}:root[data-theme=dark]{color-scheme:dark}
+*{box-sizing:border-box;min-width:0}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.55 var(--sans);overflow-x:clip;-webkit-tap-highlight-color:transparent}
+button,input,select{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.top{position:sticky;top:0;z-index:5;background:var(--surface);box-shadow:var(--shadow);border-radius:0 0 22px 22px;padding:calc(env(safe-area-inset-top,0px) + 10px) max(16px,env(safe-area-inset-left,0px)) 8px}
+.wrap{max-width:760px;margin:0 auto}
+.tabs{display:flex;gap:6px;margin-bottom:8px}
+.tabs button{flex:1;border:0;border-radius:999px;padding:9px 6px;background:var(--bg);font-family:var(--round);font-size:15px;min-height:42px}
+.tabs button[aria-selected=true]{background:var(--sel);color:var(--sel-ink)}
 .head{display:flex;align-items:center;gap:10px}
-.head h1{margin:0;font-family:var(--round);font-size:24px;font-weight:400;flex:1;min-width:0;font-variant-numeric:tabular-nums}
-.head h1 small{font-size:14px;font-weight:500;color:var(--muted);margin-left:6px}
-.nav{width:38px;height:38px;border-radius:50%;border:0;background:var(--day-bg);color:var(--ink);font-size:18px;cursor:pointer}
+.head h1{margin:0;flex:1;font:400 26px/1.1 var(--round)}
+.head h1 small{font-size:14px;color:var(--muted);margin-left:6px}
+.nav{width:42px;height:42px;border-radius:50%;border:0;background:var(--day-bg);font-size:20px}
 .nav:disabled{opacity:.3}
-.today{font-family:var(--round);font-size:13px;border:0;color:var(--sel-ink);background:var(--sel-bg);border-radius:999px;padding:5px 10px;cursor:pointer}
-.strip{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.pill{border:0;border-radius:999px;padding:7px 12px;background:var(--sel);color:var(--sel-ink);font:14px var(--round);min-height:38px}
+.strip{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding:6px 0 2px}
 .strip::-webkit-scrollbar{display:none}
-.d{flex:0 0 40px;border:0;background:transparent;border-radius:16px;padding:5px 0;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;color:var(--ink);font-family:var(--sans)}
-.d small{font-size:10px;color:var(--muted)}
-.d b{font-family:var(--mono);font-size:15px}
-.d.we small{color:var(--wkend)}
-.d.sel{background:var(--sel-bg);color:var(--sel-ink)}
-.d.sel small{color:var(--sel-ink)}
-.mlab{flex:0 0 auto;align-self:center;font-size:11px;font-weight:700;color:var(--muted);padding:0 4px 0 8px;writing-mode:vertical-rl;letter-spacing:.1em}
-.d.now:not(.sel) b{text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
-.d:focus-visible,.nav:focus-visible,.today:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-
-main{max-width:720px;margin:0 auto;padding-block:14px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
-.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
-.sum div{background:var(--surface);border:0;box-shadow:var(--shadow);border-radius:18px;padding:8px 6px;text-align:center}
-.sum b{display:block;font-family:var(--mono);font-size:20px}
-.sum span{font-size:11px;color:var(--muted)}
-.sum .s-day b{color:var(--day)} .sum .s-eve b{color:var(--eve)} .sum .s-night b{color:var(--night)} .sum .s-off b{color:var(--off)}
-
-section{display:flex;flex-direction:column;gap:6px}
-.sh{display:flex;align-items:baseline;gap:8px;padding-left:2px}
-.sh h2{margin:0;font-family:var(--round);font-size:17px;font-weight:400}
-.sh span{font-size:12px;color:var(--muted)}
-.list{background:var(--surface);border:0;box-shadow:var(--shadow);border-radius:20px;overflow:hidden}
-.grp{display:flex;gap:10px;padding:11px 14px;border-top:1px dashed var(--line);align-items:flex-start}
+.d{flex:0 0 42px;border:0;background:transparent;border-radius:16px;padding:5px 0;display:flex;flex-direction:column;align-items:center}
+.d small{font-size:11px;color:var(--muted)}.d b{font:15px var(--round)}
+.d.we small{color:var(--wk)}.d.sel{background:var(--sel);color:var(--sel-ink)}.d.sel small{color:var(--sel-ink)}
+.d.now:not(.sel) b{text-decoration:underline 2px var(--accent);text-underline-offset:3px}
+.mlab{flex:0 0 auto;align-self:center;font-size:12px;font-weight:700;color:var(--muted);padding:0 4px 0 8px;writing-mode:vertical-rl}
+main{max-width:760px;margin:0 auto;padding:14px max(16px,env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:flex;flex-direction:column;gap:14px}
+.sum{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.sum div{background:var(--surface);box-shadow:var(--shadow);border-radius:18px;padding:8px 4px;text-align:center}
+.sum b{display:block;font:22px var(--round)}.sum span{font-size:13px;color:var(--muted)}
+.c-day{color:var(--day)}.c-eve{color:var(--eve)}.c-night{color:var(--night)}.c-off{color:var(--off)}
+h2{margin:0 0 6px 2px;font:400 18px var(--round)}h2 span{font:13px var(--sans);color:var(--muted);margin-left:8px}
+.card{background:var(--surface);box-shadow:var(--shadow);border-radius:20px;overflow:hidden}
+.grp{display:flex;gap:10px;padding:11px 14px;border-top:1px dashed var(--line)}
 .grp:first-child{border-top:0}
-.code{flex:0 0 92px;display:flex;flex-direction:column;gap:1px}
-.code b{font-family:var(--mono);font-size:14px;width:max-content;padding:2px 10px;border-radius:999px}
-.code small{font-size:11px;color:var(--muted);font-family:var(--mono)}
-.day .code b{background:var(--day-bg);color:var(--day)}
-.eve .code b{background:var(--eve-bg);color:var(--eve)}
-.night .code b{background:var(--night-bg);color:var(--night)}
-.off .code b{background:var(--off-bg);color:var(--off);font-family:var(--sans);font-size:13px}
-.names{display:flex;flex-wrap:wrap;gap:6px 12px;flex:1;min-width:0;padding-top:1px}
-.p{font-family:var(--round);font-size:16px;font-weight:400;white-space:nowrap}
-.p i{font-style:normal;font-size:11px;color:var(--muted);margin-left:3px;font-family:var(--mono)}
-.p .wplus{font-size:10px;font-weight:700;color:var(--wkend);margin-left:3px}
-.empty{padding:10px 12px;color:var(--muted);font-size:13px}
-.note{font-size:12px;color:var(--muted);line-height:1.7}
-.note b{color:var(--ink);font-weight:500}
-</style>
-
-<div class="top"><div class="top-in">
-  <div class="head">
-    <button class="nav" id="prev" aria-label="前一天">‹</button>
-    <h1 id="title">11/8<small>星期日</small></h1>
-    <button class="today" id="todayBtn">今天</button>
-    <button class="nav" id="next" aria-label="後一天">›</button>
+.code{flex:0 0 96px}
+.code b{display:inline-block;font:15px var(--round);padding:2px 10px;border-radius:999px}
+.code small{display:block;font-size:12px;color:var(--muted)}
+.day .code b{background:var(--day-bg);color:var(--day)}.eve .code b{background:var(--eve-bg);color:var(--eve)}
+.night .code b{background:var(--night-bg);color:var(--night)}.off .code b{background:var(--off-bg);color:var(--off);font-size:14px}
+.names{display:flex;flex-wrap:wrap;gap:6px 14px;flex:1}
+.p{font:17px var(--round);white-space:nowrap}.p i{font:normal 12px var(--sans);color:var(--muted);margin-left:3px}
+.p em{font-style:normal;font-size:11px;font-weight:700;color:var(--wk);margin-left:3px}
+.empty{padding:12px 14px;color:var(--muted);font-size:14px}
+.note{font-size:13px;color:var(--muted);line-height:1.7;margin:0}
+.scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.g{border-collapse:separate;border-spacing:0;font-size:13px}
+.g th,.g td{border-bottom:1px solid var(--line);padding:0;text-align:center;white-space:nowrap}
+.g thead th{position:sticky;top:0;background:var(--surface);font-weight:500;padding:6px 2px;font-size:12px}
+.g th.nm,.g td.nm{position:sticky;left:0;background:var(--surface);z-index:1;text-align:left;padding:4px 8px;font:15px var(--round);border-right:1px solid var(--line)}
+.g thead th.nm{z-index:2}
+.g td span{display:block;min-width:64px;padding:6px 4px}
+.g .we{color:var(--wk)}.g .today{background:var(--sel);color:var(--sel-ink)}
+.g td.w{background:var(--day-bg)}.g td.e{background:var(--eve-bg)}.g td.n{background:var(--night-bg)}
+.g input{width:92px;border:0;background:transparent;text-align:center;padding:8px 2px;font-size:14px}
+.g input.unc{background:var(--warn-bg);color:var(--warn);font-weight:700}
+.g input.chg{box-shadow:inset 0 -2px 0 var(--accent)}
+.g tr.chk td{font-size:11px;color:var(--muted);padding:4px 2px;white-space:normal;line-height:1.3;vertical-align:top}
+.g tr.chk td.bad{background:var(--warn-bg);color:var(--warn)}
+.setf{display:flex;flex-direction:column;gap:4px;font-size:14px;color:var(--muted)}
+.setf input{padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:var(--bg);font-size:16px;color:var(--ink)}
+.drop{display:flex;flex-direction:column;align-items:center;gap:10px;padding:26px 16px;border:2px dashed var(--accent);border-radius:20px;background:var(--surface);text-align:center}
+.drop.on{background:var(--day-bg)}
+.drop img{max-width:100%;max-height:220px;border-radius:12px}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.row label{font-size:14px;color:var(--muted)}
+.row input[type=number]{width:84px;padding:8px;border-radius:12px;border:1px solid var(--line);background:var(--surface);font-size:16px}
+.big{border:0;border-radius:999px;padding:12px 20px;background:var(--accent);color:#fff;font:16px var(--round);min-height:46px}
+.big:disabled{opacity:.45}
+.ghost{border:1px solid var(--line);border-radius:999px;padding:10px 16px;background:var(--surface);font:15px var(--round);min-height:44px}
+.status{font-size:14px;color:var(--muted)}.status.err{color:var(--warn)}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:13px;color:var(--muted)}
+.legend b{display:inline-block;width:12px;height:12px;border-radius:4px;vertical-align:-1px;margin-right:4px}
+[hidden]{display:none!important}
+@media (prefers-reduced-motion:no-preference){.d,.tabs button{transition:background .15s}}
+</style></head><body>
+<div class="top"><div class="wrap">
+  <div class="tabs" role="tablist">
+    <button role="tab" data-v="day" aria-selected="true">每日</button>
+    <button role="tab" data-v="month" aria-selected="false">整月</button>
+    <button role="tab" data-v="upload" aria-selected="false" id="upTab" hidden>上傳新班表</button>
   </div>
-  <div class="strip" id="strip" role="tablist" aria-label="選擇日期"></div>
+  <div id="dayHead">
+    <div class="head">
+      <button class="nav" id="prev" aria-label="前一天">‹</button>
+      <h1 id="title">班表</h1>
+      <button class="pill" id="todayBtn">今天</button>
+      <button class="nav" id="next" aria-label="後一天">›</button>
+    </div>
+    <div class="strip" id="strip"></div>
+  </div>
+  <div id="monthHead" hidden><div class="head"><h1 id="mTitle">整月</h1><select id="mSel" class="pill"></select></div></div>
+  <div id="upHead" hidden><div class="head"><h1>上傳新班表<small>拍照 → 自動轉成班表</small></h1></div></div>
 </div></div>
 
-<main id="main"></main>
+<main id="vDay"><p class="empty">讀取班表中…</p></main>
+<main id="vMonth" hidden></main>
+<main id="vUp" hidden>
+  <label class="drop" id="drop">
+    <img id="prevImg" alt="" hidden>
+    <span id="dropTxt" style="font:18px var(--round)">點這裡選班表照片，或把照片拖進來</span>
+    <span class="note">整張班表拍正、拍清楚，日期列和每個人的名字都要入鏡</span>
+    <input type="file" id="file" accept="image/*" hidden>
+  </label>
+  <div class="row"><button class="big" id="readBtn" disabled>開始辨識</button><button class="ghost" id="stopBtn" hidden>停止</button><span class="status" id="upStatus"></span></div>
+  <section id="review" hidden>
+    <h2>核對班表<span>點格子就能改；紅底是看不清楚的格子</span></h2>
+    <div class="row" style="margin-bottom:8px">
+      <label>西元年 <input type="number" id="yIn" min="2020" max="2100"></label>
+      <label>月 <input type="number" id="mIn" min="1" max="12"></label>
+      <span class="status" id="chkSum"></span>
+    </div>
+    <div class="card scroll" id="revGrid"></div>
+    <div class="legend" style="margin-top:8px"><span><b style="background:var(--warn-bg)"></b>看不清楚，請對照紙本</span><span><b style="background:var(--day-bg)"></b>最下面一列：每天各崗位人數，紅色是跟同類日子不一樣</span></div>
+    <div class="row" style="margin-top:12px"><button class="big" id="saveBtn">儲存這個月</button><span class="status" id="saveStatus"></span></div>
+  </section>
+  <p class="note" id="upNote">辨識完一定要對照紙本看一次，尤其是紅底的格子。按「儲存這個月」會直接更新這個網站，約 1 分鐘後所有人都會看到。</p>
+</main>
+<main id="vSet" hidden>
+  <h2>管理設定<span>只存在這支手機／這台電腦的瀏覽器裡</span></h2>
+  <div class="card" style="padding:16px;display:flex;flex-direction:column;gap:12px">
+    <label class="setf">Anthropic API 金鑰（用來辨識照片）<input id="kA" type="password" autocomplete="off" placeholder="sk-ant-..."></label>
+    <label class="setf">GitHub 權杖（用來儲存到網站）<input id="kG" type="password" autocomplete="off" placeholder="github_pat_..."></label>
+    <div class="row"><button class="big" id="kSave">儲存設定</button><button class="ghost" id="kClear">清除設定</button><span class="status" id="kSt"></span></div>
+  </div>
+  <p class="note">API 金鑰到 console.anthropic.com 申請（辨識一次大約幾塊台幣）。GitHub 權杖到 GitHub → Settings → Developer settings → Fine-grained tokens 建立：Repository access 只選 jane102310-creator.github.io，Permissions 的 Contents 設為 Read and write。<br>這兩組金鑰只存在這個瀏覽器，別的裝置要再設定一次；不要在公用電腦設定。</p>
+</main>
+<p class="note" style="text-align:center;padding:0 16px 24px"><a href="#admin" id="adminLink" style="color:var(--muted)">管理</a></p>
 
 <script>
-// Transcribed from the 11511 and 11512 sheets: 11/1–12/31, one code per day, space-separated. "-" = not on that month's sheet.
-// 11月依新版紙本班表更新（紙本已含林艷霞↔楊玉蘭換班）。
-
-// 資料來自 data.json（由班表小幫手每小時自動同步）
-fetch('data.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(DATA=>{
-const MS=(DATA.months||[]).slice().sort((x,y)=>x.key<y.key?-1:1);
-const MONTHS=MS.map(M=>({y:M.year,m:M.month,n:M.n}));
-const names=[];MS.forEach(M=>M.people.forEach(p=>{if(!names.includes(p.name))names.push(p.name)}));
-const PEOPLE=names.map(name=>({name,days:MS.flatMap(M=>{const p=M.people.find(x=>x.name===name);return Array.from({length:M.n},(_,i)=>p&&p.codes[i]?p.codes[i]:'-')})}));
-
-
-const SHIFT={
-  "85":{g:'day',t:'時間未註明',o:0},
-  "8-4'":{g:'day',t:'08:00–16:30',o:1},
-  "8'-5":{g:'day',t:'08:30–17:00',o:2},
-  "9-5'":{g:'day',t:'09:00–17:30',o:3},
-  "9'-6":{g:'day',t:'09:30–18:00',o:4},
-  "10-6'":{g:'day',t:'10:00–18:30',o:5},
-  "3'-12":{g:'eve',t:'15:30–24:00',o:6},
-  "4-12'":{g:'eve',t:'16:00–24:30',o:7},
-  "PH":{g:'night',t:'00:00–08:30',o:8}};
+{
+const $=id=>document.getElementById(id);
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const WK='日一二三四五六';
+const SHIFT={"85":{g:'day',t:'時間未註明',o:0},"8-4'":{g:'day',t:'08:00–16:30',o:1},"8'-5":{g:'day',t:'08:30–17:00',o:2},"9-5'":{g:'day',t:'09:00–17:30',o:3},"9'-6":{g:'day',t:'09:30–18:00',o:4},"10-6'":{g:'day',t:'10:00–18:30',o:5},"3'-12":{g:'eve',t:'15:30–24:00',o:6},"4-12'":{g:'eve',t:'16:00–24:30',o:7},"PH":{g:'night',t:'00:00–08:30',o:8}};
+const KEYS=Object.keys(SHIFT).sort((a,b)=>b.length-a.length);
 const OFF={FF:'例假',WW:'休息日',VV:'休假',NH:'國定假日',OFF:'OFF','育嬰':'育嬰假'};
 const OFF_ORDER=['例假','休息日','國定假日','休假','育嬰假'];
-const WK='日一二三四五六';
-const $=id=>document.getElementById(id);
 const pretty=s=>s.replace(/'/g,'’');
-const DAYS=[];MONTHS.forEach(M=>{for(let d=1;d<=M.n;d++)DAYS.push({m:M.m,d,wd:new Date(M.y,M.m-1,d).getDay()})});
-const N=DAYS.length;
-const label=i=>`${DAYS[i].m}/${DAYS[i].d}`;
-
 function parse(code){
+  code=String(code||'').trim().replace(/[’‘`]/g,"'").replace(/\?$/,'');
   if(!code||code==='-')return{kind:'none'};
   let mark='';const pm=/^(W\+|N\+)/.exec(code);if(pm){mark=pm[1];code=code.slice(2)}
-  for(const k of Object.keys(SHIFT).sort((a,b)=>b.length-a.length)){
-    if(code.startsWith(k))return{kind:'work',base:k,tag:code.slice(k.length),mark,...SHIFT[k]};
-  }
-  const up=code.replace(/^ss/,'SS');
-  const off=up.startsWith('SS')?(up==='SS'?'其他假':up):(OFF[up]||up);
-  return{kind:'off',label:off};
+  for(const k of KEYS)if(code.startsWith(k))return{kind:'work',base:k,tag:code.slice(k.length),mark,...SHIFT[k]};
+  const up=code.replace(/^ss/i,'SS');
+  return{kind:'off',label:up.startsWith('SS')?(up==='SS'?'其他假':up):(OFF[up]||up)};
+}
+function post(code){const c=parse(code);if(c.kind!=='work')return null;const t=c.tag;
+  for(const k of ['點','加','(C)','(8.9)','(10.11)','(12.13)','(15.16)'])if(t.includes(k))return k;
+  if(/L\)?$/.test(t))return'L';return c.base==='85'?null:c.base;}
+
+let months=[];      // [{key,year,month,n,people:[{id,name,codes}]}]
+let DAYS=[],PEOPLE=[],sel=0,view='day',rendered=false;
+function rebuild(){
+  months.sort((a,b)=>a.key<b.key?-1:1);
+  DAYS=[];const names=[];
+  months.forEach(M=>{for(let d=1;d<=M.n;d++)DAYS.push({y:M.year,m:M.month,d,wd:new Date(M.year,M.month-1,d).getDay()});
+    M.people.forEach(p=>{if(!names.includes(p.name))names.push(p.name)})});
+  PEOPLE=names.map(name=>({name,days:months.flatMap(M=>{const p=M.people.find(x=>x.name===name);return p?Array.from({length:M.n},(_,i)=>p.codes[i]||'-'):Array(M.n).fill('-')})}));
+  $('mSel').innerHTML=months.map(M=>`<option value="${esc(M.key)}">${M.year}年${M.month}月</option>`).join('');
+  buildStrip();
+  const t=todayIdx(),hm=/^#d(\d{2})(\d{2})$/.exec(location.hash),hi=hm?DAYS.findIndex(x=>x.m===+hm[1]&&x.d===+hm[2]):-1;
+  if(!rendered){sel=hi>=0?hi:(t??0);rendered=true}else if(sel>=DAYS.length||sel<0)sel=t??0;
+  render();
+}
+function todayIdx(){const n=new Date();const i=DAYS.findIndex(x=>x.y===n.getFullYear()&&x.m===n.getMonth()+1&&x.d===n.getDate());return i<0?null:i}
+function buildStrip(){
+  const s=$('strip');s.innerHTML='';const t=todayIdx();
+  DAYS.forEach((x,i)=>{
+    if(x.d===1){const l=document.createElement('span');l.className='mlab';l.textContent=x.m+'月';s.appendChild(l)}
+    const b=document.createElement('button');b.dataset.i=i;b.className='d'+(x.wd===0||x.wd===6?' we':'')+(i===t?' now':'');
+    b.innerHTML=`<small>${WK[x.wd]}</small><b>${x.d}</b>`;b.onclick=()=>{sel=i;render()};s.appendChild(b);
+  });
 }
 function dayData(i){
-  const out={night:[],day:{},eve:{},off:{},tonight:[],tonightKnown:i+1<N};
+  const out={night:[],day:{},eve:{},off:{},tonight:[]};
   PEOPLE.forEach(p=>{
     const c=parse(p.days[i]);
-    if(c.kind==='work'){
-      const e={name:p.name,tag:c.tag,mark:c.mark};
-      if(c.g==='night')out.night.push(e);else (out[c.g][c.base]??=[]).push(e);
-    }else if(c.kind==='off')(out.off[c.label]??=[]).push({name:p.name});
-    if(i+1<N){const n=parse(p.days[i+1]);if(n.kind==='work'&&n.g==='night')out.tonight.push({name:p.name,tag:n.tag,mark:n.mark})}
-  });
-  return out;
+    if(c.kind==='work'){const e={name:p.name,tag:c.tag,mark:c.mark};if(c.g==='night')out.night.push(e);else(out[c.g][c.base]??=[]).push(e)}
+    else if(c.kind==='off')(out.off[c.label]??=[]).push({name:p.name});
+    if(i+1<DAYS.length){const n=parse(p.days[i+1]);if(n.kind==='work'&&n.g==='night')out.tonight.push({name:p.name,tag:n.tag,mark:n.mark})}
+  });return out;
 }
-const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const person=x=>`<span class="p">${esc(x.name)}${x.tag?`<i>${esc(pretty(x.tag))}</i>`:''}${x.mark?`<span class="wplus">${x.mark}</span>`:''}</span>`;
-function rows(map,cls){
-  const keys=Object.keys(map).sort((a,b)=>(SHIFT[a]?.o??0)-(SHIFT[b]?.o??0));
-  if(!keys.length)return`<div class="empty">沒有人</div>`;
-  return keys.map(k=>`<div class="grp ${cls}"><div class="code"><b>${esc(pretty(k))}</b>${SHIFT[k]?`<small>${SHIFT[k].t}</small>`:''}</div><div class="names">${map[k].map(person).join('')}</div></div>`).join('');
-}
-function single(list,code,time,cls,emptyTxt){
-  if(!list.length)return`<div class="empty">${emptyTxt}</div>`;
-  return`<div class="grp ${cls}"><div class="code"><b>${code}</b><small>${time}</small></div><div class="names">${list.map(person).join('')}</div></div>`;
-}
+const person=x=>`<span class="p">${esc(x.name)}${x.tag?`<i>${esc(pretty(x.tag))}</i>`:''}${x.mark?`<em>${esc(x.mark)}</em>`:''}</span>`;
 const count=m=>Object.values(m).reduce((a,b)=>a+b.length,0);
-
-let sel=0;
+function rows(map,cls){const ks=Object.keys(map).sort((a,b)=>(SHIFT[a]?.o??0)-(SHIFT[b]?.o??0));
+  return ks.length?ks.map(k=>`<div class="grp ${cls}"><div class="code"><b>${esc(pretty(k))}</b>${SHIFT[k]?`<small>${SHIFT[k].t}</small>`:''}</div><div class="names">${map[k].map(person).join('')}</div></div>`).join(''):'<div class="empty">沒有人</div>'}
+function single(list,cls,time,empty){return list.length?`<div class="grp ${cls}"><div class="code"><b>PH</b><small>${esc(time)}</small></div><div class="names">${list.map(person).join('')}</div></div>`:`<div class="empty">${esc(empty)}</div>`}
+const lab=i=>`${DAYS[i].m}/${DAYS[i].d}`;
 function render(){
+  if(view==='month')return renderMonth();
+  if(!DAYS.length){$('vDay').innerHTML='<p class="empty">還沒有班表。到「上傳新班表」拍一張就可以開始。</p>';$('title').textContent='班表';return}
   const T=DAYS[sel],D=dayData(sel);
   $('title').innerHTML=`${T.m}/${T.d}<small>星期${WK[T.wd]}</small>`;
-  $('prev').disabled=sel<=0;$('next').disabled=sel>=N-1;
-  document.querySelectorAll('.d').forEach(b=>{const on=+b.dataset.i===sel;b.classList.toggle('sel',on);b.setAttribute('aria-selected',on)});
-  const prevDay=sel===0?'10/31':label(sel-1);
-  const nextDay=sel+1<N?label(sel+1):'1/1';
-  const offSorted=Object.entries(D.off).sort((a,b)=>{const ia=OFF_ORDER.indexOf(a[0]),ib=OFF_ORDER.indexOf(b[0]);return(ia<0?9:ia)-(ib<0?9:ib)});
-  const offRows=offSorted.length?offSorted.map(([k,v])=>`<div class="grp off"><div class="code"><b>${esc(k)}</b></div><div class="names">${v.map(person).join('')}</div></div>`).join(''):`<div class="empty">沒有人休假</div>`;
-  $('main').innerHTML=`
-  <div class="sum">
-    <div class="s-day"><b>${count(D.day)}</b><span>白班</span></div>
-    <div class="s-eve"><b>${count(D.eve)}</b><span>小夜</span></div>
-    <div class="s-night"><b>${D.night.length}</b><span>大夜</span></div>
-    <div class="s-off"><b>${count(D.off)}</b><span>放假</span></div>
-  </div>
-  <section><div class="sh"><h2>凌晨大夜</h2><span>${prevDay} 晚上 24:00 接班，做到早上 08:30</span></div>
-    <div class="list">${single(D.night,'PH','00:00–08:30','night',sel===0?'10/31 晚上的大夜在 10 月班表':'沒有排大夜')}</div></section>
-  <section><div class="sh"><h2>白班</h2><span>依上班時間排序</span></div>
-    <div class="list">${rows(D.day,'day')}</div></section>
-  <section><div class="sh"><h2>小夜</h2></div>
-    <div class="list">${rows(D.eve,'eve')}</div></section>
-  <section><div class="sh"><h2>今晚接大夜</h2><span>${nextDay} 的 PH，今晚 24:00 上班</span></div>
-    <div class="list">${D.tonightKnown?single(D.tonight,'PH',`${nextDay} 00:00`,'night','沒有排大夜'):'<div class="empty">1/1 的 PH 在明年 1 月班表</div>'}</div></section>
-  <section><div class="sh"><h2>放假</h2></div>
-    <div class="list">${offRows}</div></section>
-  <p class="note">名字旁的小字是班表上的註記，例如 L、點、加、(12.13)。<b>W+</b> 是休假日出勤，<b>N+</b> 是國定假日出勤。<br>這份資料是從班表截圖抄錄的，若和系統班表不同，以 HR 排班資料為準。</p>`;
-  const chip=document.querySelector(`.d[data-i="${sel}"]`);chip&&chip.scrollIntoView({inline:'center',block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
-  try{history.replaceState(null,'','#d'+String(T.m).padStart(2,'0')+String(T.d).padStart(2,'0'))}catch(e){}
+  $('prev').disabled=sel<=0;$('next').disabled=sel>=DAYS.length-1;
+  document.querySelectorAll('.d').forEach(b=>b.classList.toggle('sel',+b.dataset.i===sel));
+  const offs=Object.entries(D.off).sort((a,b)=>{const x=OFF_ORDER.indexOf(a[0]),y=OFF_ORDER.indexOf(b[0]);return(x<0?9:x)-(y<0?9:y)});
+  $('vDay').innerHTML=`
+  <div class="sum"><div><b class="c-day">${count(D.day)}</b><span>白班</span></div><div><b class="c-eve">${count(D.eve)}</b><span>小夜</span></div><div><b class="c-night">${D.night.length}</b><span>大夜</span></div><div><b class="c-off">${count(D.off)}</b><span>放假</span></div></div>
+  <section><h2>凌晨大夜<span>${sel?lab(sel-1)+' 晚上 24:00 接班':'前一晚接班'}</span></h2><div class="card">${single(D.night,'night','00:00–08:30',sel?'沒有排大夜':'前一晚的大夜在上個月班表')}</div></section>
+  <section><h2>白班<span>依上班時間排序</span></h2><div class="card">${rows(D.day,'day')}</div></section>
+  <section><h2>小夜</h2><div class="card">${rows(D.eve,'eve')}</div></section>
+  <section><h2>今晚接大夜<span>${sel+1<DAYS.length?lab(sel+1)+' 的 PH':''}</span></h2><div class="card">${sel+1<DAYS.length?single(D.tonight,'night','今晚 24:00','沒有排大夜'):'<div class="empty">下個月的班表還沒上傳</div>'}</div></section>
+  <section><h2>放假</h2><div class="card">${offs.length?offs.map(([k,v])=>`<div class="grp off"><div class="code"><b>${esc(k)}</b></div><div class="names">${v.map(person).join('')}</div></div>`).join(''):'<div class="empty">沒有人休假</div>'}</div></section>
+  <p class="note">小字是班表上的註記，例如 L、點、加、(12.13)。<b>W+</b> 休息日出勤，<b>N+</b> 國定假日出勤。以紙本班表為準。</p>`;
+  const chip=document.querySelector(`.d[data-i="${sel}"]`);chip&&chip.scrollIntoView({inline:'center',block:'nearest'});
 }
-DAYS.forEach((x,i)=>{
-  if(x.d===1){const l=document.createElement('span');l.className='mlab';l.textContent=x.m+'月';$('strip').appendChild(l)}
-  const b=document.createElement('button');b.dataset.i=i;
-  b.className='d'+(x.wd===0||x.wd===6?' we':'');b.setAttribute('role','tab');
-  b.innerHTML=`<small>${WK[x.wd]}</small><b>${x.d}</b>`;b.onclick=()=>{sel=i;render()};$('strip').appendChild(b);
-});
-function todayIdx(){const n=new Date();const i=DAYS.findIndex(x=>x.m===n.getMonth()+1&&x.d===n.getDate()&&n.getFullYear()===2026);return i<0?null:i}
-const t=todayIdx();if(t!==null)document.querySelector(`.d[data-i="${t}"]`).classList.add('now');
-$('todayBtn').onclick=()=>{sel=t??0;render()};
-$('prev').onclick=()=>{if(sel>0){sel--;render()}};
-$('next').onclick=()=>{if(sel<N-1){sel++;render()}};
+function cellCls(code){const c=parse(code);return c.kind==='work'?({day:'w',eve:'e',night:'n'}[c.g]):''}
+function renderMonth(){
+  const M=months.find(x=>x.key===$('mSel').value)||months[months.length-1];
+  if(!M){$('vMonth').innerHTML='<p class="empty">還沒有班表。</p>';return}
+  $('mSel').value=M.key;$('mTitle').textContent=`${M.year}年${M.month}月`;
+  const n=new Date(),td=(n.getFullYear()===M.year&&n.getMonth()+1===M.month)?n.getDate():0;
+  const hd=Array.from({length:M.n},(_,i)=>{const w=new Date(M.year,M.month-1,i+1).getDay();return`<th class="${w%6===0?'we':''} ${i+1===td?'today':''}">${i+1}<br>${WK[w]}</th>`}).join('');
+  $('vMonth').innerHTML=`<div class="card scroll"><table class="g"><thead><tr><th class="nm">姓名</th>${hd}</tr></thead><tbody>${M.people.map(p=>`<tr><td class="nm">${esc(p.name)}</td>${Array.from({length:M.n},(_,i)=>`<td class="${cellCls(p.codes[i])}"><span>${esc(pretty(p.codes[i]||''))}</span></td>`).join('')}</tr>`).join('')}</tbody></table></div>
+  ${keys().g?'<div class="row"><button class="ghost" id="editBtn">修改這個月</button></div>':''}`;
+  if(keys().g)$('editBtn').onclick=()=>{draft={year:M.year,month:M.month,n:M.n,people:M.people.map(p=>({id:p.id||'',name:p.name,codes:[...p.codes]}))};orig=JSON.stringify(draft.people);showReview();setView('upload')};
+}
+function setView(v){view=v;document.querySelectorAll('.tabs button').forEach(b=>b.setAttribute('aria-selected',b.dataset.v===v));
+  $('vDay').hidden=v!=='day';$('dayHead').hidden=v!=='day';$('vMonth').hidden=v!=='month';$('monthHead').hidden=v!=='month';$('vUp').hidden=v!=='upload';$('upHead').hidden=v!=='upload';$('vSet').hidden=v!=='set';
+  if(v==='day'||v==='month')render();window.scrollTo(0,0);}
+document.querySelectorAll('.tabs button').forEach(b=>b.onclick=()=>setView(b.dataset.v));
+$('mSel').onchange=renderMonth;
+$('prev').onclick=()=>{if(sel>0){sel--;render()}};$('next').onclick=()=>{if(sel<DAYS.length-1){sel++;render()}};
+$('todayBtn').onclick=()=>{sel=todayIdx()??0;render()};
 let sx=null,sy=null;
-$('main').addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
-$('main').addEventListener('touchend',e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
-  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){if(dx<0&&sel<N-1)sel++;else if(dx>0&&sel>0)sel--;render()}sx=null},{passive:true});
-function fromHash(){const m=/^#d(\d{2})(\d{2})$/.exec(location.hash);if(!m)return null;const i=DAYS.findIndex(x=>x.m===+m[1]&&x.d===+m[2]);return i<0?null:i}
-sel=fromHash()??t??0;
-addEventListener('hashchange',()=>{const i=fromHash();if(i!==null&&i!==sel){sel=i;render()}});
-render();
+$('vDay').addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+$('vDay').addEventListener('touchend',e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){if(dx<0&&sel<DAYS.length-1)sel++;else if(dx>0&&sel>0)sel--;render()}sx=null},{passive:true});
 
-}).catch(()=>{document.getElementById('main').innerHTML='<p class="note">班表暫時讀不到，請稍後重新整理。</p>'});
+/* ---------- upload & recognise ---------- */
+let file=null,draft=null,orig='',ctl=null;
+const REPO='jane102310-creator/jane102310-creator.github.io',DPATH='schedule/data.json',MODEL='claude-opus-5-5';
+function keys(){try{return{a:localStorage.getItem('rosterKeyA')||'',g:localStorage.getItem('rosterKeyG')||''}}catch(e){return{a:'',g:''}}}
+function syncAdmin(){const k=keys();$('upTab').hidden=!k.g;$('readBtn').disabled=!(file&&k.a);
+  $('upStatus').textContent=file&&!k.a?'要先到「管理」設定 API 金鑰才能辨識':'';}
+function pick(f){if(!f||!f.type.startsWith('image/'))return;file=f;const u=URL.createObjectURL(f);$('prevImg').src=u;$('prevImg').hidden=false;$('dropTxt').textContent='換一張照片';syncAdmin();}
+$('adminLink').onclick=e=>{e.preventDefault();const k=keys();$('kA').value=k.a;$('kG').value=k.g;$('kSt').textContent='';setView('set')};
+$('kSave').onclick=()=>{try{localStorage.setItem('rosterKeyA',$('kA').value.trim());localStorage.setItem('rosterKeyG',$('kG').value.trim());$('kSt').textContent='已儲存';syncAdmin();if(keys().g)setView('upload')}catch(e){$('kSt').textContent='這個瀏覽器不能儲存設定'}};
+$('kClear').onclick=()=>{try{localStorage.removeItem('rosterKeyA');localStorage.removeItem('rosterKeyG')}catch(e){}$('kA').value='';$('kG').value='';$('kSt').textContent='已清除';syncAdmin()};
+$('file').onchange=e=>pick(e.target.files[0]);
+const drop=$('drop');
+drop.addEventListener('dragover',e=>{e.preventDefault();drop.classList.add('on')});
+drop.addEventListener('dragleave',()=>drop.classList.remove('on'));
+drop.addEventListener('drop',e=>{e.preventDefault();drop.classList.remove('on');pick(e.dataTransfer.files[0])});
+
+async function bands(f){
+  const bmp=await createImageBitmap(f,{imageOrientation:'from-image'});const W=bmp.width,H=bmp.height;
+  const parts=[[0,.42],[.30,.72],[.60,1]];
+  return Promise.all(parts.map(([a,b])=>new Promise(res=>{const c=document.createElement('canvas');const y=Math.round(a*H),h=Math.round((b-a)*H);
+    const sc=Math.min(1,2400/W);c.width=Math.round(W*sc);c.height=Math.round(h*sc);c.getContext('2d').drawImage(bmp,0,y,W,h,0,0,c.width,c.height);c.toBlob(res,'image/jpeg',.92)})));
+}
+const PROMPT=(part)=>`You are transcribing a Taiwanese hospital monthly duty roster (班表) from a photo.
+Image 1 is a ZOOMED STRIP of the photo (part ${part} of 3, top to bottom, strips overlap). Image 2${''} (if present) is the whole photo for context.
+Table layout: first column 職編 (employee number), second column 姓名 (name), then one column per day of the month, left to right, day 1 first. Header rows show the dates (e.g. 11/1) and weekday (日一二三四五六). The top-left cell may show a code like "11511" meaning ROC year 115, month 11.
+Each day cell holds a code. Copy it exactly, joining a cell's two lines with no space. Typical codes: FF, WW, VV, PH, NH, 85, 育嬰, SS, SS調移, SS補颱, 8-4'L, 8-4'點, 8'-5, 9-5', 9-5'(8.9), 9-5'(10.11), 9-5'(12.13), 9'-6加, 9'-6(15.16), 10-6'加, 3'-12點, 4-12'(C), 4-12'(L), W+9-5'(12.13) (a small "W+" or "N+" above a shift). Keep apostrophes as '. If a handwritten mark changes a cell, write the code as you believe it now reads.
+If a cell is blank write "". If you cannot read a cell confidently, give your best guess followed by "?" (e.g. "9-5'(8.9)?").
+Return ONLY rows whose name is fully visible in image 1. Reply with only JSON:
+{"label":"11511 or empty","days":<number of day columns in the table>,"rows":[{"id":"800078","name":"黃美琴","codes":["FF","85",...one per day...]}]}`;
+
+const toB64=b=>new Promise((res,rej)=>{const r=new FileReader();r.onload=()=>res(String(r.result).split(',')[1]);r.onerror=rej;r.readAsDataURL(b)});
+function parseJSON(t){try{return JSON.parse(t)}catch(e){}const m=/```(?:json)?\s*([\s\S]*?)```/.exec(t);if(m)try{return JSON.parse(m[1])}catch(e){}
+  const i=t.indexOf('{'),j=t.lastIndexOf('}');if(i>=0&&j>i)return JSON.parse(t.slice(i,j+1));throw new Error('json')}
+async function ask(strip,whole,part,signal){
+  const imgs=[strip,whole].filter(Boolean);const content=[];
+  for(const b of imgs)content.push({type:'image',source:{type:'base64',media_type:'image/jpeg',data:await toB64(b)}});
+  content.push({type:'text',text:PROMPT(part)});
+  const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',signal,headers:{'content-type':'application/json','x-api-key':keys().a,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+    body:JSON.stringify({model:MODEL,max_tokens:12000,messages:[{role:'user',content}]})});
+  if(!r.ok){const e=new Error('api');e.status=r.status;throw e}
+  const j=await r.json();return parseJSON((j.content||[]).filter(c=>c.type==='text').map(c=>c.text).join(''));
+}
+async function shrink(f){const bmp=await createImageBitmap(f,{imageOrientation:'from-image'});const sc=Math.min(1,1568/Math.max(bmp.width,bmp.height));
+  const c=document.createElement('canvas');c.width=Math.round(bmp.width*sc);c.height=Math.round(bmp.height*sc);c.getContext('2d').drawImage(bmp,0,0,c.width,c.height);return new Promise(r=>c.toBlob(r,'image/jpeg',.9))}
+$('readBtn').onclick=async()=>{
+  if(!file||!keys().a)return;
+  $('readBtn').disabled=true;$('stopBtn').hidden=false;const st=$('upStatus');st.className='status';st.textContent='準備照片…';
+  ctl=new AbortController();
+  try{
+    const strips=await bands(file),whole=await shrink(file);
+    let done=0;st.textContent='Claude 正在讀班表（約 1～2 分鐘）… 0/3';
+    const res=await Promise.all(strips.map((b,i)=>ask(b,whole,i+1,ctl.signal).then(r=>{done++;st.textContent=`Claude 正在讀班表… ${done}/3`;return r})));
+    merge(res);st.textContent='辨識完成，請對照紙本核對';
+  }catch(e){
+    st.className='status err';
+    st.textContent=e?.name==='AbortError'?'已停止':e?.status===401?'API 金鑰不對，請到「管理」重新設定':e?.status===429||e?.status===529?'Claude 現在太忙，請稍後再試':e?.status===400?'照片格式或大小不支援，請換一張':e?.message==='json'?'這次沒讀成功，請再按一次「開始辨識」':'辨識失敗，請確認網路後再試一次';
+  }finally{$('stopBtn').hidden=true;syncAdmin()}
+};
+$('stopBtn').onclick=()=>ctl?.abort();
+
+function merge(res){
+  const label=res.map(r=>String(r?.label||'')).find(x=>/^\d{5}$/.test(x))||'';
+  const n=Math.max(28,Math.min(31,Math.round(Number(res.find(r=>r?.days)?.days)||30)));
+  const byKey=new Map();
+  res.forEach(r=>(Array.isArray(r?.rows)?r.rows:[]).forEach(row=>{
+    const name=String(row?.name||'').trim();if(!name)return;
+    const codes=Array.from({length:n},(_,i)=>String((row.codes||[])[i]??'').trim());
+    const score=codes.filter(c=>c&&!c.endsWith('?')).length;
+    const k=String(row.id||'').trim()||name;const old=byKey.get(k);
+    if(!old||score>old.score)byKey.set(k,{id:String(row.id||'').trim(),name,codes,score,ord:old?old.ord:byKey.size});
+  }));
+  const people=[...byKey.values()].sort((a,b)=>a.ord-b.ord).map(({id,name,codes})=>({id,name,codes}));
+  let y=new Date().getFullYear(),m=new Date().getMonth()+2;if(m>12){m=1;y++}
+  if(label){y=1911+Number(label.slice(0,3));m=Number(label.slice(3))}
+  draft={year:y,month:m,n,people};orig='';showReview();
+}
+function showReview(){
+  $('review').hidden=false;$('yIn').value=draft.year;$('mIn').value=draft.month;
+  const w0=new Date(draft.year,draft.month-1,1).getDay();
+  const hd=Array.from({length:draft.n},(_,i)=>{const w=(w0+i)%7;return`<th class="${w%6===0?'we':''}">${i+1}<br>${WK[w]}</th>`}).join('');
+  const op=orig?JSON.parse(orig):null;
+  $('revGrid').innerHTML=`<table class="g"><thead><tr><th class="nm">姓名</th>${hd}</tr></thead><tbody>${draft.people.map((p,r)=>`<tr><td class="nm">${esc(p.name)}</td>${p.codes.map((c,i)=>`<td><input data-r="${r}" data-i="${i}" value="${esc(c)}" class="${c.endsWith('?')?'unc':''}${op&&op[r]&&op[r].codes[i]!==c?' chg':''}" aria-label="${esc(p.name)} ${i+1}日"></td>`).join('')}</tr>`).join('')}<tr class="chk" id="chkRow"></tr></tbody></table>`;
+  $('revGrid').querySelectorAll('input').forEach(inp=>inp.oninput=()=>{const v=inp.value.trim();draft.people[+inp.dataset.r].codes[+inp.dataset.i]=v;inp.classList.toggle('unc',v.endsWith('?'));inp.classList.add('chg');check()});
+  check();
+}
+function check(){
+  const w0=new Date(draft.year,draft.month-1,1).getDay();
+  const sig=[];for(let i=0;i<draft.n;i++){const c={};draft.people.forEach(p=>{const k=post(p.codes[i]);if(k)c[k]=(c[k]||0)+1});sig.push(c)}
+  const type=i=>{const w=(w0+i)%7;return w===0?'sun':w===6?'sat':'wk'};
+  const key=c=>Object.keys(c).sort().map(k=>k+c[k]).join(',');
+  const mode={};['wk','sat','sun'].forEach(t=>{const f={};sig.forEach((c,i)=>{if(type(i)===t){const k=key(c);f[k]=(f[k]||0)+1}});mode[t]=Object.entries(f).sort((a,b)=>b[1]-a[1])[0]?.[0]});
+  let bad=0;
+  $('chkRow').innerHTML='<td class="nm" style="font-size:12px">每日人數</td>'+sig.map((c,i)=>{const ok=key(c)===mode[type(i)];if(!ok)bad++;return`<td class="${ok?'':'bad'}">${Object.entries(c).map(([k,v])=>esc(pretty(k))+v).join('<br>')||'—'}</td>`}).join('');
+  const unc=draft.people.reduce((a,p)=>a+p.codes.filter(c=>c.endsWith('?')).length,0);
+  $('chkSum').textContent=`${draft.people.length} 人・${unc} 格看不清楚・${bad} 天人數跟同類日子不同`;
+  $('chkSum').className='status'+(unc||bad?' err':'');
+}
+const b64e=s=>{const by=new TextEncoder().encode(s);let bin='';for(let i=0;i<by.length;i+=8192)bin+=String.fromCharCode(...by.subarray(i,i+8192));return btoa(bin)};
+const b64d=s=>new TextDecoder().decode(Uint8Array.from(atob(s.replace(/\n/g,'')),c=>c.charCodeAt(0)));
+async function gh(method,body){const r=await fetch(`https://api.github.com/repos/${REPO}/contents/${DPATH}`+(method==='GET'?'?ref=main&t='+Date.now():''),{method,cache:'no-store',
+  headers:{'Accept':'application/vnd.github+json','Authorization':'Bearer '+keys().g,'X-GitHub-Api-Version':'2022-11-28'},body:body?JSON.stringify(body):undefined});
+  if(!r.ok){const e=new Error('gh');e.status=r.status;throw e}return r.json()}
+$('saveBtn').onclick=async()=>{
+  const y=+$('yIn').value,m=+$('mIn').value,st=$('saveStatus');
+  if(!(y>2000&&m>=1&&m<=12)){st.textContent='請填年和月';return}
+  if(!keys().g){st.textContent='要先到「管理」設定 GitHub 權杖';return}
+  const key=`${y}-${String(m).padStart(2,'0')}`;const n=new Date(y,m,0).getDate();
+  const people=draft.people.filter(p=>p.name).map(p=>({id:p.id||'',name:p.name,codes:Array.from({length:n},(_,i)=>(p.codes[i]||'').replace(/\?$/,''))}));
+  $('saveBtn').disabled=true;st.className='status';st.textContent='儲存中…';
+  try{
+    const cur=await gh('GET');const data=JSON.parse(b64d(cur.content));
+    const list=(data.months||[]).filter(x=>x.key!==key);list.push({key,year:y,month:m,n,people});list.sort((a,b)=>a.key<b.key?-1:1);
+    const now=new Date().toISOString();
+    await gh('PUT',{message:`更新班表：${y}年${m}月`,content:b64e(JSON.stringify({updatedAt:now,months:list},null,1)+'\n'),sha:cur.sha,branch:'main'});
+    months=list.map(x=>({...x}));rebuild();
+    st.textContent=`已儲存 ${y}年${m}月，網站約 1 分鐘後更新`;
+  }catch(e){st.className='status err';st.textContent=e?.status===401||e?.status===403||e?.status===404?'GitHub 權杖沒有權限，請到「管理」重新設定':e?.status===409?'剛好有其他更新，請再按一次儲存':'儲存失敗，請確認網路後再試一次'}
+  finally{$('saveBtn').disabled=false}
+};
+
+/* ---------- start ---------- */
+syncAdmin();
+if(location.hash==='#admin')$('adminLink').click();
+fetch('data.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(d=>{
+  months=(Array.isArray(d.months)?d.months:[]).map(v=>({key:String(v.key),year:+v.year,month:+v.month,n:+v.n,people:Array.isArray(v.people)?v.people.map(p=>({id:String(p.id||''),name:String(p.name||''),codes:Array.isArray(p.codes)?p.codes.map(String):[]})):[]})).filter(M=>M.year&&M.month&&M.n);
+  rebuild();
+}).catch(()=>{$('vDay').innerHTML='<p class="empty">班表暫時讀不到，請稍後重新整理。</p>'});
+}
 </script>
-
 </body></html>
