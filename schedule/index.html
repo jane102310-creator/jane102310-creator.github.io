@@ -92,26 +92,14 @@ section{display:flex;flex-direction:column;gap:6px}
 <script>
 // Transcribed from the 11511 and 11512 sheets: 11/1–12/31, one code per day, space-separated. "-" = not on that month's sheet.
 // 11月依新版紙本班表更新（紙本已含林艷霞↔楊玉蘭換班）。
-const MONTHS=[{y:2026,m:11,n:30},{y:2026,m:12,n:31}];
-const PEOPLE=[
-["黃美琴","FF 85 85 85 VV 85 WW FF 85 85 85 85 85 WW FF 85 SS SS SS SS WW FF 85 85 85 85 85 WW FF 85 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"],
-["張邇寧","FF 8-4'L 8-4'L WW 8-4'L 8-4'L 8-4'L FF 8-4'L 8-4'L VV 8-4'L 8-4'L WW FF 8-4'L 8-4'L 8-4'L 8-4'L 8-4'L WW FF 8-4'L 8-4'L 8-4'L 8-4'L 8-4'L WW FF 8-4'L 8-4'L 8-4'L 8-4'L 8-4'L WW FF 8-4'L 8-4'L 8-4'L SS公假 8-4'L 8-4'L FF WW 8-4'L 8-4'L 8-4'L 8-4'L 8-4'L FF 8-4'L 8-4'L VV WW NH WW FF 8-4'L 8-4'L 8-4'L 8-4'L"],
-["盧怡君","PH FF PH PH PH W+PH PH FF PH PH PH PH PH PH FF WW PH PH PH PH SS調移 FF WW PH PH PH PH PH FF WW WW PH PH PH PH FF WW PH PH PH PH PH FF WW PH PH PH PH SS國慶 FF FF PH PH PH N+PH PH SS調移 WW PH PH PH"],
-["陳潔琪","FF 10-6'加 10-6'加 9-5'(12.13) W+9-5'(12.13) FF 8-4'點 8-4'L 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) SS調移 WW FF 9'-6加 9'-6加 9'-6加 9-5'(10.11) 9-5'(10.11) WW FF 8'-5 8-4'點 VV 9-5'(8.9) 9-5'(8.9) WW FF 9'-6(15.16) 9'-6加 9'-6加 9'-6加 9-5'(12.13) WW FF 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) VV FF 8-4'點 10-6'加 10-6'加 VV 9-5'(12.13) WW FF WW WW 9-5'(12.13) 9-5'(12.13) NH 9-5' FF 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 9-5'(8.9)"],
-["李欣恬","FF 9-5'(12.13) 9-5'(12.13) 10-6'加 10-6'加 10-6'加 WW FF 8'-5 8'-5 8-4'點 9'-6加 9'-6加 FF 8-4'L 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 8'-5 8-4'點 WW FF WW WW 9-5'(12.13) 8-4'點 8'-5 8-4'點 FF 8-4'點 9-5'(12.13) 9-5'(12.13) 9-5'(12.13) SS調移 WW FF 9'-6加 9'-6加 FF 8'-5 8-4'點 8-4'點 8-4'L 10-6'加 SS國慶 9-5'(8.9) 8'-5 8'-5 WW FF 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) NH WW FF 9-5'(12.13) 9-5'(12.13) 10-6'加 WW"],
-["黃彩瑜","FF 4-12'(C) 4-12'(C) 4-12'(L) 4-12'(L) 4-12'(L) WW FF 3'-12點 4-12'(L) 4-12'(L) WW 8-4'點 8-4'點 FF VV WW 3'-12點 4-12'(C) 4-12'(C) 4-12'(L) FF 3'-12點 3'-12點 3'-12點 3'-12點 3'-12點 WW FF 4-12'(L) 4-12'(L) 4-12'(C) WW 9-5'(10.11) 10-6'加 FF 4-12'(C) 4-12'(C) WW SS補颱 WW FF 4-12'(L) 4-12'(C) WW 3'-12點 3'-12點 3'-12點 4-12'(L) FF 9'-6(15.16) 9'-6(15.16) 9'-6(15.16) SS調移 N+4-12'(L) FF 4-12'(L) 4-12'(C) 4-12'(C) 4-12'(C) 4-12'(C)"],
-["楊茹薏","FF 3'-12點 3'-12點 4-12'(C) 4-12'(C) 4-12'(C) WW FF WW 3'-12點 3'-12點 4-12'(C) 4-12'(C) 4-12'(L) FF 3'-12點 3'-12點 WW 3'-12點 3'-12點 WW FF 9-5'(10.11) 9'-6(15.16) FF 8'-5 4-12'(C) 4-12'(L) 4-12'(L) 4-12'(C) 4-12'(C) WW 3'-12點 3'-12點 4-12'(L) FF WW 3'-12點 4-12'(C) 4-12'(C) 4-12'(C) 4-12'(C) FF 3'-12點 4-12'(C) 4-12'(C) 4-12'(C) 4-12'(C) FF 4-12'(L) 3'-12點 3'-12點 3'-12點 3'-12點 NH WW OFF OFF 8-4'點 9'-6(15.16) 9'-6(15.16)"],
-["彭子芸","8-4'L 9-5'(8.9) WW VV 8-4'點 8-4'點 FF PH 9'-6(15.16) 9'-6(15.16) WW 9-5'(8.9) 9-5'(8.9) FF PH PH 10-6'加 10-6'加 WW FF PH PH PH 10-6'加 10-6'加 WW 8-4'點 FF PH PH PH 10-6'加 10-6'加 10-6'加 FF PH PH 10-6'加 9'-6(15.16) 9'-6(15.16) 9'-6(15.16) FF PH PH 9-5'(12.13) 9-5'(12.13) 9-5'(12.13) WW PH FF SS調移 WW 8-4'點 9'-6(15.16) NH FF PH PH WW 9-5'(12.13) 9'-6加"],
-["陳麗安","4-12'(L) FF WW 3'-12點 3'-12點 3'-12點 4-12'(L) FF 4-12'(C) 4-12'(C) 4-12'(C) 3'-12點 3'-12點 WW FF 4-12'(C) 4-12'(C) 4-12'(C) FF 8'-5 SS補颱 4-12'(L) 4-12'(C) 4-12'(C) 4-12'(C) 4-12'(C) WW WW FF 3'-12點 3'-12點 3'-12點 4-12'(C) 4-12'(C) WW FF 3'-12點 WW 3'-12點 3'-12點 3'-12點 FF SS補颱 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) WW FF 4-12'(C) 4-12'(C) 4-12'(C) 4-12'(C) NH SS補颱 FF 3'-12點 3'-12點 3'-12點 WW"],
-["許筱瑄","FF SS颱 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) WW FF 9-5'(8.9) 10-6'加 10-6'加 9'-6(15.16) 9'-6(15.16) WW FF 9-5'(12.13) 9-5'(12.13) WW 9'-6加 9'-6加 FF 8-4'L 8-4'點 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) WW FF 9'-6加 9'-6(15.16) 8'-5 8'-5 8'-5 WW FF 8-4'點 8-4'點 10-6'加 10-6'加 10-6'加 WW FF 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5' FF 9'-6加 9'-6加 9-5'(8.9) 9-5'(8.9) NH WW FF 9'-6(15.16) 9'-6(15.16) WW 9-5'(12.13)"],
-["蘇淑琴","FF 4-12'(L) 4-12'(L) WW VV 8'-5 FF 4-12'(L) 4-12'(L) WW 9-5'(12.13) 4-12'(L) 4-12'(L) FF 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) WW FF 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) WW FF 8'-5 8'-5 4-12'(L) 4-12'(L) W+4-12'(L) FF 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) WW FF VV VV VV VV WW WW FF 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) NH 4-12'(L) FF 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L)"],
-["林艷霞","FF 8-4'點 SS豪雨 8-4'點 WW 9-5'(12.13) W+10-6'加 FF 9'-6加 9-5'(8.9) 9-5'(8.9) 8-4'點 9-5'(12.13) WW FF 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 8'-5 8-4'點 8-4'點 10-6'加 10-6'加 10-6'加 FF 9-5'(12.13) 9-5'(12.13) 9'-6加 9'-6加 NH WW FF 9-5'(10.11) WW 8-4'點 8-4'點"],
-["黃弋俽","FF PH 8'-5 8'-5 8'-5 VV WW FF 10-6'加 9'-6加 9'-6加 9-5'(12.13) VV WW FF 9-5'(8.9) 8'-5 8'-5 8-4'點 WW 8-4'L FF 9-5'(12.13) 9-5'(12.13) 8-4'點 WW FF 8-4'L 8-4'L 10-6'加 10-6'加 9'-6(15.16) WW FF 8-4'L 8-4'L 8'-5 8'-5 8-4'點 8-4'點 VV WW FF 9'-6加 9'-6加 9'-6加 9-5'(8.9) WW WW FF 8'-5 8'-5 8-4'L 8-4'L NH 8-4'L FF 8'-5 8'-5 8'-5 8'-5"],
-["林宜蓁","FF 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) WW FF 9-5'(12.13) 9-5'(12.13) 9'-6(15.16) 10-6'加 10-6'加 10-6'加 FF 8-4'點 WW 9-5'(12.13) 9-5'(12.13) 9-5'(12.13) 8-4'點 FF 9'-6加 9'-6加 9'-6(15.16) 9'-6(15.16) 9'-6(15.16) WW FF WW WW VV 8-4'點 8-4'點 8-4'點 FF 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 9-5' FF 9-5'(8.9) 9-5'(8.9) 9'-6(15.16) 9'-6(15.16) 9'-6(15.16) WW FF 10-6'加 10-6'加 FF 8-4'點 NH 10-6'加 8-4'L 9'-6加 9'-6加 WW WW"],
-["楊玉蘭","FF 8'-5 8-4'點 8-4'L VV VV WW FF VV WW 8-4'L WW 9-5'(10.11) 8-4'L FF 10-6'加 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 9-5' FF 9'-6(15.16) 8'-5 8'-5 9'-6加 9'-6加 WW FF 9-5'(12.13) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9'-6加 WW FF 10-6'加 WW 8'-5 8-4'L 8'-5 10-6'加 FF 8-4'L 8'-5 8'-5 8-4'點 8-4'點 FF PH PH WW SS補颱 SS公假 NH FF FF 8-4'點 VV 9'-6加 10-6'加"],
-["王嘉儷","FF 9'-6(15.16) 9'-6(15.16) 9'-6加 9'-6加 9'-6加 WW FF 8-4'點 8-4'點 8'-5 8'-5 8'-5 WW FF 9'-6(15.16) 9'-6(15.16) 9'-6(15.16) 10-6'加 10-6'加 WW FF 10-6'加 WW 9'-6加 9-5'(12.13) 9-5'(12.13) 9-5' FF 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) W+9-5'(8.9) 9-5' FF 9'-6(15.16) 9'-6(15.16) 9'-6加 9'-6加 9'-6加 WW FF 9'-6(15.16) 9'-6(15.16) WW SS調移 9-5'(8.9) 8-4'點 FF 8-4'點 8-4'點 8'-5 8'-5 N+8-4'L WW FF 10-6'加 10-6'加 SS調移 3'-12點"],
-["李欣容","FF 9'-6加 9'-6加 9'-6(15.16) 9'-6(15.16) W+9'-6(15.16) 9-5' FF WW SS調移 VV WW WW 9-5' FF 8'-5 8-4'點 8-4'點 9'-6(15.16) 9'-6(15.16) 10-6'加 FF 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 10-6'加 10-6'加 10-6'加 FF 9-5'(10.11) 8-4'點 8-4'點 9'-6(15.16) 9'-6(15.16) WW FF 9-5'(12.13) 9-5'(12.13) 9-5'(12.13) 9-5'(12.13) 9-5'(12.13) WW FF 9-5'(12.13) 3'-12點 WW 9'-6加 9'-6加 FF 8-4'L 9-5'(8.9) 9-5'(8.9) 10-6'加 10-6'加 NH 8-4'點 FF WW 9-5'(10.11) 9-5'(10.11) 9-5'(10.11)"]
-].map(([name,s])=>({name,days:s.split(' ')}));
+
+// 資料來自 data.json（由班表小幫手每小時自動同步）
+fetch('data.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.json()).then(DATA=>{
+const MS=(DATA.months||[]).slice().sort((x,y)=>x.key<y.key?-1:1);
+const MONTHS=MS.map(M=>({y:M.year,m:M.month,n:M.n}));
+const names=[];MS.forEach(M=>M.people.forEach(p=>{if(!names.includes(p.name))names.push(p.name)}));
+const PEOPLE=names.map(name=>({name,days:MS.flatMap(M=>{const p=M.people.find(x=>x.name===name);return Array.from({length:M.n},(_,i)=>p&&p.codes[i]?p.codes[i]:'-')})}));
+
 
 const SHIFT={
   "85":{g:'day',t:'時間未註明',o:0},
@@ -154,11 +142,12 @@ function dayData(i){
   });
   return out;
 }
-const person=x=>`<span class="p">${x.name}${x.tag?`<i>${pretty(x.tag)}</i>`:''}${x.mark?`<span class="wplus">${x.mark}</span>`:''}</span>`;
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const person=x=>`<span class="p">${esc(x.name)}${x.tag?`<i>${esc(pretty(x.tag))}</i>`:''}${x.mark?`<span class="wplus">${x.mark}</span>`:''}</span>`;
 function rows(map,cls){
   const keys=Object.keys(map).sort((a,b)=>(SHIFT[a]?.o??0)-(SHIFT[b]?.o??0));
   if(!keys.length)return`<div class="empty">沒有人</div>`;
-  return keys.map(k=>`<div class="grp ${cls}"><div class="code"><b>${pretty(k)}</b>${SHIFT[k]?`<small>${SHIFT[k].t}</small>`:''}</div><div class="names">${map[k].map(person).join('')}</div></div>`).join('');
+  return keys.map(k=>`<div class="grp ${cls}"><div class="code"><b>${esc(pretty(k))}</b>${SHIFT[k]?`<small>${SHIFT[k].t}</small>`:''}</div><div class="names">${map[k].map(person).join('')}</div></div>`).join('');
 }
 function single(list,code,time,cls,emptyTxt){
   if(!list.length)return`<div class="empty">${emptyTxt}</div>`;
@@ -175,7 +164,7 @@ function render(){
   const prevDay=sel===0?'10/31':label(sel-1);
   const nextDay=sel+1<N?label(sel+1):'1/1';
   const offSorted=Object.entries(D.off).sort((a,b)=>{const ia=OFF_ORDER.indexOf(a[0]),ib=OFF_ORDER.indexOf(b[0]);return(ia<0?9:ia)-(ib<0?9:ib)});
-  const offRows=offSorted.length?offSorted.map(([k,v])=>`<div class="grp off"><div class="code"><b>${k}</b></div><div class="names">${v.map(person).join('')}</div></div>`).join(''):`<div class="empty">沒有人休假</div>`;
+  const offRows=offSorted.length?offSorted.map(([k,v])=>`<div class="grp off"><div class="code"><b>${esc(k)}</b></div><div class="names">${v.map(person).join('')}</div></div>`).join(''):`<div class="empty">沒有人休假</div>`;
   $('main').innerHTML=`
   <div class="sum">
     <div class="s-day"><b>${count(D.day)}</b><span>白班</span></div>
@@ -216,6 +205,8 @@ function fromHash(){const m=/^#d(\d{2})(\d{2})$/.exec(location.hash);if(!m)retur
 sel=fromHash()??t??0;
 addEventListener('hashchange',()=>{const i=fromHash();if(i!==null&&i!==sel){sel=i;render()}});
 render();
+
+}).catch(()=>{document.getElementById('main').innerHTML='<p class="note">班表暫時讀不到，請稍後重新整理。</p>'});
 </script>
 
 </body></html>
