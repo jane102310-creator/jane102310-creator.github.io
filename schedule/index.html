@@ -1,0 +1,221 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>每日上班表</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Huninn&family=Noto+Sans+TC:wght@400;500;700&display=swap">
+<style>
+/* Layout: cream planner — soft butter surfaces, rounded pills, one day per screen */
+:root{
+  --bg:#FBF6EC; --surface:#FFFDF8; --ink:#5A4636; --muted:#A08D7B; --line:#EFE4D2;
+  --day:#B7791F; --day-bg:#FCEFCF; --eve:#9B6A8C; --eve-bg:#F6E6EE; --night:#5F7FA3; --night-bg:#E5EEF6;
+  --off:#8C9A7E; --off-bg:#EDF2E4; --accent:#C9965B; --sel-bg:#F6DFA9; --sel-ink:#5A4636; --wkend:#D98B73;
+  --shadow:0 2px 10px rgba(150,115,70,.08);
+  --sans:"Noto Sans TC","PingFang TC","Microsoft JhengHei",system-ui,sans-serif;
+  --round:"Huninn","Noto Sans TC","PingFang TC",system-ui,sans-serif;
+  --mono:"Huninn","Noto Sans TC",ui-rounded,system-ui,sans-serif;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#2A221C; --surface:#352B24; --ink:#F3E7D6; --muted:#B9A48E; --line:#4A3D33;
+  --day:#F2C477; --day-bg:#4A3A22; --eve:#E3B3CF; --eve-bg:#45303C; --night:#A9C3E0; --night-bg:#2F3A47;
+  --off:#C2CDB3; --off-bg:#36402F; --accent:#E3B47A; --sel-bg:#E8C98A; --sel-ink:#3A2C20; --wkend:#F0A890;
+  --shadow:0 2px 10px rgba(0,0,0,.25); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#2A221C; --surface:#352B24; --ink:#F3E7D6; --muted:#B9A48E; --line:#4A3D33;
+  --day:#F2C477; --day-bg:#4A3A22; --eve:#E3B3CF; --eve-bg:#45303C; --night:#A9C3E0; --night-bg:#2F3A47;
+  --off:#C2CDB3; --off-bg:#36402F; --accent:#E3B47A; --sel-bg:#E8C98A; --sel-ink:#3A2C20; --wkend:#F0A890;
+  --shadow:0 2px 10px rgba(0,0,0,.25); color-scheme:dark}
+
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);-webkit-tap-highlight-color:transparent}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--surface)}
+.top{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;background:var(--surface);border-bottom:1px solid var(--line);border-radius:0 0 22px 22px;box-shadow:var(--shadow)}
+.top-in{max-width:720px;margin:0 auto;padding-block:10px 8px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:8px}
+.head{display:flex;align-items:center;gap:10px}
+.head h1{margin:0;font-family:var(--round);font-size:24px;font-weight:400;flex:1;min-width:0;font-variant-numeric:tabular-nums}
+.head h1 small{font-size:14px;font-weight:500;color:var(--muted);margin-left:6px}
+.nav{width:38px;height:38px;border-radius:50%;border:0;background:var(--day-bg);color:var(--ink);font-size:18px;cursor:pointer}
+.nav:disabled{opacity:.3}
+.today{font-family:var(--round);font-size:13px;border:0;color:var(--sel-ink);background:var(--sel-bg);border-radius:999px;padding:5px 10px;cursor:pointer}
+.strip{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;padding-bottom:2px}
+.strip::-webkit-scrollbar{display:none}
+.d{flex:0 0 40px;border:0;background:transparent;border-radius:16px;padding:5px 0;display:flex;flex-direction:column;align-items:center;gap:1px;cursor:pointer;color:var(--ink);font-family:var(--sans)}
+.d small{font-size:10px;color:var(--muted)}
+.d b{font-family:var(--mono);font-size:15px}
+.d.we small{color:var(--wkend)}
+.d.sel{background:var(--sel-bg);color:var(--sel-ink)}
+.d.sel small{color:var(--sel-ink)}
+.mlab{flex:0 0 auto;align-self:center;font-size:11px;font-weight:700;color:var(--muted);padding:0 4px 0 8px;writing-mode:vertical-rl;letter-spacing:.1em}
+.d.now:not(.sel) b{text-decoration:underline;text-decoration-color:var(--accent);text-underline-offset:3px}
+.d:focus-visible,.nav:focus-visible,.today:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+main{max-width:720px;margin:0 auto;padding-block:14px 32px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:14px}
+.sum{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.sum div{background:var(--surface);border:0;box-shadow:var(--shadow);border-radius:18px;padding:8px 6px;text-align:center}
+.sum b{display:block;font-family:var(--mono);font-size:20px}
+.sum span{font-size:11px;color:var(--muted)}
+.sum .s-day b{color:var(--day)} .sum .s-eve b{color:var(--eve)} .sum .s-night b{color:var(--night)} .sum .s-off b{color:var(--off)}
+
+section{display:flex;flex-direction:column;gap:6px}
+.sh{display:flex;align-items:baseline;gap:8px;padding-left:2px}
+.sh h2{margin:0;font-family:var(--round);font-size:17px;font-weight:400}
+.sh span{font-size:12px;color:var(--muted)}
+.list{background:var(--surface);border:0;box-shadow:var(--shadow);border-radius:20px;overflow:hidden}
+.grp{display:flex;gap:10px;padding:11px 14px;border-top:1px dashed var(--line);align-items:flex-start}
+.grp:first-child{border-top:0}
+.code{flex:0 0 92px;display:flex;flex-direction:column;gap:1px}
+.code b{font-family:var(--mono);font-size:14px;width:max-content;padding:2px 10px;border-radius:999px}
+.code small{font-size:11px;color:var(--muted);font-family:var(--mono)}
+.day .code b{background:var(--day-bg);color:var(--day)}
+.eve .code b{background:var(--eve-bg);color:var(--eve)}
+.night .code b{background:var(--night-bg);color:var(--night)}
+.off .code b{background:var(--off-bg);color:var(--off);font-family:var(--sans);font-size:13px}
+.names{display:flex;flex-wrap:wrap;gap:6px 12px;flex:1;min-width:0;padding-top:1px}
+.p{font-family:var(--round);font-size:16px;font-weight:400;white-space:nowrap}
+.p i{font-style:normal;font-size:11px;color:var(--muted);margin-left:3px;font-family:var(--mono)}
+.p .wplus{font-size:10px;font-weight:700;color:var(--wkend);margin-left:3px}
+.empty{padding:10px 12px;color:var(--muted);font-size:13px}
+.note{font-size:12px;color:var(--muted);line-height:1.7}
+.note b{color:var(--ink);font-weight:500}
+</style>
+
+<div class="top"><div class="top-in">
+  <div class="head">
+    <button class="nav" id="prev" aria-label="前一天">‹</button>
+    <h1 id="title">11/8<small>星期日</small></h1>
+    <button class="today" id="todayBtn">今天</button>
+    <button class="nav" id="next" aria-label="後一天">›</button>
+  </div>
+  <div class="strip" id="strip" role="tablist" aria-label="選擇日期"></div>
+</div></div>
+
+<main id="main"></main>
+
+<script>
+// Transcribed from the 11511 and 11512 sheets: 11/1–12/31, one code per day, space-separated. "-" = not on that month's sheet.
+// 11月依新版紙本班表更新（紙本已含林艷霞↔楊玉蘭換班）。
+const MONTHS=[{y:2026,m:11,n:30},{y:2026,m:12,n:31}];
+const PEOPLE=[
+["黃美琴","FF 85 85 85 VV 85 WW FF 85 85 85 85 85 WW FF 85 SS SS SS SS WW FF 85 85 85 85 85 WW FF 85 - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -"],
+["張邇寧","FF 8-4'L 8-4'L WW 8-4'L 8-4'L 8-4'L FF 8-4'L 8-4'L VV 8-4'L 8-4'L WW FF 8-4'L 8-4'L 8-4'L 8-4'L 8-4'L WW FF 8-4'L 8-4'L 8-4'L 8-4'L 8-4'L WW FF 8-4'L 8-4'L 8-4'L 8-4'L 8-4'L WW FF 8-4'L 8-4'L 8-4'L SS公假 8-4'L 8-4'L FF WW 8-4'L 8-4'L 8-4'L 8-4'L 8-4'L FF 8-4'L 8-4'L VV WW NH WW FF 8-4'L 8-4'L 8-4'L 8-4'L"],
+["盧怡君","PH FF PH PH PH W+PH PH FF PH PH PH PH PH PH FF WW PH PH PH PH SS調移 FF WW PH PH PH PH PH FF WW WW PH PH PH PH FF WW PH PH PH PH PH FF WW PH PH PH PH SS國慶 FF FF PH PH PH N+PH PH SS調移 WW PH PH PH"],
+["陳潔琪","FF 10-6'加 10-6'加 9-5'(12.13) W+9-5'(12.13) FF 8-4'點 8-4'L 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) SS調移 WW FF 9'-6加 9'-6加 9'-6加 9-5'(10.11) 9-5'(10.11) WW FF 8'-5 8-4'點 VV 9-5'(8.9) 9-5'(8.9) WW FF 9'-6(15.16) 9'-6加 9'-6加 9'-6加 9-5'(12.13) WW FF 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) VV FF 8-4'點 10-6'加 10-6'加 VV 9-5'(12.13) WW FF WW WW 9-5'(12.13) 9-5'(12.13) NH 9-5' FF 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 9-5'(8.9)"],
+["李欣恬","FF 9-5'(12.13) 9-5'(12.13) 10-6'加 10-6'加 10-6'加 WW FF 8'-5 8'-5 8-4'點 9'-6加 9'-6加 FF 8-4'L 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 8'-5 8-4'點 WW FF WW WW 9-5'(12.13) 8-4'點 8'-5 8-4'點 FF 8-4'點 9-5'(12.13) 9-5'(12.13) 9-5'(12.13) SS調移 WW FF 9'-6加 9'-6加 FF 8'-5 8-4'點 8-4'點 8-4'L 10-6'加 SS國慶 9-5'(8.9) 8'-5 8'-5 WW FF 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) NH WW FF 9-5'(12.13) 9-5'(12.13) 10-6'加 WW"],
+["黃彩瑜","FF 4-12'(C) 4-12'(C) 4-12'(L) 4-12'(L) 4-12'(L) WW FF 3'-12點 4-12'(L) 4-12'(L) WW 8-4'點 8-4'點 FF VV WW 3'-12點 4-12'(C) 4-12'(C) 4-12'(L) FF 3'-12點 3'-12點 3'-12點 3'-12點 3'-12點 WW FF 4-12'(L) 4-12'(L) 4-12'(C) WW 9-5'(10.11) 10-6'加 FF 4-12'(C) 4-12'(C) WW SS補颱 WW FF 4-12'(L) 4-12'(C) WW 3'-12點 3'-12點 3'-12點 4-12'(L) FF 9'-6(15.16) 9'-6(15.16) 9'-6(15.16) SS調移 N+4-12'(L) FF 4-12'(L) 4-12'(C) 4-12'(C) 4-12'(C) 4-12'(C)"],
+["楊茹薏","FF 3'-12點 3'-12點 4-12'(C) 4-12'(C) 4-12'(C) WW FF WW 3'-12點 3'-12點 4-12'(C) 4-12'(C) 4-12'(L) FF 3'-12點 3'-12點 WW 3'-12點 3'-12點 WW FF 9-5'(10.11) 9'-6(15.16) FF 8'-5 4-12'(C) 4-12'(L) 4-12'(L) 4-12'(C) 4-12'(C) WW 3'-12點 3'-12點 4-12'(L) FF WW 3'-12點 4-12'(C) 4-12'(C) 4-12'(C) 4-12'(C) FF 3'-12點 4-12'(C) 4-12'(C) 4-12'(C) 4-12'(C) FF 4-12'(L) 3'-12點 3'-12點 3'-12點 3'-12點 NH WW OFF OFF 8-4'點 9'-6(15.16) 9'-6(15.16)"],
+["彭子芸","8-4'L 9-5'(8.9) WW VV 8-4'點 8-4'點 FF PH 9'-6(15.16) 9'-6(15.16) WW 9-5'(8.9) 9-5'(8.9) FF PH PH 10-6'加 10-6'加 WW FF PH PH PH 10-6'加 10-6'加 WW 8-4'點 FF PH PH PH 10-6'加 10-6'加 10-6'加 FF PH PH 10-6'加 9'-6(15.16) 9'-6(15.16) 9'-6(15.16) FF PH PH 9-5'(12.13) 9-5'(12.13) 9-5'(12.13) WW PH FF SS調移 WW 8-4'點 9'-6(15.16) NH FF PH PH WW 9-5'(12.13) 9'-6加"],
+["陳麗安","4-12'(L) FF WW 3'-12點 3'-12點 3'-12點 4-12'(L) FF 4-12'(C) 4-12'(C) 4-12'(C) 3'-12點 3'-12點 WW FF 4-12'(C) 4-12'(C) 4-12'(C) FF 8'-5 SS補颱 4-12'(L) 4-12'(C) 4-12'(C) 4-12'(C) 4-12'(C) WW WW FF 3'-12點 3'-12點 3'-12點 4-12'(C) 4-12'(C) WW FF 3'-12點 WW 3'-12點 3'-12點 3'-12點 FF SS補颱 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) WW FF 4-12'(C) 4-12'(C) 4-12'(C) 4-12'(C) NH SS補颱 FF 3'-12點 3'-12點 3'-12點 WW"],
+["許筱瑄","FF SS颱 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) WW FF 9-5'(8.9) 10-6'加 10-6'加 9'-6(15.16) 9'-6(15.16) WW FF 9-5'(12.13) 9-5'(12.13) WW 9'-6加 9'-6加 FF 8-4'L 8-4'點 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) WW FF 9'-6加 9'-6(15.16) 8'-5 8'-5 8'-5 WW FF 8-4'點 8-4'點 10-6'加 10-6'加 10-6'加 WW FF 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5' FF 9'-6加 9'-6加 9-5'(8.9) 9-5'(8.9) NH WW FF 9'-6(15.16) 9'-6(15.16) WW 9-5'(12.13)"],
+["蘇淑琴","FF 4-12'(L) 4-12'(L) WW VV 8'-5 FF 4-12'(L) 4-12'(L) WW 9-5'(12.13) 4-12'(L) 4-12'(L) FF 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) WW FF 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) WW FF 8'-5 8'-5 4-12'(L) 4-12'(L) W+4-12'(L) FF 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) WW FF VV VV VV VV WW WW FF 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L) NH 4-12'(L) FF 4-12'(L) 4-12'(L) 4-12'(L) 4-12'(L)"],
+["林艷霞","FF 8-4'點 SS豪雨 8-4'點 WW 9-5'(12.13) W+10-6'加 FF 9'-6加 9-5'(8.9) 9-5'(8.9) 8-4'點 9-5'(12.13) WW FF 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 育嬰 8'-5 8-4'點 8-4'點 10-6'加 10-6'加 10-6'加 FF 9-5'(12.13) 9-5'(12.13) 9'-6加 9'-6加 NH WW FF 9-5'(10.11) WW 8-4'點 8-4'點"],
+["黃弋俽","FF PH 8'-5 8'-5 8'-5 VV WW FF 10-6'加 9'-6加 9'-6加 9-5'(12.13) VV WW FF 9-5'(8.9) 8'-5 8'-5 8-4'點 WW 8-4'L FF 9-5'(12.13) 9-5'(12.13) 8-4'點 WW FF 8-4'L 8-4'L 10-6'加 10-6'加 9'-6(15.16) WW FF 8-4'L 8-4'L 8'-5 8'-5 8-4'點 8-4'點 VV WW FF 9'-6加 9'-6加 9'-6加 9-5'(8.9) WW WW FF 8'-5 8'-5 8-4'L 8-4'L NH 8-4'L FF 8'-5 8'-5 8'-5 8'-5"],
+["林宜蓁","FF 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) WW FF 9-5'(12.13) 9-5'(12.13) 9'-6(15.16) 10-6'加 10-6'加 10-6'加 FF 8-4'點 WW 9-5'(12.13) 9-5'(12.13) 9-5'(12.13) 8-4'點 FF 9'-6加 9'-6加 9'-6(15.16) 9'-6(15.16) 9'-6(15.16) WW FF WW WW VV 8-4'點 8-4'點 8-4'點 FF 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 9-5' FF 9-5'(8.9) 9-5'(8.9) 9'-6(15.16) 9'-6(15.16) 9'-6(15.16) WW FF 10-6'加 10-6'加 FF 8-4'點 NH 10-6'加 8-4'L 9'-6加 9'-6加 WW WW"],
+["楊玉蘭","FF 8'-5 8-4'點 8-4'L VV VV WW FF VV WW 8-4'L WW 9-5'(10.11) 8-4'L FF 10-6'加 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 9-5' FF 9'-6(15.16) 8'-5 8'-5 9'-6加 9'-6加 WW FF 9-5'(12.13) 9-5'(10.11) 9-5'(10.11) 9-5'(10.11) 9'-6加 WW FF 10-6'加 WW 8'-5 8-4'L 8'-5 10-6'加 FF 8-4'L 8'-5 8'-5 8-4'點 8-4'點 FF PH PH WW SS補颱 SS公假 NH FF FF 8-4'點 VV 9'-6加 10-6'加"],
+["王嘉儷","FF 9'-6(15.16) 9'-6(15.16) 9'-6加 9'-6加 9'-6加 WW FF 8-4'點 8-4'點 8'-5 8'-5 8'-5 WW FF 9'-6(15.16) 9'-6(15.16) 9'-6(15.16) 10-6'加 10-6'加 WW FF 10-6'加 WW 9'-6加 9-5'(12.13) 9-5'(12.13) 9-5' FF 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) W+9-5'(8.9) 9-5' FF 9'-6(15.16) 9'-6(15.16) 9'-6加 9'-6加 9'-6加 WW FF 9'-6(15.16) 9'-6(15.16) WW SS調移 9-5'(8.9) 8-4'點 FF 8-4'點 8-4'點 8'-5 8'-5 N+8-4'L WW FF 10-6'加 10-6'加 SS調移 3'-12點"],
+["李欣容","FF 9'-6加 9'-6加 9'-6(15.16) 9'-6(15.16) W+9'-6(15.16) 9-5' FF WW SS調移 VV WW WW 9-5' FF 8'-5 8-4'點 8-4'點 9'-6(15.16) 9'-6(15.16) 10-6'加 FF 9-5'(8.9) 9-5'(8.9) 9-5'(8.9) 10-6'加 10-6'加 10-6'加 FF 9-5'(10.11) 8-4'點 8-4'點 9'-6(15.16) 9'-6(15.16) WW FF 9-5'(12.13) 9-5'(12.13) 9-5'(12.13) 9-5'(12.13) 9-5'(12.13) WW FF 9-5'(12.13) 3'-12點 WW 9'-6加 9'-6加 FF 8-4'L 9-5'(8.9) 9-5'(8.9) 10-6'加 10-6'加 NH 8-4'點 FF WW 9-5'(10.11) 9-5'(10.11) 9-5'(10.11)"]
+].map(([name,s])=>({name,days:s.split(' ')}));
+
+const SHIFT={
+  "85":{g:'day',t:'時間未註明',o:0},
+  "8-4'":{g:'day',t:'08:00–16:30',o:1},
+  "8'-5":{g:'day',t:'08:30–17:00',o:2},
+  "9-5'":{g:'day',t:'09:00–17:30',o:3},
+  "9'-6":{g:'day',t:'09:30–18:00',o:4},
+  "10-6'":{g:'day',t:'10:00–18:30',o:5},
+  "3'-12":{g:'eve',t:'15:30–24:00',o:6},
+  "4-12'":{g:'eve',t:'16:00–24:30',o:7},
+  "PH":{g:'night',t:'00:00–08:30',o:8}};
+const OFF={FF:'例假',WW:'休息日',VV:'休假',NH:'國定假日',OFF:'OFF','育嬰':'育嬰假'};
+const OFF_ORDER=['例假','休息日','國定假日','休假','育嬰假'];
+const WK='日一二三四五六';
+const $=id=>document.getElementById(id);
+const pretty=s=>s.replace(/'/g,'’');
+const DAYS=[];MONTHS.forEach(M=>{for(let d=1;d<=M.n;d++)DAYS.push({m:M.m,d,wd:new Date(M.y,M.m-1,d).getDay()})});
+const N=DAYS.length;
+const label=i=>`${DAYS[i].m}/${DAYS[i].d}`;
+
+function parse(code){
+  if(!code||code==='-')return{kind:'none'};
+  let mark='';const pm=/^(W\+|N\+)/.exec(code);if(pm){mark=pm[1];code=code.slice(2)}
+  for(const k of Object.keys(SHIFT).sort((a,b)=>b.length-a.length)){
+    if(code.startsWith(k))return{kind:'work',base:k,tag:code.slice(k.length),mark,...SHIFT[k]};
+  }
+  const up=code.replace(/^ss/,'SS');
+  const off=up.startsWith('SS')?(up==='SS'?'其他假':up):(OFF[up]||up);
+  return{kind:'off',label:off};
+}
+function dayData(i){
+  const out={night:[],day:{},eve:{},off:{},tonight:[],tonightKnown:i+1<N};
+  PEOPLE.forEach(p=>{
+    const c=parse(p.days[i]);
+    if(c.kind==='work'){
+      const e={name:p.name,tag:c.tag,mark:c.mark};
+      if(c.g==='night')out.night.push(e);else (out[c.g][c.base]??=[]).push(e);
+    }else if(c.kind==='off')(out.off[c.label]??=[]).push({name:p.name});
+    if(i+1<N){const n=parse(p.days[i+1]);if(n.kind==='work'&&n.g==='night')out.tonight.push({name:p.name,tag:n.tag,mark:n.mark})}
+  });
+  return out;
+}
+const person=x=>`<span class="p">${x.name}${x.tag?`<i>${pretty(x.tag)}</i>`:''}${x.mark?`<span class="wplus">${x.mark}</span>`:''}</span>`;
+function rows(map,cls){
+  const keys=Object.keys(map).sort((a,b)=>(SHIFT[a]?.o??0)-(SHIFT[b]?.o??0));
+  if(!keys.length)return`<div class="empty">沒有人</div>`;
+  return keys.map(k=>`<div class="grp ${cls}"><div class="code"><b>${pretty(k)}</b>${SHIFT[k]?`<small>${SHIFT[k].t}</small>`:''}</div><div class="names">${map[k].map(person).join('')}</div></div>`).join('');
+}
+function single(list,code,time,cls,emptyTxt){
+  if(!list.length)return`<div class="empty">${emptyTxt}</div>`;
+  return`<div class="grp ${cls}"><div class="code"><b>${code}</b><small>${time}</small></div><div class="names">${list.map(person).join('')}</div></div>`;
+}
+const count=m=>Object.values(m).reduce((a,b)=>a+b.length,0);
+
+let sel=0;
+function render(){
+  const T=DAYS[sel],D=dayData(sel);
+  $('title').innerHTML=`${T.m}/${T.d}<small>星期${WK[T.wd]}</small>`;
+  $('prev').disabled=sel<=0;$('next').disabled=sel>=N-1;
+  document.querySelectorAll('.d').forEach(b=>{const on=+b.dataset.i===sel;b.classList.toggle('sel',on);b.setAttribute('aria-selected',on)});
+  const prevDay=sel===0?'10/31':label(sel-1);
+  const nextDay=sel+1<N?label(sel+1):'1/1';
+  const offSorted=Object.entries(D.off).sort((a,b)=>{const ia=OFF_ORDER.indexOf(a[0]),ib=OFF_ORDER.indexOf(b[0]);return(ia<0?9:ia)-(ib<0?9:ib)});
+  const offRows=offSorted.length?offSorted.map(([k,v])=>`<div class="grp off"><div class="code"><b>${k}</b></div><div class="names">${v.map(person).join('')}</div></div>`).join(''):`<div class="empty">沒有人休假</div>`;
+  $('main').innerHTML=`
+  <div class="sum">
+    <div class="s-day"><b>${count(D.day)}</b><span>白班</span></div>
+    <div class="s-eve"><b>${count(D.eve)}</b><span>小夜</span></div>
+    <div class="s-night"><b>${D.night.length}</b><span>大夜</span></div>
+    <div class="s-off"><b>${count(D.off)}</b><span>放假</span></div>
+  </div>
+  <section><div class="sh"><h2>凌晨大夜</h2><span>${prevDay} 晚上 24:00 接班，做到早上 08:30</span></div>
+    <div class="list">${single(D.night,'PH','00:00–08:30','night',sel===0?'10/31 晚上的大夜在 10 月班表':'沒有排大夜')}</div></section>
+  <section><div class="sh"><h2>白班</h2><span>依上班時間排序</span></div>
+    <div class="list">${rows(D.day,'day')}</div></section>
+  <section><div class="sh"><h2>小夜</h2></div>
+    <div class="list">${rows(D.eve,'eve')}</div></section>
+  <section><div class="sh"><h2>今晚接大夜</h2><span>${nextDay} 的 PH，今晚 24:00 上班</span></div>
+    <div class="list">${D.tonightKnown?single(D.tonight,'PH',`${nextDay} 00:00`,'night','沒有排大夜'):'<div class="empty">1/1 的 PH 在明年 1 月班表</div>'}</div></section>
+  <section><div class="sh"><h2>放假</h2></div>
+    <div class="list">${offRows}</div></section>
+  <p class="note">名字旁的小字是班表上的註記，例如 L、點、加、(12.13)。<b>W+</b> 是休假日出勤，<b>N+</b> 是國定假日出勤。<br>這份資料是從班表截圖抄錄的，若和系統班表不同，以 HR 排班資料為準。</p>`;
+  const chip=document.querySelector(`.d[data-i="${sel}"]`);chip&&chip.scrollIntoView({inline:'center',block:'nearest',behavior:matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth'});
+  try{history.replaceState(null,'','#d'+String(T.m).padStart(2,'0')+String(T.d).padStart(2,'0'))}catch(e){}
+}
+DAYS.forEach((x,i)=>{
+  if(x.d===1){const l=document.createElement('span');l.className='mlab';l.textContent=x.m+'月';$('strip').appendChild(l)}
+  const b=document.createElement('button');b.dataset.i=i;
+  b.className='d'+(x.wd===0||x.wd===6?' we':'');b.setAttribute('role','tab');
+  b.innerHTML=`<small>${WK[x.wd]}</small><b>${x.d}</b>`;b.onclick=()=>{sel=i;render()};$('strip').appendChild(b);
+});
+function todayIdx(){const n=new Date();const i=DAYS.findIndex(x=>x.m===n.getMonth()+1&&x.d===n.getDate()&&n.getFullYear()===2026);return i<0?null:i}
+const t=todayIdx();if(t!==null)document.querySelector(`.d[data-i="${t}"]`).classList.add('now');
+$('todayBtn').onclick=()=>{sel=t??0;render()};
+$('prev').onclick=()=>{if(sel>0){sel--;render()}};
+$('next').onclick=()=>{if(sel<N-1){sel++;render()}};
+let sx=null,sy=null;
+$('main').addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY},{passive:true});
+$('main').addEventListener('touchend',e=>{if(sx===null)return;const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+  if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5){if(dx<0&&sel<N-1)sel++;else if(dx>0&&sel>0)sel--;render()}sx=null},{passive:true});
+function fromHash(){const m=/^#d(\d{2})(\d{2})$/.exec(location.hash);if(!m)return null;const i=DAYS.findIndex(x=>x.m===+m[1]&&x.d===+m[2]);return i<0?null:i}
+sel=fromHash()??t??0;
+addEventListener('hashchange',()=>{const i=fromHash();if(i!==null&&i!==sel){sel=i;render()}});
+render();
+</script>
+
+</body></html>
