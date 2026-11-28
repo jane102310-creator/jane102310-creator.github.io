@@ -1073,6 +1073,14 @@
         var t = s.items[i]; s.items[i] = s.items[j]; s.items[j] = t;
       });
     }
+    function setPurchasedQty(id, variant, unit, val) {
+      var n = Math.max(0, parseInt(val) || 0), key = lineKey(variant, unit);
+      mutate(s => {
+        var p = findP(s.items, id); if (!p) return;
+        if (!p.purchasedCounts) p.purchasedCounts = {};
+        p.purchasedCounts[key] = n;
+      });
+    }
     function updatePurchasedQty(id, variant, unit, delta) {
       var key = lineKey(variant, unit);
       mutate(s => {
@@ -1196,7 +1204,7 @@
           var twd = pr.krwPrice ? Math.round(toInt(pr.krwPrice) / pr.rate) : 0;
           var attrs = ' data-id="' + id + '" data-unit="' + eu + '"';
           var rows = Object.keys(lines).map(v =>
-            '<div class="progress-row"><span style="font-size:12px;">🛒 ' + (v ? esc(v) + '：' : '') + '<b>已買 ' + (counts[lineKey(v, u)] || 0) + ' / 共 ' + lines[v] + ' ' + eu + '</b></span>' +
+            '<div class="progress-row"><span style="font-size:12px;">🛒 ' + (v ? esc(v) + '：' : '') + '<b>已買 </b><input type="number" inputmode="numeric" min="0" class="form-input stats-input purch-input" style="display:inline-block; width:64px; padding:4px 6px; text-align:center; font-weight:bold;" data-id="' + id + '" data-unit="' + eu + '" data-variant="' + esc(v) + '" value="' + (counts[lineKey(v, u)] || 0) + '" /><b> / 共 ' + lines[v] + ' ' + eu + '</b></span>' +
             '<div class="progress-controls"><button class="btn-mini-qty" data-act="purch" data-id="' + id + '" data-unit="' + eu + '" data-variant="' + esc(v) + '" data-d="-1">-</button>' +
             '<button class="btn-mini-qty" data-act="purch" data-id="' + id + '" data-unit="' + eu + '" data-variant="' + esc(v) + '" data-d="1">+</button></div></div>').join('');
           return '<div class="progress-box" style="background:#FAFAFA; border:1px solid #EFECE6; padding:10px; border-radius:10px; margin-bottom:8px;">' +
@@ -1316,9 +1324,13 @@
       if (el.classList && el.classList.contains('stats-input') && el.dataset.field) queuePrice(el.dataset.id, el.dataset.unit, el.dataset.field, el.value);
     });
 
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && e.target.classList && e.target.classList.contains('purch-input')) e.target.blur();
+    });
     document.addEventListener('change', e => {
       var el = e.target;
       if (el.dataset && el.dataset.vsel) { selectedVariant[el.dataset.id] = el.value; renderList(); }
+      if (el.classList && el.classList.contains('purch-input')) { setPurchasedQty(el.dataset.id, el.dataset.variant || '', el.dataset.unit, el.value); el.blur(); }
     });
 
     initRealtimeListener();
