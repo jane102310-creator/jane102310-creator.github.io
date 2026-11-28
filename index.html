@@ -669,7 +669,7 @@
       var rate = parseFloat(info.rate) || GLOBAL_EXCHANGE_RATE;
       var manualNt = toInt(info.ntPrice);
       var finalNt = manualNt > 0 ? manualNt : (krw > 0 && rate > 0 ? Math.round(krw / rate) : 0);
-      return { krwPrice: info.krwPrice == null ? '' : String(info.krwPrice), rate: rate, ntPrice: info.ntPrice == null ? '' : String(info.ntPrice), finalNt: finalNt };
+      return { origPrice: info.origPrice == null ? '' : String(info.origPrice), krwPrice: info.krwPrice == null ? '' : String(info.krwPrice), rate: rate, ntPrice: info.ntPrice == null ? '' : String(info.ntPrice), finalNt: finalNt };
     }
 
     // 輸入價格：停止輸入 600ms 後才寫入雲端 (debounce)
@@ -711,7 +711,7 @@
       return '"' + v.replace(/"/g, '""') + '"';
     }
     function exportToExcel() {
-      var rows = [['商品名稱', '品牌', '購買地點', '分類', '色號/款式', '單位', '總需求數量', '採購成本', '匯率', '售價(NT$)', '總售價', '已採購數', '買家與數量明細']];
+      var rows = [['商品名稱', '品牌', '購買地點', '分類', '色號/款式', '單位', '總需求數量', '原價', '採購成本', '匯率', '售價(NT$)', '總售價', '已採購數', '買家與數量明細']];
       products.forEach(p => {
         var buyers = p.buyers || [], counts = p.purchasedCounts || {};
         var vs = (p.variants || []).slice();
@@ -723,7 +723,7 @@
             var mine = buyers.filter(b => (b.unit || '瓶') === u && (b.variant || '') === v);
             var need = mine.reduce((a, b) => a + (b.count || 0), 0);
             if (v === '' && vs.length > 1 && need === 0) return;
-            rows.push([p.name, p.brand || '', p.store || '', p.category, v, u, need, pr.krwPrice, pr.rate, pr.finalNt, pr.finalNt * need, counts[lineKey(v, u)] || 0, mine.map(b => b.name + ' ' + b.count + u).join('; ')]);
+            rows.push([p.name, p.brand || '', p.store || '', p.category, v, u, need, pr.origPrice, pr.krwPrice, pr.rate, pr.finalNt, pr.finalNt * need, counts[lineKey(v, u)] || 0, mine.map(b => b.name + ' ' + b.count + u).join('; ')]);
           });
         });
       });
@@ -1210,7 +1210,11 @@
           return '<div class="progress-box" style="background:#FAFAFA; border:1px solid #EFECE6; padding:10px; border-radius:10px; margin-bottom:8px;">' +
             '<div style="font-weight:bold; font-size:13px; color:var(--accent); margin-bottom:6px;">📦 單位 [' + eu + '] 採購設定</div>' +
             '<div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:6px;">' +
-              '<div><label style="font-size:11px; color:#666;">採購成本</label><input type="text" class="form-input stats-input"' + attrs + ' data-field="krwPrice" value="' + esc(pr.krwPrice) + '" /></div>' +
+              '<div><label style="font-size:11px; color:#666;">原價（特價前）</label><input type="text" inputmode="numeric" class="form-input stats-input"' + attrs + ' data-field="origPrice" value="' + esc(pr.origPrice) + '" placeholder="沒特價可不填" /></div>' +
+              '<div><label style="font-size:11px; color:#666;">特價省下</label><input type="text" class="form-input" style="background:#eee; color:#D9534F;" readonly value="' + ((toInt(pr.origPrice) > toInt(pr.krwPrice) && toInt(pr.krwPrice) > 0) ? (toInt(pr.origPrice) - toInt(pr.krwPrice)).toLocaleString() + '（' + Math.round((1 - toInt(pr.krwPrice) / toInt(pr.origPrice)) * 100) + '% off）' : '-') + '" /></div>' +
+            '</div>' +
+            '<div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:6px;">' +
+              '<div><label style="font-size:11px; color:#666;">採購成本（實付）</label><input type="text" class="form-input stats-input"' + attrs + ' data-field="krwPrice" value="' + esc(pr.krwPrice) + '" /></div>' +
               '<div><label style="font-size:11px; color:#666;">匯率</label><input type="number" step="0.1" class="form-input stats-input"' + attrs + ' data-field="rate" value="' + esc(pr.rate) + '" /></div>' +
             '</div>' +
             '<div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px;">' +
